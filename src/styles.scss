@@ -6,7 +6,7 @@ $contentWidth: 1440px;
 $paddingLR: 100px;
 $paddingLR1000: 50px;
 $paddingLR500: 20px;
-$transition: color 150ms ease-in-out, background-color 150ms ease-in-out, border-color 150ms ease-in-out, box-shadow 150ms ease-in-out, opacity 150ms ease-in-out;
+$transition: color 150ms ease-in-out, background-color 150ms ease-in-out, border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
 
 @mixin flexBox($display: flex, $jc: center, $ai: center, $fd: row, $gap: 0) {
   display: $display;
@@ -22,13 +22,15 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out, border
 }
 
 @mixin button($switchColors: false, $transparent: false, $mobile: false) {
+  position: relative;
   padding: if($mobile, 10px 24px, 14px 32px);
   border-radius: 14px;
   font-size: if($mobile, 14px, 16px);
   font-weight: 500;
   letter-spacing: 0.04em;
   cursor: pointer;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, border-color 0.22s ease, opacity 0.22s ease;
+  overflow: hidden;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, border-color 0.22s ease;
 
   @if $switchColors {
     background: linear-gradient(175deg, rgba(255,255,255,0.97) 0%, rgba(230,230,230,0.91) 100%);
@@ -101,6 +103,81 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out, border
 
 html {
   background-color: $bgColor;
+}
+
+/* === Spotlight border — pearl shimmer on element edges near cursor ===
+   JS sets --mx/--my relative to each element.
+   ::before mask-subtract = only the 1px border region lights up.
+   ::after = soft warm surface glow that fades from the border inward.
+*/
+.skill-item,
+.project-info,
+.project-img-wrap,
+.about-icon,
+.social-icon-link,
+form {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(
+      120px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(255, 210, 140, 0.85),
+      rgba(200, 140, 255, 0.60),
+      rgba(120, 200, 255, 0.35),
+      transparent 68%
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: subtract;
+    pointer-events: none;
+    z-index: 2;
+    transition: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      90px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(255, 220, 160, 0.055) 0%,
+      rgba(220, 180, 255, 0.025) 55%,
+      transparent 75%
+    );
+    pointer-events: none;
+    z-index: 1;
+    transition: none;
+  }
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    90px circle at var(--mx, -400px) var(--my, -400px),
+    rgba(255, 215, 140, 0.80),
+    rgba(190, 140, 255, 0.55),
+    transparent 65%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: subtract;
+  pointer-events: none;
+  z-index: 2;
+  transition: none;
 }
 
 

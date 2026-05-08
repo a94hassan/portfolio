@@ -31,7 +31,7 @@ export class AboutMeComponent implements AfterViewInit, OnDestroy {
       });
     }, this.el.nativeElement);
 
-    this.zone.runOutsideAngular(() => this.initAboutCanvas());
+    this.zone.runOutsideAngular(() => setTimeout(() => this.initAboutCanvas(), 100));
   }
 
   private initAboutCanvas() {

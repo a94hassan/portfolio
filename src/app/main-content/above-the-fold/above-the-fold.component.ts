@@ -19,6 +19,7 @@ export class AboveTheFoldComponent implements AfterViewInit, OnDestroy {
     this.initGsapTimeline();
     this.initScrollEffects();
     this.initMagneticButton();
+    this.initPhotoTilt();
   }
 
   private initGsapTimeline() {
@@ -112,6 +113,24 @@ export class AboveTheFoldComponent implements AfterViewInit, OnDestroy {
 
     btn.addEventListener('mouseleave', () => {
       gsap.to(btn, { x: 0, y: 0, duration: 0.65, ease: 'elastic.out(1, 0.4)' });
+    });
+  }
+
+  private initPhotoTilt() {
+    const wrapper = this.el.nativeElement.querySelector('.hero-photo-wrapper') as HTMLElement;
+    if (!wrapper || !window.matchMedia('(hover: hover)').matches) return;
+
+    gsap.set(wrapper, { transformPerspective: 900 });
+
+    wrapper.addEventListener('mousemove', (e: MouseEvent) => {
+      const rect = wrapper.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width - 0.5;
+      const ny = (e.clientY - rect.top) / rect.height - 0.5;
+      gsap.to(wrapper, { rotateY: nx * 16, rotateX: -ny * 16, duration: 0.4, ease: 'power2.out' });
+    });
+
+    wrapper.addEventListener('mouseleave', () => {
+      gsap.to(wrapper, { rotateX: 0, rotateY: 0, duration: 0.7, ease: 'power3.out' });
     });
   }
 

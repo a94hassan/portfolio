@@ -267,42 +267,50 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const ring = document.getElementById('cursor-ring')!;
     const dot = document.getElementById('cursor-dot')!;
-    const glow = document.getElementById('cursor-glow');
     if (!ring || !dot) return;
 
     gsap.set(ring, { xPercent: -50, yPercent: -50 });
     gsap.set(dot, { xPercent: -50, yPercent: -50 });
-    if (glow) gsap.set(glow, { xPercent: -50, yPercent: -50 });
 
     let appeared = false;
+    let spotElements: HTMLElement[] = [];
+
+    const SPOT_SEL = '.skill-item,.project-info,.project-img-wrap,.about-icon,.social-icon-link,form,button';
+    setTimeout(() => {
+      spotElements = Array.from(document.querySelectorAll(SPOT_SEL)) as HTMLElement[];
+    }, 900);
 
     const onMove = (e: MouseEvent) => {
       if (!appeared) {
         gsap.to([ring, dot], { opacity: 1, duration: 0.4 });
-        if (glow) gsap.to(glow, { opacity: 1, duration: 0.8 });
         appeared = true;
       }
       gsap.to(dot, { x: e.clientX, y: e.clientY, duration: 0 });
       gsap.to(ring, { x: e.clientX, y: e.clientY, duration: 0.18, ease: 'power2.out' });
-      if (glow) gsap.to(glow, { x: e.clientX, y: e.clientY, duration: 0.60, ease: 'power2.out' });
+
+      for (const el of spotElements) {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        el.style.setProperty('--my', `${e.clientY - r.top}px`);
+      }
     };
 
     const onOver = (e: MouseEvent) => {
       if ((e.target as Element).closest('a, button, input, textarea')) {
-        gsap.to(ring, { scale: 1.8, borderColor: 'rgba(255,255,255,0.9)', duration: 0.25 });
+        gsap.to(ring, { scale: 1.7, borderColor: 'rgba(255,255,255,0.75)', duration: 0.22 });
       }
     };
 
     const onOut = (e: MouseEvent) => {
       if ((e.target as Element).closest('a, button, input, textarea')) {
-        gsap.to(ring, { scale: 1, borderColor: 'rgba(255,255,255,0.5)', duration: 0.25 });
+        gsap.to(ring, { scale: 1, borderColor: 'rgba(255,255,255,0.40)', duration: 0.22 });
       }
     };
 
-    const onLeaveWindow = () => { gsap.to([ring, dot], { opacity: 0, duration: 0.3 }); if (glow) gsap.to(glow, { opacity: 0, duration: 0.5 }); };
-    const onEnterWindow = () => { if (appeared) { gsap.to([ring, dot], { opacity: 1, duration: 0.3 }); if (glow) gsap.to(glow, { opacity: 1, duration: 0.5 }); } };
+    const onLeaveWindow = () => gsap.to([ring, dot], { opacity: 0, duration: 0.3 });
+    const onEnterWindow = () => { if (appeared) gsap.to([ring, dot], { opacity: 1, duration: 0.3 }); };
 
-    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mousemove', onMove, { passive: true });
     document.addEventListener('mouseover', onOver);
     document.addEventListener('mouseout', onOut);
     document.addEventListener('mouseleave', onLeaveWindow);
