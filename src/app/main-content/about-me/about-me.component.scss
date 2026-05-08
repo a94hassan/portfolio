@@ -3,181 +3,111 @@
 :host {
   width: 100%;
   @include flexBox($fd: column);
-  >div {
-    width: 100%;
-    position: relative;
-    overflow-x: clip;
-    >img {
-      position: absolute;
-      z-index: 2;
-      left: 50%;
-      transform: translate(60%, -30%);
-    }
-  }
 }
 
 section {
   scroll-margin-top: 120px;
   position: relative;
   z-index: 3;
-  padding: 144px 0px;
+  padding: 144px 0;
   @include contentWidth();
+  @include flexBox($ai: center);
+}
+
+.about-content {
+  flex: 1;
+  padding-left: 100px;
+
+  > div {
+    @include flexBox($fd: column, $ai: flex-start);
+    width: 480px;
+
+    > h1 {
+      font-size: 90px;
+      margin-bottom: 16px;
+    }
+
+    > p {
+      font-size: 15px;
+      line-height: 1.65;
+      color: rgba(255, 255, 255, 0.55);
+      margin-bottom: 32px;
+    }
+  }
+}
+
+.about-trait {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+
+  p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.55);
+    padding-top: 2px;
+  }
+}
+
+.about-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
   @include flexBox();
-  >div:first-of-type {
-    flex: 1;
-    padding-left: 100px;
-    line-height: 1.25;
-    >div {
-      @include flexBox($fd: column, $ai: flex-start);
-      width: 480px;
-      >h1 {
-        font-size: 90px;
-        margin-bottom: 16px;
-      }
-      >p {
-        margin-bottom: 32px;
-      }
-      >div {
-        margin-bottom: 32px;
-        @include flexBox($ai: flex-start);
-        >img {
-          padding: 0px 32px;
-        }
-      }
-    }
-  }
-  >div:last-of-type {
-    flex: 1;
-    @include flexBox();
-    >div:first-of-type {
-      transition-timing-function: cubic-bezier(.175,.885,.32,1.275);
-      >img {
-        width: 450px;
-        border-radius: 50%;
-        border: 4px solid $secondColor;
-        background-color: $bgColor;
-      }
-    }
-    >div:last-of-type {
-      height: 4px;
-      width: 100%;
-      background-color: $secondColor;
-    }
-  }
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.60);
+}
+
+.about-visual {
+  flex: 1;
+  @include flexBox();
+}
+
+.about-canvas {
+  width: 450px;
+  height: 450px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  display: block;
 }
 
 @media (max-width: 1440px) {
-:host {
-  overflow-x: clip;
-  >div {
-    >img {
-      transform: translate(30vw, -20vh);
-    }
-  }
-}
+  :host { overflow-x: clip; }
 
-section {
-  >div:first-of-type {
-    >div {
-      margin-right: 10vw;
-      >h1 {
-        font-size: clamp(50px, 6.5vw, 90px);
-      }
-    }
+  .about-content > div {
+    margin-right: 10vw;
+    > h1 { font-size: clamp(50px, 6.5vw, 90px); }
   }
-  >div:last-of-type {
-    width: unset;
-    >div:first-of-type {
-      >img {
-        width: 30vw;
-      }
-    }
-  }
- }
+
+  .about-canvas { width: 30vw; height: 30vw; min-width: 280px; min-height: 280px; }
 }
 
 @media (max-width: 1200px) {
-  section {
-    >div:first-of-type {
-      >div {
-        margin-right: 8vw;
-        width: 40vw;
-      }
-    }
-  }
+  .about-content > div { margin-right: 8vw; width: 40vw; }
 }
 
 @media (max-width: 1000px) {
-  section {
-    >div:first-of-type {
-      padding-left: 50px;
-      >div {
-        margin-right: 5vw;
-        width: 50vw;
-      }
-    }
-  }
+  .about-content { padding-left: 50px; }
+  .about-content > div { margin-right: 5vw; width: 50vw; }
 }
 
 @media (max-width: 720px) {
-  :host {
-    >div {
-      >img {
-        transform: translate(20vw, -20vh);
-        width: 100%;
-      }
-    }
-  }
-
-  section {
-    padding: 100px 0px;
-    >div:first-of-type {
-      padding: 0 $paddingLR1000;
-      >div {
-        width: 100%;
-      }
-    }
-    >div:last-of-type {
-      display: none;
-    }
-  }
+  section { padding: 100px 0; }
+  .about-content { padding: 0 $paddingLR1000; }
+  .about-content > div { width: 100%; }
+  .about-visual { display: none; }
 }
 
 @media (max-width: 500px) {
-  :host {
-    >div {
-      >img {
-        transform: translate(20vw, -10vh);
-        width: 120vw;
-      }
-    }
-  }
-  
-  section {
-    >div:first-of-type {
-      padding: 0 $paddingLR500;
-      >div {
-        >h1 {
-          font-size: clamp(40px, 10vw, 60px);
-        }
-      }
-    }
-  }
+  .about-content { padding: 0 $paddingLR500; }
+  .about-content > div > h1 { font-size: clamp(40px, 10vw, 60px); }
 }
 
 @media (max-width: 400px) {
-
-
-  section {
-    padding: 72px 0px;
-    >div:first-of-type {
-      >div {
-        >div {
-          >img {
-            padding: 0px 8px;
-          }
-        }
-      }
-    }
-  }
+  section { padding: 72px 0; }
 }

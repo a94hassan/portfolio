@@ -8,17 +8,6 @@ $invalid: #E61C40;
   @include flexBox();
   position: relative;
   overflow-x: clip;
-  >div:first-of-type {
-    width: 100%;
-    position: absolute;
-    z-index: 1;
-    overflow-x: clip;
-    @include flexBox();
-    >img {
-      margin-left: -1000px;
-      margin-bottom: -600px;
-    }
-  }
   >div:last-of-type {
     height: 100vh;
     height: 100svh;
@@ -28,15 +17,16 @@ $invalid: #E61C40;
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 8;
-    background-color: rgba(20, 29, 47, 0.95);
+    background-color: rgba(10, 10, 10, 0.92);
+    backdrop-filter: blur(8px);
     @include flexBox();
     display: none;
     >span {
-      background-color: $bgColor;
-      border: 2px solid $secondColor;
-      border-radius: 16px;
+      background-color: #111111;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
       padding: 40px 64px;
-      font-size: 24px;
+      font-size: 22px;
     }
   }
 }
@@ -71,10 +61,10 @@ section {
     @include flexBox($jc: flex-start);
     width: 100%;
     >div {
-      height: 4px;
+      height: 2px;
       width: 50px;
       margin-right: 50px;
-      background-color: $firstColor;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5));
       border-top-right-radius: 2px;
       border-bottom-right-radius: 2px;
     }
@@ -132,31 +122,43 @@ section {
 form {
   @include flexBox($fd: column);
   width: 100%;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 24px;
+  padding: 40px 36px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   >div:first-of-type {
-    @include flexBox($fd: column, $gap: 32px);
+    @include flexBox($fd: column, $gap: 20px);
     width: 100%;
     >div {
       width: 100%;
       @include flexBox($fd: column, $ai: flex-start, $gap: 6px);
       >input, >textarea {
         width: 100%;
-        background-color: $bgColor;
-        border: 1px solid $firstColor;
-        outline-color: $secondColor;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-size: 16px;
-        resize: vertical; 
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        outline: none;
+        border-radius: 14px;
+        padding: 14px 20px;
+        font-size: 15px;
+        resize: vertical;
+        transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset;
         &::placeholder {
-          color: white;
+          color: rgba(255, 255, 255, 0.30);
         }
         &:hover {
-          cursor: pointer;
-          border: 1px solid $secondColor;
+          border-color: rgba(255, 255, 255, 0.20);
+          background: rgba(255, 255, 255, 0.07);
         }
-        &:focus-visible {
-          outline: 1px solid $secondColor;
-          border: 1px solid $secondColor;
+        &:focus {
+          border-color: rgba(255, 255, 255, 0.28);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 0 0 3px rgba(255,255,255,0.04);
         }
         &::-webkit-resizer {
          background-image: url(./../../../assets/img/5_contact_section/resizer.png);
@@ -164,11 +166,12 @@ form {
         }
       }
       >textarea {
-        min-height: 200px;
+        min-height: 180px;
       }
       >span {
-        font-size: 14px;
+        font-size: 13px;
         color: $invalid;
+        padding-left: 4px;
       }
     }
   }
@@ -176,16 +179,18 @@ form {
     @include flexBox($fd: column, $ai: unset);
     width: 100%;
     font-size: 14px;
-    margin-top: 16px;
-    margin-bottom: 32px;
+    margin-top: 20px;
+    margin-bottom: 28px;
     >div {
-      @include flexBox($gap: 8px, $ai: unset);
+      @include flexBox($gap: 10px, $ai: flex-start);
       input {
-        appearance: none; 
+        appearance: none;
         -webkit-appearance: none;
-        -moz-appearance: none; 
-        width: 24px;
-        height: 24px; 
+        -moz-appearance: none;
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        margin-top: 1px;
         background-image: url(./../../../assets/img/5_contact_section/checkbox.png);
         background-size: contain;
         background-repeat: no-repeat;
@@ -202,11 +207,13 @@ form {
       }
       >span  {
         width: 100%;
+        color: rgba(255,255,255,0.55);
+        line-height: 1.5;
         a {
           text-decoration: none;
-          color: $firstColor;
+          color: rgba(255,255,255,0.80);
           &:hover {
-            cursor: pointer;
+            color: white;
             text-decoration: underline;
           }
         }
@@ -214,39 +221,35 @@ form {
     }
     >span {
       color: $invalid;
+      font-size: 13px;
+      margin-top: 6px;
     }
   }
   >button {
     @include button();
+    align-self: flex-start;
   }
 }
 
 .invalid {
   border: 1px solid $invalid !important;
-  outline-color: $invalid !important;
   background-image: url(./../../../assets/img/5_contact_section/invalid.png);
-  background-position: right 20px top 10px;
+  background-position: right 20px top 14px;
   background-repeat: no-repeat;
-  &:focus-visible {
-    outline: 1px solid $invalid !important;
-    border: 1px solid $invalid !important;
-  }
+  box-shadow: 0 0 0 3px rgba(230,28,64,0.12) !important;
 }
 
 .valid {
   border: 1px solid $valid !important;
-  outline-color: $valid !important;
   background-image: url(./../../../assets/img/5_contact_section/valid.png);
-  background-position: right 20px top 10px;
+  background-position: right 20px top 14px;
   background-repeat: no-repeat;
-  &:focus-visible {
-    outline: 1px solid $valid !important;
-    border: 1px solid $valid !important;
-  }
+  box-shadow: 0 0 0 3px rgba(112,230,28,0.10) !important;
 }
 
 .disabled {
-  background-color: grey !important;
+  opacity: 0.45 !important;
+  pointer-events: none;
 }
 
 @media(max-width: 1440px) {
@@ -260,15 +263,6 @@ form {
 }
 
 @media(max-width: 1000px) {
-  :host {
-    >div:first-of-type {
-      img {
-        margin-left: -800px;
-        margin-bottom: -700px;
-      }
-    }
-  }
-
   section {
     >div:first-of-type {
       >div {
@@ -306,15 +300,6 @@ form {
 }
 
 @media(max-width: 500px) {
-  :host {
-    >div:first-of-type {
-      img {
-        margin-left: -600px;
-        margin-bottom: -800px;
-      }
-    }
-  }
-
   section {
     >div:first-of-type {
       >div {

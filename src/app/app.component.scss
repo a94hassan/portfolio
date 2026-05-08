@@ -1,0 +1,65 @@
+#global-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+}
+
+#cursor-dot {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+}
+
+/* Iridescent pearl ring — only the ring band is visible, center is hollow */
+#cursor-glow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgba(255,  80, 200, 0.00)  0deg,
+    rgba(255,  80, 200, 0.38) 25deg,
+    rgba( 80, 160, 255, 0.42) 90deg,
+    rgba( 80, 255, 200, 0.34) 170deg,
+    rgba(255, 220,  80, 0.38) 240deg,
+    rgba(200,  80, 255, 0.40) 310deg,
+    rgba(255,  80, 200, 0.00) 360deg
+  );
+  mask-image: radial-gradient(circle, transparent 0%, transparent 43%, black 50%, black 60%, transparent 68%);
+  -webkit-mask-image: radial-gradient(circle, transparent 0%, transparent 43%, black 50%, black 60%, transparent 68%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 9990;
+  opacity: 0;
+  will-change: transform;
+  animation: pearl-hue 6s linear infinite;
+}
+
+@keyframes pearl-hue {
+  to { filter: hue-rotate(360deg); }
+}

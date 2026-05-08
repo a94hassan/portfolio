@@ -1,13 +1,114 @@
 @import './../../../../../styles.scss';
 
 nav {
-  font-size: 24px;
-  @include flexBox($gap: 32px);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  @include flexBox($gap: 36px);
+
   >a {
+    position: relative;
     text-decoration: none;
+    color: rgba(255, 255, 255, 0.65);
+    padding-bottom: 3px;
+    transition: color 0.25s ease;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.75);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
     &:hover {
+      color: white;
+
+      &::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
+    }
+  }
+}
+
+.language_selector {
+  position: relative;
+  width: max-content;
+
+  >div {
+    @include flexBox($gap: 8px);
+    padding: 8px 16px;
+    border-radius: 8px;
+    position: relative;
+    z-index: 8;
+    border: 1px solid transparent;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.55);
+    transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
       cursor: pointer;
-      color: $secondColor;
+    }
+
+    &.active {
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      background: rgba(255, 255, 255, 0.06) !important;
+    }
+
+    >img {
+      width: 18px;
+      height: 18px;
+      opacity: 0.8;
+    }
+  }
+
+  >ul {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 7;
+    width: 100%;
+    padding: 6px;
+    margin: 0;
+    list-style: none;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 10px;
+    background: rgba(14, 14, 14, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    >li {
+      @include flexBox($gap: 8px);
+      padding: 8px 12px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.65);
+      transition: background 0.2s ease, color 0.2s ease;
+
+      &.selected {
+        background: rgba(255, 255, 255, 0.10);
+        color: white;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: white;
+      }
+
+      >img {
+        width: 18px;
+        height: 18px;
+      }
     }
   }
 }
@@ -22,179 +123,109 @@ nav {
     left: 100%;
     right: 0;
     bottom: 0;
-    background-color: rgba(20, 29, 47, 0.95);
-    @include flexBox();    
+    background-color: rgba(8, 8, 8, 0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    @include flexBox();
     display: none;
     animation: slide 150ms forwards;
+
     >div {
-      @include flexBox($fd: column, $gap: 32px);
+      @include flexBox($fd: column, $gap: 36px);
+
       >a {
         text-decoration: none;
-        font-size: 24px;
+        font-size: 22px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.75);
+        letter-spacing: 0.02em;
+        transition: color 0.25s ease;
+
         &:hover {
-          cursor: pointer;
-          text-decoration: underline 2px $secondColor;
-          text-underline-offset: 8px;
+          color: white;
         }
       }
     }
+
     &.visible {
       display: flex;
     }
   }
 }
 
-.language_selector {
-  position: relative;
-  width: max-content;
-  >div {
-    @include flexBox($gap: 8px);
-    padding: 12px 24px;
-    border-radius: 10px;
-    position: relative;
-    z-index: 8;
-    border: 1px solid transparent;
-    &:hover {
-      border: 1px solid white;
-      cursor: pointer;
-    }
-    &.active {
-      border: 1px solid white !important;
-      background-color: $bgColor !important;
-    }
-    >img {
-      width: 24px;
-      height: 24px;
-    }
-  }
-  >ul {
-    position: absolute;
-    top: calc(100% - 8px);
-    left: 0;
-    z-index: 7;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    padding-top: 8px;
-    list-style: none;
-    border: 1px solid white;
-    border-top: none;
-    border-radius: 0 0 10px 10px;
-    background-color: $bgColor;
-    >li {
-      @include flexBox($gap: 8px);
-      padding: 12px 24px;
-      border-radius: 10px;
-      cursor: pointer;
-      &.selected {
-        background-color: $firstColor;
-      }
-      &:hover {
-        background-color: $secondColor;
-      }
-      >img {
-        width: 24px;
-        height: 24px;
-      }
-    }
-  }
-}
-
-@keyframes slide {
-    to {
-      left: 0; 
-    }
-}
-
-.burger_menu{
-  position: absolute;
-  z-index: 10;
-  width: 35px;
-  height: 30px;
+.burger_menu {
+  width: 32px;
+  height: 24px;
   position: relative;
   cursor: pointer;
   display: none;
 }
 
-.burger_menu span{
-  background-color:#fff;
+.burger_menu span {
+  background-color: rgba(255, 255, 255, 0.75);
   position: absolute;
   border-radius: 2px;
-  transition: .3s cubic-bezier(.8, .5, .2, 1.4);
-  width:100%;
-  height: 2px;
-  transition-duration: 500ms
+  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  height: 1.5px;
 }
 
-.burger_menu span:nth-child(1){
-  top:0px;
-  left: 0px;
+.burger_menu span:nth-child(1) {
+  top: 0;
 }
 
-.burger_menu span:nth-child(2){
-  top:14px;
-  left: 0px;
-  opacity:1;
+.burger_menu span:nth-child(2) {
+  top: 11px;
+  width: 70%;
 }
 
-.burger_menu span:nth-child(3){
-  bottom:0px;
-  left: 0px;
+.burger_menu span:nth-child(3) {
+  bottom: 0;
 }
 
-.burger_menu:not(.open):hover span:nth-child(1){
-  transform: rotate(-3deg) scaleY(1.1);
+.burger_menu:not(.open):hover span {
+  background-color: white;
 }
 
-.burger_menu:not(.open):hover span:nth-child(2){
-  transform: rotate(3deg) scaleY(1.1);
+.burger_menu:not(.open):hover span:nth-child(2) {
+  width: 100%;
 }
 
-.burger_menu:not(.open):hover span:nth-child(3){
-  transform: rotate(-4deg) scaleY(1.1);
-}
-
-.burger_menu.open span:nth-child(1){
+.burger_menu.open span:nth-child(1) {
   transform: rotate(45deg);
-  top: 14px;
+  top: 11px;
+  background-color: white;
 }
 
-.burger_menu.open span:nth-child(2){
-  opacity:0;
+.burger_menu.open span:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-8px);
 }
 
-.burger_menu.open span:nth-child(3){
+.burger_menu.open span:nth-child(3) {
   transform: rotate(-45deg);
-  top: 14px;
+  top: 11px;
+  background-color: white;
 }
 
-@media (max-width: 1000px) {
-  nav {
-    font-size: 18px;
-  }
+@keyframes slide {
+  to { left: 0; }
 }
 
 @media (max-width: 720px) {
-  nav {
-    >a {
-      display: none;
-    }
+  nav > a {
+    display: none;
   }
 
   .burger_menu {
-    display: inline-block;
+    display: block;
   }
 }
 
 @media (max-width: 500px) {
   .language_selector {
     >div {
-      padding: 8px 16px;
-    }
-    >ul {
-      >li {
-        padding: 8px 16px;
-      }
+      padding: 6px 12px;
     }
   }
 }

@@ -1,23 +1,27 @@
-<div><img src="./../../../assets/img/2_about_me_section/shadow_about-me.png" alt="shadow"></div>
 <section id="about_me_section">
-  <div id="about_me" data-aos="fade-in" data-aos-anchor="#about_me" data-aos-anchor-placement="top-bottom">
+  <div id="about_me" class="about-content">
     <div>
       <h1>{{'about_me_h1' | translate}}</h1>
       <p>{{'about_me_p1' | translate}}</p>
-      <div>
-        <img src="./../../../assets/img/2_about_me_section/bulb_icon_about_me.png" alt="bulb icon">
+      <div class="about-trait">
+        <div class="about-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.5 21h5M12 3a6 6 0 0 1 6 6c0 2.38-1.25 4.46-3.12 5.65L14 17H10l-.88-2.35A6 6 0 0 1 12 3z"/>
+          </svg>
+        </div>
         <p>{{'about_me_p2' | translate}}</p>
       </div>
-      <div>
-        <img src="./../../../assets/img/2_about_me_section/puzzle_icon_about_me.png" alt="puzzle icon">
+      <div class="about-trait">
+        <div class="about-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
         <p>{{'about_me_p3' | translate}}</p>
       </div>
     </div>
   </div>
-  <div>
-    <div data-aos="fade-left" data-aos-anchor-placement="top-bottom" data-aos-anchor="#about_me" data-aos-delay="1000">
-      <img src="./../../../assets/img/2_about_me_section/photo_about_me.png" alt="photo">
-    </div>
-    <div data-aos="fade-in" data-aos-anchor-placement="top-bottom" data-aos-anchor="#about_me" data-aos-delay="1000"></div>
+  <div class="about-visual">
+    <canvas class="about-canvas"></canvas>
   </div>
 </section>
