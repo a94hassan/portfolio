@@ -15,6 +15,10 @@ export class AboveTheFoldComponent implements AfterViewInit, OnDestroy {
   private el = inject(ElementRef);
   private ctx?: gsap.Context;
 
+  get isGerman(): boolean {
+    return localStorage.getItem('selectedLanguage') === 'de';
+  }
+
   ngAfterViewInit() {
     this.initGsapTimeline();
     this.initScrollEffects();
@@ -39,19 +43,13 @@ export class AboveTheFoldComponent implements AfterViewInit, OnDestroy {
         duration: 0.55,
         ease: 'power2.out'
       }, '-=0.9')
-      .from('.hero-name-block h1', {
+      .from('.hero-name', {
         opacity: 0,
         y: 48,
         duration: 1.1,
         ease: 'power3.out'
       }, '-=0.40')
-      .from('.hero-divider', {
-        scaleX: 0,
-        transformOrigin: 'left center',
-        duration: 0.7,
-        ease: 'power2.out'
-      }, '-=0.45')
-      .from('.hero-name-block h2', {
+      .from('.hero-role', {
         opacity: 0,
         y: 16,
         duration: 0.65,

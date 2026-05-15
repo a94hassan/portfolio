@@ -16,27 +16,20 @@
   &.mirrored-style {
     flex-direction: row-reverse;
 
-    .project-info {
-      align-items: flex-end;
-      text-align: right;
-    }
-
-    .project-meta {
-      flex-direction: row-reverse;
-    }
-
-    .project-actions {
-      justify-content: flex-end;
-    }
+    .project-info    { align-items: flex-end; text-align: right; }
+    .project-meta    { flex-direction: row-reverse; }
+    .project-actions { justify-content: flex-end; }
   }
 }
+
+// ─── Image ────────────────────────────────────────────────────────────────────
 
 .project-img-wrap {
   flex: 1;
   min-width: 0;
   border-radius: 24px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--fg-09);
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.50);
 
   img {
@@ -46,10 +39,10 @@
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  &:hover img {
-    transform: scale(1.03);
-  }
+  &:hover img { transform: scale(1.03); }
 }
+
+// ─── Info card ────────────────────────────────────────────────────────────────
 
 .project-info {
   flex: 0 0 460px;
@@ -57,13 +50,13 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 20px;
-  background: linear-gradient(160deg, rgba(255,255,255,0.040) 0%, rgba(255,255,255,0.015) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(160deg, var(--surface-md) 0%, var(--surface) 100%);
+  border: 1px solid var(--fg-09);
   border-radius: 24px;
   padding: 40px 36px;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 20px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 0 var(--fg-07) inset, 0 20px 60px rgba(0, 0, 0, 0.25);
 }
 
 .project-meta {
@@ -78,7 +71,7 @@
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.20);
+  color: var(--fg-18);
 }
 
 .project-tech {
@@ -86,11 +79,11 @@
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--fg-35);
   padding: 4px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid var(--fg-09);
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
 }
 
 h4 {
@@ -98,14 +91,14 @@ h4 {
   font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.05;
-  color: $firstColor;
+  color: var(--fg);
   margin: 0;
 }
 
 p {
   font-size: 15px;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--fg-55);
   margin: 0;
 }
 
@@ -116,14 +109,11 @@ p {
   width: 100%;
   padding-top: 8px;
 
-  a:first-child button {
-    @include button($switchColors: true);
-  }
-
-  a:last-child button {
-    @include button($transparent: true);
-  }
+  a:first-child button { @include button($switchColors: true); }
+  a:last-child  button { @include button(); }
 }
+
+// ─── Responsive ───────────────────────────────────────────────────────────────
 
 @media (max-width: 1440px) {
   .project-card { gap: 60px; }
@@ -136,7 +126,7 @@ p {
 }
 
 @media (max-width: 1000px) {
-  :host { padding: 60px $paddingLR1000 80px; }
+  :host         { padding: 60px $paddingLR1000 80px; }
   .project-card { gap: 40px; }
   .project-info { flex: 0 0 320px; }
 }
@@ -164,18 +154,17 @@ p {
     text-align: left !important;
   }
 
-  .project-meta { flex-direction: row !important; }
+  .project-meta    { flex-direction: row !important; }
   .project-actions { justify-content: flex-start !important; }
 }
 
 @media (max-width: 500px) {
-  :host { padding: 32px $paddingLR500 48px; }
-
+  :host         { padding: 32px $paddingLR500 48px; }
   .project-info { padding: 24px 20px; }
-  h4 { font-size: clamp(22px, 7vw, 30px); }
+  h4            { font-size: clamp(22px, 7vw, 30px); }
 
   .project-actions {
     a:first-child button { @include button($switchColors: true, $mobile: true); }
-    a:last-child button { @include button($transparent: true, $mobile: true); }
+    a:last-child  button { @include button($mobile: true); }
   }
 }

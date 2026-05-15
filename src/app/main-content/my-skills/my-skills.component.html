@@ -1,17 +1,18 @@
-<div><img src="./../../../assets/img/3_my_skills_section/shadow_my_skills.png" alt="shadow"></div>
 <section id="my_skills_section">
-  <a href="#contact_section" data-aos="fade-in" data-aos-anchor-placement="top-bottom" data-aos-anchor="#my_skills_section"><button>{{'my_skills_button' | translate}}</button></a>
-  <div data-aos="fade-right" data-aos-anchor-placement="top-bottom" data-aos-delay="1000" data-aos-anchor="#my_skills_section">
+  <div class="skills-mobile-btn">
+    <a href="#contact_section"><button>{{'my_skills_button' | translate}}</button></a>
+  </div>
+  <div class="skills-grid">
     @for (skill of skillsService.skills; track $index) {
-      <div class="trigger">
-        <img src="./../../../assets/img/3_my_skills_section/{{skill.icon}}" alt="{{skill.name}} icon" class="target">
+      <div class="skill-item">
+        <img src="./../../../assets/img/3_my_skills_section/{{skill.icon}}" alt="{{skill.name}} icon" loading="lazy">
         <span>{{skill.name}}</span>
       </div>
     }
   </div>
-  <div data-aos="fade-in" data-aos-anchor-placement="top-bottom" data-aos-anchor="#my_skills_section">
+  <div class="skills-text">
     <div>
-      <h1 [ngClass]="{'german': isGerman}">{{'my_skills_h1' | translate}}</h1>
+      <h1 [class.german]="isGerman">{{'my_skills_h1' | translate}}</h1>
       <div></div>
     </div>
     <p>{{'my_skills_p' | translate}}</p>

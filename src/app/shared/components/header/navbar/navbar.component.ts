@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { TranslationService } from './../../../services/translation.service';
 import { TranslateModule } from '@ngx-translate/core';
+import { ThemeService } from './../../../services/theme.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,20 +12,19 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './navbar.component.scss'
 })
 export class NavbarComponent {
-
   translate = inject(TranslationService);
+  theme     = inject(ThemeService);
 
-  options: { text: string; image: string }[] = 
-    [
-      { text: 'EN', image: './../../../../../assets/img/0_header/united_kingdom_icon.png'},
-      { text: 'DE', image: './../../../../../assets/img/0_header/germany_icon.png'},
-    ];
+  options: { text: string; code: string }[] = [
+    { text: 'EN', code: 'en' },
+    { text: 'DE', code: 'de' },
+  ];
 
   selectedIndex = localStorage.getItem('selectedLanguage') === 'en' ? 0 : 1;
-  selectedOption: { text: string; image: string } = this.options[this.selectedIndex];
+  get selectedOption() { return this.options[this.selectedIndex]; }
   showDropdown = false;
 
-  toggleIcon(navIcon: HTMLElement, dialog: HTMLElement) {
+  toggleIcon(navIcon: HTMLElement, dialog: HTMLElement): void {
     navIcon.classList.toggle('open');
     dialog.classList.toggle('visible');
   }
@@ -34,9 +34,8 @@ export class NavbarComponent {
   }
 
   selectOption(index: number): void {
-    this.selectedOption = this.options[index];
     this.selectedIndex = index;
     this.showDropdown = false;
-    this.toggleDropdown();
+    this.translate.switchLanguage(this.options[index].code);
   }
 }

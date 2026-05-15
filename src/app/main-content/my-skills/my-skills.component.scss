@@ -16,6 +16,8 @@ section {
   @include flexBox($jc: space-between);
 }
 
+// ─── Skill grid ───────────────────────────────────────────────────────────────
+
 .skills-grid {
   width: 60%;
   padding-left: 100px;
@@ -29,10 +31,10 @@ section {
   width: 90px;
   height: 108px;
   padding: 18px 10px 14px;
-  background: linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.02) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: linear-gradient(160deg, var(--surface-md) 0%, var(--surface) 100%);
+  border: 1px solid var(--fg-09);
   border-radius: 20px;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 4px 16px rgba(0,0,0,0.18);
+  box-shadow: 0 1px 0 var(--fg-07) inset, 0 4px 16px rgba(0, 0, 0, 0.18);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   display: flex;
@@ -56,18 +58,20 @@ section {
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.03em;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--fg-55);
     line-height: 1.2;
   }
 
   &:hover {
-    background: linear-gradient(160deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 10px 36px rgba(0, 0, 0, 0.32);
+    background: linear-gradient(160deg, var(--surface-hi) 0%, var(--surface-md) 100%);
+    border-color: var(--fg-18);
+    box-shadow: 0 1px 0 var(--fg-12) inset, 0 10px 36px rgba(0, 0, 0, 0.28);
 
     img { filter: brightness(1.12) saturate(1.2); }
   }
 }
+
+// ─── Text column ──────────────────────────────────────────────────────────────
 
 .skills-text {
   width: 40%;
@@ -76,7 +80,7 @@ section {
   align-items: flex-end;
   gap: 20px;
 
-  >div:first-of-type {
+  > div:first-of-type {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -86,36 +90,35 @@ section {
       font-weight: 700;
       letter-spacing: -0.03em;
       line-height: 0.95;
+      color: var(--fg);
     }
 
-    >div {
+    > div {
       height: 4px;
       width: 56px;
-      background: rgba(255, 255, 255, 0.25);
+      background: var(--fg-28);
       margin-left: 36px;
       border-top-left-radius: 2px;
       border-bottom-left-radius: 2px;
     }
   }
 
-  >p {
+  > p {
     padding-right: 100px;
     line-height: 1.65;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--fg-55);
     text-align: right;
     font-size: 15px;
   }
 
-  >div:last-of-type {
+  > div:last-of-type {
     width: 100%;
     padding-right: 100px;
     padding-left: 5vw;
     margin-top: 16px;
     @include flexBox();
 
-    button {
-      @include button();
-    }
+    button { @include button(); }
   }
 }
 
@@ -123,51 +126,39 @@ section {
 
 .skills-mobile-btn {
   display: none;
-
-  >button {
-    @include button();
-  }
+  button { @include button(); }
 }
 
-@media (max-width: 1440px) {
-  .skills-text > div:first-of-type h1 {
-    font-size: clamp(50px, 6.5vw, 90px);
-  }
+// ─── Responsive ───────────────────────────────────────────────────────────────
 
+@media (max-width: 1440px) {
+  .skills-text > div:first-of-type h1 { font-size: clamp(50px, 6.5vw, 90px); }
   .german { font-size: clamp(40px, 5vw, 76px) !important; }
 }
 
 @media (max-width: 1000px) {
   .skills-grid { padding-left: $paddingLR1000; }
-
-  .skills-text {
-    >div:last-of-type { padding-right: $paddingLR1000; }
-    >p { padding-right: $paddingLR1000; }
-    >div:first-of-type > div { width: 32px; margin-left: 18px; }
-  }
-
+  .skills-text > div:last-of-type { padding-right: $paddingLR1000; }
+  .skills-text > p { padding-right: $paddingLR1000; }
+  .skills-text > div:first-of-type > div { width: 32px; margin-left: 18px; }
   .german { font-size: 5.5vw !important; }
 }
 
 @media (max-width: 900px) {
   .skills-grid { gap: 12px; }
-  .skill-item { width: 80px; height: 96px; padding: 14px 8px 12px; }
-  .skill-item img { width: 34px; height: 34px; }
+  .skill-item  { width: 80px; height: 96px; padding: 14px 8px 12px; }
+  .skill-item img  { width: 34px; height: 34px; }
   .skill-item span { font-size: 10px; }
 }
 
 @media (max-width: 720px) {
   :host { padding-top: 80px; padding-bottom: 160px; }
-
   section { flex-direction: column-reverse; gap: 40px; }
-
   .skills-grid { width: 100%; padding: 0 $paddingLR1000; gap: 12px; justify-content: center; }
   .skills-text { width: 100%; padding-left: $paddingLR1000; align-items: flex-start; }
   .skills-text > p { padding-right: 0; text-align: left; }
   .skills-text > div:last-of-type { display: none; }
-
   .skills-mobile-btn { display: flex; }
-
   .german { font-size: 50px !important; }
 }
 
@@ -175,15 +166,14 @@ section {
   .skills-grid { padding: 0 $paddingLR500; gap: 10px; }
   .skills-text { padding-left: $paddingLR500; }
   .skills-text > div:first-of-type h1 { font-size: clamp(40px, 10vw, 60px); }
-  .skill-item { width: 74px; height: 88px; border-radius: 13px; }
-
-  .skills-mobile-btn > button { @include button($mobile: true); }
+  .skill-item  { width: 74px; height: 88px; border-radius: 13px; }
+  .skills-mobile-btn button { @include button($mobile: true); }
   .german { font-size: clamp(40px, 10vw, 60px) !important; }
 }
 
 @media (max-width: 400px) {
   :host { padding-top: 50px; padding-bottom: 100px; }
-  .skill-item { width: 66px; height: 80px; gap: 8px; }
-  .skill-item img { width: 30px; height: 30px; }
+  .skill-item      { width: 66px; height: 80px; gap: 8px; }
+  .skill-item img  { width: 30px; height: 30px; }
   .skill-item span { font-size: 9px; }
 }

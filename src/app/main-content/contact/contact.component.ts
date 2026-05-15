@@ -24,8 +24,8 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
   contactData = { name: '', email: '', message: '' };
 
   post = {
-    endPoint: '/sendMail.php',
-    body: (payload: any) => JSON.stringify(payload),
+    endPoint: 'https://api.hassan-ammar.com/sendMail.php',
+    body: (payload: object) => JSON.stringify(payload),
     options: { headers: { 'Content-Type': 'text/plain', responseType: 'text' } },
   };
 

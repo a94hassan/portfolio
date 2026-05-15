@@ -18,6 +18,7 @@
   pointer-events: none;
   z-index: 9999;
   opacity: 0;
+  transition: border-color 0.2s ease;
 }
 
 #cursor-dot {
@@ -31,4 +32,13 @@
   pointer-events: none;
   z-index: 9999;
   opacity: 0;
+  transition: background 0.2s ease;
+}
+
+html.light #cursor-ring {
+  border-color: rgba(0, 0, 0, 0.30);
+}
+
+html.light #cursor-dot {
+  background: rgba(17, 17, 17, 0.80);
 }

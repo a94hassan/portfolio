@@ -1,12 +1,85 @@
-﻿
-$bgColor: #0a0a0a;
-$firstColor: #e2e8f0;
-$secondColor: rgba(226, 232, 240, 0.5);
-$contentWidth: 1440px;
-$paddingLR: 100px;
-$paddingLR1000: 50px;
-$paddingLR500: 20px;
-$transition: color 150ms ease-in-out, background-color 150ms ease-in-out, border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+// ─── Theme tokens ─────────────────────────────────────────────────────────────
+
+:root {
+  color-scheme: dark;
+
+  --bg:         #0a0a0a;
+  --bg-nav:     rgba(10, 10, 10, 0.82);
+  --fg:         #e2e8f0;
+  --fg-55:      rgba(226, 232, 240, 0.55);
+  --fg-48:      rgba(226, 232, 240, 0.48);
+  --fg-40:      rgba(226, 232, 240, 0.40);
+  --fg-35:      rgba(226, 232, 240, 0.35);
+  --fg-28:      rgba(226, 232, 240, 0.28);
+  --fg-18:      rgba(226, 232, 240, 0.18);
+  --fg-12:      rgba(226, 232, 240, 0.12);
+  --fg-09:      rgba(226, 232, 240, 0.09);
+  --fg-07:      rgba(226, 232, 240, 0.07);
+  --fg-05:      rgba(226, 232, 240, 0.05);
+  --fg-04:      rgba(226, 232, 240, 0.04);
+  --fg-03:      rgba(226, 232, 240, 0.03);
+
+  --surface:    rgba(255, 255, 255, 0.04);
+  --surface-md: rgba(255, 255, 255, 0.055);
+  --surface-hi: rgba(255, 255, 255, 0.09);
+
+  --sb-track:   #111111;
+  --sb-thumb:   #333333;
+  --sb-thumb-h: #555555;
+
+  --btn-solid-from:   rgba(255, 255, 255, 0.97);
+  --btn-solid-to:     rgba(230, 230, 230, 0.91);
+  --btn-solid-border: rgba(255, 255, 255, 0.55);
+  --btn-solid-color:  #0a0a0a;
+  --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.85) inset, 0 4px 20px rgba(0,0,0,0.35);
+  --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.90) inset, 0 10px 32px rgba(0,0,0,0.45);
+}
+
+html.light {
+  color-scheme: light;
+
+  --bg:         #f5f4f0;
+  --bg-nav:     rgba(245, 244, 240, 0.86);
+  --fg:         #111111;
+  --fg-55:      rgba(17, 17, 17, 0.62);
+  --fg-48:      rgba(17, 17, 17, 0.55);
+  --fg-40:      rgba(17, 17, 17, 0.46);
+  --fg-35:      rgba(17, 17, 17, 0.40);
+  --fg-28:      rgba(17, 17, 17, 0.34);
+  --fg-18:      rgba(17, 17, 17, 0.18);
+  --fg-12:      rgba(17, 17, 17, 0.12);
+  --fg-09:      rgba(17, 17, 17, 0.09);
+  --fg-07:      rgba(17, 17, 17, 0.07);
+  --fg-05:      rgba(17, 17, 17, 0.05);
+  --fg-04:      rgba(17, 17, 17, 0.04);
+  --fg-03:      rgba(17, 17, 17, 0.03);
+
+  --surface:    rgba(0, 0, 0, 0.03);
+  --surface-md: rgba(0, 0, 0, 0.045);
+  --surface-hi: rgba(0, 0, 0, 0.07);
+
+  --sb-track:   #e8e7e3;
+  --sb-thumb:   #c0bfbc;
+  --sb-thumb-h: #a09f9b;
+
+  --btn-solid-from:   #1a1a1a;
+  --btn-solid-to:     #0d0d0d;
+  --btn-solid-border: rgba(0, 0, 0, 0.35);
+  --btn-solid-color:  #f5f4f0;
+  --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 20px rgba(0,0,0,0.22);
+  --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.06) inset, 0 10px 32px rgba(0,0,0,0.32);
+}
+
+// ─── Layout vars ──────────────────────────────────────────────────────────────
+
+$contentWidth:   1440px;
+$paddingLR:      100px;
+$paddingLR1000:  50px;
+$paddingLR500:   20px;
+$transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
+             border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+
+// ─── Mixins ───────────────────────────────────────────────────────────────────
 
 @mixin flexBox($display: flex, $jc: center, $ai: center, $fd: row, $gap: 0) {
   display: $display;
@@ -33,83 +106,67 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out, border
   transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, border-color 0.22s ease;
 
   @if $switchColors {
-    background: linear-gradient(175deg, rgba(255,255,255,0.97) 0%, rgba(230,230,230,0.91) 100%);
-    border: 1px solid rgba(255,255,255,0.55);
-    color: #0a0a0a;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.85) inset, 0 -2px 0 rgba(0,0,0,0.12) inset, 0 4px 20px rgba(0,0,0,0.35);
+    background: linear-gradient(175deg, var(--btn-solid-from) 0%, var(--btn-solid-to) 100%);
+    border: 1px solid var(--btn-solid-border);
+    color: var(--btn-solid-color);
+    box-shadow: var(--btn-solid-sh);
     &:hover {
       transform: translateY(-2px);
-      background: linear-gradient(175deg, #ffffff 0%, rgba(242,242,242,0.96) 100%);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.9) inset, 0 -2px 0 rgba(0,0,0,0.12) inset, 0 10px 32px rgba(0,0,0,0.45);
-    }
-    &:active { transform: translateY(1px); box-shadow: 0 2px 0 rgba(0,0,0,0.1) inset, 0 2px 8px rgba(0,0,0,0.2); }
-  } @else if $transparent {
-    background: linear-gradient(175deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: white;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.10) inset, 0 4px 14px rgba(0,0,0,0.22);
-    &:hover {
-      transform: translateY(-2px);
-      background: linear-gradient(175deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.07) 100%);
-      border-color: rgba(255,255,255,0.30);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.14) inset, 0 10px 28px rgba(0,0,0,0.28);
+      box-shadow: var(--btn-solid-sh-h);
     }
     &:active { transform: translateY(1px); }
   } @else {
-    background: linear-gradient(175deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
-    border: 1px solid rgba(255,255,255,0.13);
-    color: white;
+    background: var(--surface-md);
+    border: 1px solid var(--fg-12);
+    color: var(--fg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 4px 16px rgba(0,0,0,0.28);
+    box-shadow: 0 1px 0 var(--fg-09) inset, 0 4px 16px rgba(0,0,0,0.18);
     &:hover {
       transform: translateY(-2px);
-      background: linear-gradient(175deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.08) 100%);
-      border-color: rgba(255,255,255,0.26);
-      box-shadow: 0 1px 0 rgba(255,255,255,0.16) inset, 0 10px 32px rgba(0,0,0,0.38);
+      background: var(--surface-hi);
+      border-color: var(--fg-18);
+      box-shadow: 0 1px 0 var(--fg-12) inset, 0 10px 32px rgba(0,0,0,0.25);
     }
     &:active { transform: translateY(1px); }
   }
 }
 
+// ─── Global cursor override ───────────────────────────────────────────────────
 
 @media (hover: hover) {
   * { cursor: none !important; }
 }
 
+// ─── Base reset ───────────────────────────────────────────────────────────────
+
 * {
   margin: 0;
   box-sizing: border-box;
-  font-family: 'Outfit', 'Poppins', sans-serif;
-  color: white;
+  font-family: 'Poppins', sans-serif;
+  color: var(--fg);
   transition: $transition;
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    background: #111111;
-  }
+
+  &::-webkit-scrollbar { width: 8px; }
+  &::-webkit-scrollbar-track { background: var(--sb-track); }
   &::-webkit-scrollbar-thumb {
-    background-color: #333333;
+    background-color: var(--sb-thumb);
     border-radius: 4px;
-    border: 2px solid #111111;
-    &:hover {
-      background-color: #555555;
-    }
+    border: 2px solid var(--sb-track);
+    &:hover { background-color: var(--sb-thumb-h); }
   }
 }
 
 html {
-  background-color: $bgColor;
+  background-color: var(--bg);
 }
 
-/* === Spotlight border — pearl shimmer on element edges near cursor ===
-   JS sets --mx/--my relative to each element.
-   ::before mask-subtract = only the 1px border region lights up.
-   ::after = soft warm surface glow that fades from the border inward.
-*/
+// ─── Three.js: hidden in light mode ──────────────────────────────────────────
+
+html.light #global-canvas { display: none; }
+
+// ─── Spotlight border (pearl shimmer) ────────────────────────────────────────
+
 .skill-item,
 .project-info,
 .project-img-wrap,
@@ -131,9 +188,7 @@ form {
       rgba(120, 200, 255, 0.35),
       transparent 68%
     );
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: destination-out;
     mask-composite: subtract;
     pointer-events: none;
@@ -170,9 +225,7 @@ button::before {
     rgba(190, 140, 255, 0.55),
     transparent 65%
   );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: destination-out;
   mask-composite: subtract;
   pointer-events: none;
@@ -180,62 +233,46 @@ button::before {
   transition: none;
 }
 
+// Light mode spotlight — darker palette
+html.light {
+  .skill-item::before,
+  .project-info::before,
+  .project-img-wrap::before,
+  .about-icon::before,
+  .social-icon-link::before,
+  form::before {
+    background: radial-gradient(
+      120px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(60, 80, 200, 0.50),
+      rgba(120, 40, 180, 0.32),
+      rgba(20, 100, 200, 0.18),
+      transparent 68%
+    );
+  }
 
-/* poppins-100 - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 100;
-  src: url('./assets/font/poppins-v20-latin-100.woff2') format('woff2');
+  button::before {
+    background: radial-gradient(
+      90px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(60, 80, 200, 0.48),
+      rgba(120, 40, 180, 0.30),
+      transparent 65%
+    );
+  }
 }
 
-/* poppins-100italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 100;
-  src: url('./assets/font/poppins-v20-latin-100italic.woff2') format('woff2');
+// ─── Reduced motion ───────────────────────────────────────────────────────────
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  #global-canvas { display: none; }
 }
 
-/* poppins-200 - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 200;
-  src: url('./assets/font/poppins-v20-latin-200.woff2') format('woff2');
-}
+// ─── Poppins — only the three weights in use ──────────────────────────────────
 
-/* poppins-200italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 200;
-  src: url('./assets/font/poppins-v20-latin-200italic.woff2') format('woff2');
-}
-
-/* poppins-300 - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 300;
-  src: url('./assets/font/poppins-v20-latin-300.woff2') format('woff2');
-}
-
-/* poppins-300italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 300;
-  src: url('./assets/font/poppins-v20-latin-300italic.woff2') format('woff2');
-}
-
-/* poppins-regular - latin */
 @font-face {
   font-display: swap;
   font-family: 'Poppins';
@@ -244,16 +281,6 @@ button::before {
   src: url('./assets/font/poppins-v20-latin-regular.woff2') format('woff2');
 }
 
-/* poppins-italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 400;
-  src: url('./assets/font/poppins-v20-latin-italic.woff2') format('woff2');
-}
-
-/* poppins-500 - latin */
 @font-face {
   font-display: swap;
   font-family: 'Poppins';
@@ -262,83 +289,10 @@ button::before {
   src: url('./assets/font/poppins-v20-latin-500.woff2') format('woff2');
 }
 
-/* poppins-500italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 500;
-  src: url('./assets/font/poppins-v20-latin-500italic.woff2') format('woff2');
-}
-
-/* poppins-600 - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 600;
-  src: url('./assets/font/poppins-v20-latin-600.woff2') format('woff2');
-}
-
-/* poppins-600italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 600;
-  src: url('./assets/font/poppins-v20-latin-600italic.woff2') format('woff2');
-}
-
-/* poppins-700 - latin */
 @font-face {
   font-display: swap;
   font-family: 'Poppins';
   font-style: normal;
   font-weight: 700;
   src: url('./assets/font/poppins-v20-latin-700.woff2') format('woff2');
-}
-
-/* poppins-700italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 700;
-  src: url('./assets/font/poppins-v20-latin-700italic.woff2') format('woff2');
-}
-
-/* poppins-800 - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 800;
-  src: url('./assets/font/poppins-v20-latin-800.woff2') format('woff2');
-}
-
-/* poppins-800italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 800;
-  src: url('./assets/font/poppins-v20-latin-800italic.woff2') format('woff2');
-}
-
-/* poppins-900 - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 900;
-  src: url('./assets/font/poppins-v20-latin-900.woff2') format('woff2');
-}
-
-/* poppins-900italic - latin */
-@font-face {
-  font-display: swap;
-  font-family: 'Poppins';
-  font-style: italic;
-  font-weight: 900;
-  src: url('./assets/font/poppins-v20-latin-900italic.woff2') format('woff2');
 }

@@ -1,250 +1,274 @@
 @import './../../../styles.scss';
 
-$valid: #70E61C;
+$valid:   #70E61C;
 $invalid: #E61C40;
 
 :host {
   width: 100%;
-  @include flexBox();
-  position: relative;
-  overflow-x: clip;
-  >div:last-of-type {
-    height: 100vh;
-    height: 100svh;
-    width: 100%;
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 8;
-    background-color: rgba(10, 10, 10, 0.92);
-    backdrop-filter: blur(8px);
-    @include flexBox();
-    display: none;
-    >span {
-      background-color: #111111;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 40px 64px;
-      font-size: 22px;
-    }
+  display: flex;
+  flex-direction: column;
+}
+
+// ─── Feedback overlay ─────────────────────────────────────────────────────────
+
+#feedback {
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  position: fixed;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  background-color: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  > span {
+    background-color: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 40px 64px;
+    font-size: 22px;
+    color: #e2e8f0;
   }
 }
 
 .show {
   display: flex !important;
-  animation: fadeInOut 4s ease infinite;
+  animation: fadeInOut 4s ease forwards;
 }
 
 @keyframes fadeInOut {
-  0% {
-      opacity: 0;
-  }
-  25% {
-      opacity: 1;
-  }
-  75% {
-      opacity: 1;
-  }
-  100% {
-      opacity: 0;
-  }
+  0%   { opacity: 0; }
+  25%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
 }
+
+// ─── Section ──────────────────────────────────────────────────────────────────
 
 section {
   position: relative;
   z-index: 2;
   scroll-margin-top: 120px;
-  @include contentWidth();
-  @include flexBox($fd: column);
-  >div:first-of-type {
-    @include flexBox($jc: flex-start);
-    width: 100%;
-    >div {
-      height: 2px;
-      width: 50px;
-      margin-right: 50px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5));
-      border-top-right-radius: 2px;
-      border-bottom-right-radius: 2px;
-    }
-    >h1 {
-      font-size: 90px;
-      transition-timing-function: cubic-bezier(.175,.885,.32,1.275);
-    }
+  width: 100%;
+  max-width: $contentWidth;
+  margin: 0 auto;
+  padding: 120px $paddingLR 100px;
+  display: flex;
+  flex-direction: column;
+}
+
+// ─── Heading ──────────────────────────────────────────────────────────────────
+
+.contact-heading {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 64px;
+}
+
+.contact-rule {
+  height: 2px;
+  width: 50px;
+  margin-right: 50px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, transparent, var(--fg-35));
+  border-radius: 0 2px 2px 0;
+}
+
+.contact-heading h1 {
+  font-size: clamp(50px, 6.5vw, 90px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--fg);
+}
+
+// ─── Columns ──────────────────────────────────────────────────────────────────
+
+.contact-columns {
+  display: flex;
+  align-items: flex-start;
+  gap: 64px;
+}
+
+// ─── Info ─────────────────────────────────────────────────────────────────────
+
+.contact-info {
+  flex: 0 0 44%;
+  max-width: 480px;
+
+  h4 {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 24px;
+    color: var(--fg);
   }
-  >div:last-of-type {
-    width: 100%;
-    margin-top: 64px;
-    margin-bottom: 100px;
-    @include flexBox($ai: unset);
-    padding: 0 $paddingLR;
-    >div:first-of-type {
-      width: 50%;
-      >div {
-        max-width: 480px;
-        margin-right: 32px;
-        >h4 {
-          font-size: 32px;
-        }
-        >p {
-          line-height: 1.25;
-          margin-top: 32px;
-          margin-bottom: 24px;
-        }
-      }
-    }
-    >div:last-of-type {
-      width: 50%;
-      @include flexBox($fd: column, $gap: 40px);
-      transition-timing-function: cubic-bezier(.175,.885,.32,1.275);
-      >div {
-        width: 100%;
-        @include flexBox($jc: flex-end);
-        button {
-          width: 40px;
-          height: 40px;
-          background-image: url(./../../../assets/img/5_contact_section/arrow_up.png);
-          background-position: center;
-          background-repeat: no-repeat;
-          background-color: transparent;
-          border: none;
-          &:hover {
-            background-image: url(./../../../assets/img/5_contact_section/arrow_up_hover.png);
-            cursor: pointer;
-          }
-        }
-      }
-    }
+
+  p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--fg-48);
+    margin-bottom: 20px;
+  }
+
+  span {
+    font-size: 14px;
+    color: var(--fg-35);
+    line-height: 1.6;
+
+    b { color: var(--fg-55); font-weight: 500; }
   }
 }
 
-form {
-  @include flexBox($fd: column);
+// ─── Form wrap ────────────────────────────────────────────────────────────────
+
+.contact-form-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ─── Form ─────────────────────────────────────────────────────────────────────
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(160deg, var(--surface-md) 0%, var(--surface) 100%);
+  border: 1px solid var(--fg-07);
   border-radius: 24px;
   padding: 40px 36px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-  >div:first-of-type {
-    @include flexBox($fd: column, $gap: 20px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.20);
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+
+  input, textarea {
     width: 100%;
-    >div {
-      width: 100%;
-      @include flexBox($fd: column, $ai: flex-start, $gap: 6px);
-      >input, >textarea {
-        width: 100%;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.10);
-        outline: none;
-        border-radius: 14px;
-        padding: 14px 20px;
-        font-size: 15px;
-        resize: vertical;
-        transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset;
-        &::placeholder {
-          color: rgba(255, 255, 255, 0.30);
-        }
-        &:hover {
-          border-color: rgba(255, 255, 255, 0.20);
-          background: rgba(255, 255, 255, 0.07);
-        }
-        &:focus {
-          border-color: rgba(255, 255, 255, 0.28);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 0 0 3px rgba(255,255,255,0.04);
-        }
-        &::-webkit-resizer {
-         background-image: url(./../../../assets/img/5_contact_section/resizer.png);
-         background-repeat: no-repeat;
-        }
-      }
-      >textarea {
-        min-height: 180px;
-      }
-      >span {
-        font-size: 13px;
-        color: $invalid;
-        padding-left: 4px;
-      }
-    }
+    background: var(--surface);
+    border: 1px solid var(--fg-09);
+    outline: none;
+    border-radius: 14px;
+    padding: 14px 20px;
+    font-size: 15px;
+    color: var(--fg);
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+
+    &::placeholder { color: var(--fg-28); }
+    &:hover  { border-color: var(--fg-18); background: var(--surface-md); }
+    &:focus  { border-color: var(--fg-28); background: var(--surface-hi); box-shadow: 0 0 0 3px var(--fg-04); }
   }
-  >div:last-of-type{
-    @include flexBox($fd: column, $ai: unset);
-    width: 100%;
-    font-size: 14px;
-    margin-top: 20px;
-    margin-bottom: 28px;
-    >div {
-      @include flexBox($gap: 10px, $ai: flex-start);
-      input {
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        width: 22px;
-        height: 22px;
-        flex-shrink: 0;
-        margin-top: 1px;
-        background-image: url(./../../../assets/img/5_contact_section/checkbox.png);
+
+  textarea { min-height: 180px; }
+}
+
+.field-error {
+  font-size: 13px;
+  color: $invalid;
+  padding-left: 4px;
+}
+
+// ─── Privacy ──────────────────────────────────────────────────────────────────
+
+.form-privacy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 28px;
+  font-size: 14px;
+}
+
+.privacy-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: 100%;
+
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    border: 1px solid var(--fg-18);
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.18s ease, border-color 0.18s ease;
+
+    &:hover { border-color: var(--fg-35); background: var(--surface-md); }
+
+    &:checked {
+      background: var(--surface-hi);
+      border-color: var(--fg-35);
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%23e2e8f0' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
         background-size: contain;
         background-repeat: no-repeat;
-        cursor: pointer;
-        &:hover {
-          background-image: url(./../../../assets/img/5_contact_section/checkbox_hover.png);
-        }
-        &:checked {
-          background-image: url(./../../../assets/img/5_contact_section/checkbox_checked.png);
-        }
-        &:checked:hover {
-          background-image: url(./../../../assets/img/5_contact_section/checkbox_checked_hover.png);
-        }
+        background-position: center;
       }
-      >span  {
-        width: 100%;
-        color: rgba(255,255,255,0.55);
-        line-height: 1.5;
-        a {
-          text-decoration: none;
-          color: rgba(255,255,255,0.80);
-          &:hover {
-            color: white;
-            text-decoration: underline;
-          }
-        }
-      }
-    }
-    >span {
-      color: $invalid;
-      font-size: 13px;
-      margin-top: 6px;
     }
   }
-  >button {
-    @include button();
-    align-self: flex-start;
+
+  > span {
+    color: var(--fg-48);
+    line-height: 1.5;
+
+    a {
+      text-decoration: none;
+      color: var(--fg-55);
+      &:hover { color: var(--fg); text-decoration: underline; }
+    }
   }
 }
 
+// ─── Submit ───────────────────────────────────────────────────────────────────
+
+.contact-form > button {
+  @include button();
+  align-self: flex-start;
+}
+
+// ─── State classes ────────────────────────────────────────────────────────────
+
 .invalid {
-  border: 1px solid $invalid !important;
-  background-image: url(./../../../assets/img/5_contact_section/invalid.png);
-  background-position: right 20px top 14px;
-  background-repeat: no-repeat;
-  box-shadow: 0 0 0 3px rgba(230,28,64,0.12) !important;
+  border-color: $invalid !important;
+  box-shadow: 0 0 0 3px rgba(230, 28, 64, 0.12) !important;
 }
 
 .valid {
-  border: 1px solid $valid !important;
-  background-image: url(./../../../assets/img/5_contact_section/valid.png);
-  background-position: right 20px top 14px;
-  background-repeat: no-repeat;
-  box-shadow: 0 0 0 3px rgba(112,230,28,0.10) !important;
+  border-color: $valid !important;
+  box-shadow: 0 0 0 3px rgba(112, 230, 28, 0.10) !important;
 }
 
 .disabled {
@@ -252,72 +276,50 @@ form {
   pointer-events: none;
 }
 
-@media(max-width: 1440px) {
-  section {
-    >div:first-of-type {
-      >h1 {
-        font-size: clamp(50px, 6.5vw, 90px);
-      }
+// ─── Back to top ──────────────────────────────────────────────────────────────
+
+.contact-back-top {
+  display: flex;
+  justify-content: flex-end;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--fg-09);
+    background: var(--surface);
+    color: var(--fg-40);
+    text-decoration: none;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+
+    &:hover {
+      color: var(--fg);
+      border-color: var(--fg-18);
+      background: var(--surface-hi);
     }
   }
 }
 
-@media(max-width: 1000px) {
-  section {
-    >div:first-of-type {
-      >div {
-        width: 32px;
-        margin-right: 18px;
-      }
-    }
-    >div:last-of-type {
-      padding: 0 $paddingLR1000;
-    }
-  }
+// ─── Responsive ───────────────────────────────────────────────────────────────
+
+@media (max-width: 1000px) {
+  section       { padding: 100px $paddingLR1000 80px; }
+  .contact-rule { width: 32px; margin-right: 18px; }
 }
 
-@media(max-width: 720px) {
-  :host {
-    >div {
-      >span {
-        padding: 20px 32px;
-        font-size: 16px;
-      }
-    }
-  }
-  section {
-    >div:last-of-type {
-      @include flexBox($fd: column, $gap: 48px);
-      >div:first-of-type {
-        width: 100%;
-        padding-right: unset;
-      }
-      >div:last-of-type {
-        width: 100%;
-      }
-    }
-  }
+@media (max-width: 720px) {
+  .contact-columns { flex-direction: column; gap: 48px; }
+  .contact-info    { max-width: 100%; flex: none; }
+  #feedback > span { padding: 20px 32px; font-size: 16px; }
 }
 
-@media(max-width: 500px) {
-  section {
-    >div:first-of-type {
-      >div {
-        width: 16px;
-        margin-right: 4px;
-      }
-      >h1 {
-        font-size: clamp(40px, 10vw, 60px);
-      }
-    }
-    >div:last-of-type {
-      padding: 0 $paddingLR500;
-    }
-  }
-
-  form {
-    >button {
-      @include button($mobile: true);
-    }
-  }
+@media (max-width: 500px) {
+  section             { padding: 64px $paddingLR500 64px; }
+  .contact-rule       { width: 16px; margin-right: 4px; }
+  .contact-heading h1 { font-size: clamp(40px, 10vw, 60px); }
+  .contact-form       { padding: 28px 22px; border-radius: 18px; }
+  .contact-form > button { @include button($mobile: true); }
 }

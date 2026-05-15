@@ -1,56 +1,63 @@
-<div><img src="./../../../assets/img/5_contact_section/shadow.png" alt="shadow"></div>
 <section id="contact_section">
-  <div data-aos="fade-in" data-aos-anchor-placement="top-bottom" data-aos-anchor="#contact_section">
-    <div></div>
+
+  <div class="contact-heading">
+    <div class="contact-rule"></div>
     <h1>{{'contact_h1' | translate}}</h1>
   </div>
-  <div>
-    <div data-aos="fade-in" data-aos-anchor-placement="top-bottom" data-aos-anchor="#contact_section">
-      <div>
-        <h4>{{'contact_h4' | translate}}</h4>
-        <p>{{'contact_p' | translate}}</p>
-        <span>{{'contact_span' | translate}}<b>{{'contact_span_bold' | translate}}</b></span>
-      </div>
+
+  <div class="contact-columns">
+    <div class="contact-info">
+      <h4>{{'contact_h4' | translate}}</h4>
+      <p>{{'contact_p' | translate}}</p>
+      <span>{{'contact_span' | translate}}<b>{{'contact_span_bold' | translate}}</b></span>
     </div>
-    <div data-aos="fade-left" data-aos-anchor-placement="top-bottom" data-aos-delay="1000" data-aos-anchor="#contact_section">
-      <form (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">
-        <div>
-          <div>
+
+    <div class="contact-form-wrap">
+      <form class="contact-form" (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">
+        <div class="form-fields">
+          <div class="form-field">
             <input [(ngModel)]="contactData.name" [ngClass]="{'invalid': name.invalid && name.touched || name.invalid && contactForm.submitted, 'valid': name.valid && name.touched}" name="name" type="text" placeholder="{{'placeholder1' | translate}}" #name="ngModel" required>
             @if (name.invalid && name.touched || name.invalid && contactForm.submitted) {
-              <span>{{'user_feedback1' | translate}}</span>
+              <span class="field-error">{{'user_feedback1' | translate}}</span>
             }
           </div>
-          <div>
+          <div class="form-field">
             <input [(ngModel)]="contactData.email" [ngClass]="{'invalid': email.invalid && email.touched || email.invalid && contactForm.submitted, 'valid': email.valid && email.touched}" name="email" type="email" placeholder="{{'placeholder2' | translate}}" #email="ngModel" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required>
             @if (email.invalid && email.touched || email.invalid && contactForm.submitted) {
-              <span>{{'user_feedback2' | translate}}</span>
-            } 
+              <span class="field-error">{{'user_feedback2' | translate}}</span>
+            }
           </div>
-          <div>
+          <div class="form-field">
             <textarea [(ngModel)]="contactData.message" [ngClass]="{'invalid': message.invalid && message.touched || message.invalid && contactForm.submitted, 'valid': message.valid && message.touched}" name="message" placeholder="{{'placeholder3' | translate}}" #message="ngModel" required></textarea>
             @if (message.invalid && message.touched || message.invalid && contactForm.submitted) {
-              <span>{{'user_feedback3' | translate}}</span>
-            }            
+              <span class="field-error">{{'user_feedback3' | translate}}</span>
+            }
           </div>
         </div>
-        <div>
-          <div>
+
+        <div class="form-privacy">
+          <div class="privacy-row">
             <input type="checkbox" [ngModel] name="checkbox" #checkbox="ngModel" required>
-            <span>{{'checkbox1' | translate}}<a href="privacy_policy">{{'contact_privacy_policy' | translate}}</a>{{'checkbox2' | translate}}</span> 
+            <span>{{'checkbox1' | translate}}<a href="privacy_policy">{{'contact_privacy_policy' | translate}}</a>{{'checkbox2' | translate}}</span>
           </div>
           @if (checkbox.invalid && contactForm.submitted) {
-            <span>{{'user_feedback4' | translate}}</span>
-          }     
+            <span class="field-error">{{'user_feedback4' | translate}}</span>
+          }
         </div>
+
         <button [disabled]="!checkbox" [ngClass]="{'disabled': name.invalid || email.invalid || message.invalid || checkbox.invalid}">{{'contact_button' | translate}}</button>
-      </form>    
-      <div>
-        <a href="#above_the_fold_section"><button></button></a>
+      </form>
+
+      <div class="contact-back-top">
+        <a href="#above_the_fold_section" aria-label="Zurück nach oben">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </a>
       </div>
     </div>
   </div>
+
 </section>
+
 <div id="feedback">
   <span>{{'user_feedback5' | translate}}</span>
 </div>

@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, NgZone, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
+import { ThemeService } from './shared/services/theme.service';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
@@ -17,6 +18,7 @@ import * as THREE from 'three';
 export class AppComponent implements OnInit, OnDestroy {
   title = 'portfolio';
   private zone = inject(NgZone);
+  private themeService = inject(ThemeService);
   private lenis?: Lenis;
   private animId = 0;
   private threeCleanup?: () => void;
@@ -25,11 +27,11 @@ export class AppComponent implements OnInit, OnDestroy {
   private scrollLimit = 1;
 
   ngOnInit() {
+    this.themeService.init();
     gsap.registerPlugin(ScrollTrigger);
 
     this.lenis = new Lenis();
-    this.lenis.on('scroll', ({ scroll, limit }: any) => {
-      ScrollTrigger.update();
+    this.lenis.on('scroll', ({ scroll, limit }: { scroll: number; limit: number }) => {
       this.scrollY = scroll;
       this.scrollLimit = limit;
     });
@@ -40,7 +42,8 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.from('app-header', { y: -80, opacity: 0, duration: 0.7, ease: 'power3.out', delay: 0.1 });
 
     this.zone.runOutsideAngular(() => {
-      this.initGlobalThreeJS();
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!reducedMotion) this.initGlobalThreeJS();
       this.initCustomCursor();
     });
   }
@@ -146,6 +149,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const tempColor = new THREE.Color();
 
     const animate = () => {
+      if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
 
       // --- Camera driven by scroll (Y) and cursor (X) ---
@@ -247,14 +251,18 @@ export class AppComponent implements OnInit, OnDestroy {
       renderer.setSize(w, h);
     };
 
+    const onVisibilityChange = () => { if (!document.hidden && this.animId === 0) animate(); };
+
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('resize', onResize);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     animate();
 
     this.threeCleanup = () => {
       cancelAnimationFrame(this.animId);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', onResize);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       renderer.dispose();
       particleGeo.dispose(); particleMat.dispose();
       [ico1e, tor1e, octae, ico2e, tor2e].forEach(e => e.dispose());
@@ -274,10 +282,17 @@ export class AppComponent implements OnInit, OnDestroy {
 
     let appeared = false;
     let spotElements: HTMLElement[] = [];
+    let cachedRects: DOMRect[] = [];
 
     const SPOT_SEL = '.skill-item,.project-info,.project-img-wrap,.about-icon,.social-icon-link,form,button';
+
+    const refreshRects = () => {
+      cachedRects = spotElements.map(el => el.getBoundingClientRect());
+    };
+
     setTimeout(() => {
       spotElements = Array.from(document.querySelectorAll(SPOT_SEL)) as HTMLElement[];
+      refreshRects();
     }, 900);
 
     const onMove = (e: MouseEvent) => {
@@ -288,10 +303,11 @@ export class AppComponent implements OnInit, OnDestroy {
       gsap.to(dot, { x: e.clientX, y: e.clientY, duration: 0 });
       gsap.to(ring, { x: e.clientX, y: e.clientY, duration: 0.18, ease: 'power2.out' });
 
-      for (const el of spotElements) {
-        const r = el.getBoundingClientRect();
-        el.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        el.style.setProperty('--my', `${e.clientY - r.top}px`);
+      for (let i = 0; i < spotElements.length; i++) {
+        const r = cachedRects[i];
+        if (!r) continue;
+        spotElements[i].style.setProperty('--mx', `${e.clientX - r.left}px`);
+        spotElements[i].style.setProperty('--my', `${e.clientY - r.top}px`);
       }
     };
 
@@ -311,6 +327,8 @@ export class AppComponent implements OnInit, OnDestroy {
     const onEnterWindow = () => { if (appeared) gsap.to([ring, dot], { opacity: 1, duration: 0.3 }); };
 
     window.addEventListener('mousemove', onMove, { passive: true });
+    window.addEventListener('scroll', refreshRects, { passive: true });
+    window.addEventListener('resize', refreshRects, { passive: true });
     document.addEventListener('mouseover', onOver);
     document.addEventListener('mouseout', onOut);
     document.addEventListener('mouseleave', onLeaveWindow);
@@ -318,6 +336,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.cursorCleanup = () => {
       window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('scroll', refreshRects);
+      window.removeEventListener('resize', refreshRects);
       document.removeEventListener('mouseover', onOver);
       document.removeEventListener('mouseout', onOut);
       document.removeEventListener('mouseleave', onLeaveWindow);
