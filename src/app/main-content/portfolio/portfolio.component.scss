@@ -101,3 +101,13 @@ app-project {
   .portfolio-heading h1 { font-size: clamp(32px, 9vw, 52px); }
   .portfolio-sub { padding: 0 $paddingLR500 10px; }
 }
+
+// Mobile: section height auto — panels stack naturally
+@media (max-width: 900px), (hover: none) {
+  section {
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 60px;
+    padding-bottom: 40px;
+  }
+}

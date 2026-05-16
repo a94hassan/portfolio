@@ -422,3 +422,33 @@ html.light {
     max-width: none !important;
   }
 }
+
+// ─── Mobile: disable pinned journey → native scroll ───────────────────────────
+// On touch/small screens the 700vh pinned scroll causes jank. Switch to
+// natural document flow: stages stack vertically, native scroll handles momentum.
+
+@media (max-width: 900px), (hover: none) {
+  #journey {
+    height: auto !important;
+  }
+
+  #stages {
+    position: relative !important;
+    height: auto !important;
+    overflow: visible !important;
+    perspective: none !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+  }
+
+  .stage {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100svh;
+    transform: none !important;
+    opacity: 1 !important;
+    will-change: auto !important;
+  }
+}

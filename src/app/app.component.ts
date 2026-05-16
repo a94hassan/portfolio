@@ -34,7 +34,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.zone.runOutsideAngular(() => {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!reducedMotion) this.initGlobalThreeJS();
+      if (!reducedMotion && !this.isMobile) this.initGlobalThreeJS();  // skip Three.js on mobile
       this.initCustomCursor();
     });
 
@@ -48,9 +48,18 @@ export class AppComponent implements OnInit, OnDestroy {
   // JOURNEY — 7-beat pinned scroll experience
   // ════════════════════════════════════════════════════════════════════════════
 
+  private get isMobile(): boolean {
+    return window.innerWidth <= 900 || !window.matchMedia('(hover: hover)').matches;
+  }
+
   private initJourney() {
     const stages = gsap.utils.toArray<HTMLElement>('.stage');
     if (stages.length < 5) return;
+
+    if (this.isMobile) {
+      this.initMobileScroll();
+      return;
+    }
 
     // ── Stage initial positions ──────────────────────────────────────────────
     // Beat 0→1 (Hero→About): cinematic vertical crossfade — no aggressive Z-dive
@@ -239,6 +248,81 @@ export class AppComponent implements OnInit, OnDestroy {
           { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.12 })
       .to('.contact-columns',
           { opacity: 1, y: 0, duration: 0.68, ease: 'power2.out' }, '-=0.40');
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // MOBILE SCROLL — native touch, lightweight ScrollTrigger entrances
+  // No pinning, no scrub, no Three.js, no 3D transforms.
+  // Stages stack vertically via CSS; native momentum scroll handles smoothness.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private initMobileScroll() {
+    // Hero: entrance on load
+    gsap.from(['.hero-text', '.hero-photo-wrapper'], {
+      opacity: 0, y: 28,
+      duration: 0.65, stagger: 0.14, ease: 'power2.out', delay: 0.35,
+      clearProps: 'opacity,transform'
+    });
+
+    // Scroll-triggered entrances for each subsequent section
+    const groups: Array<[string, string[]]> = [
+      ['.about-content',    ['.about-content', '.about-photo-wrap']],
+      ['.skills-grid',      ['.skills-grid', '.skills-text']],
+      ['.contact-heading',  ['.contact-heading', '.contact-columns']],
+    ];
+
+    groups.forEach(([triggerSel, targets]) => {
+      const triggerEl = document.querySelector(triggerSel);
+      if (!triggerEl) return;
+      targets.forEach((sel, i) => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        gsap.from(el, {
+          scrollTrigger: {
+            trigger: triggerEl,
+            start: 'top 88%',
+            once: true,
+          },
+          opacity: 0,
+          y: 24,
+          duration: 0.65,
+          ease: 'power2.out',
+          delay: i * 0.12,
+          clearProps: 'opacity,transform'
+        });
+      });
+    });
+
+    // Portfolio panels — each fades in individually as they scroll into view
+    gsap.utils.toArray<HTMLElement>('.project-panel').forEach((panel) => {
+      gsap.from(panel, {
+        scrollTrigger: {
+          trigger: panel,
+          start: 'top 90%',
+          once: true,
+        },
+        opacity: 0,
+        y: 30,
+        duration: 0.7,
+        ease: 'power2.out',
+        clearProps: 'opacity,transform'
+      });
+    });
+
+    // Section link navigation — use native scrollIntoView on mobile
+    document.addEventListener('click', (e) => {
+      const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!a) return;
+      const id = a.getAttribute('href')!.slice(1);
+      const target = document.getElementById(id);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+
+    // Set __journeyProgress to 0 (Three.js disabled on mobile but guard anyway)
+    (window as any).__journeyProgress = () => 0;
   }
 
   // ════════════════════════════════════════════════════════════════════════════

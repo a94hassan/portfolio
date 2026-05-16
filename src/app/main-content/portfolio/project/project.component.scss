@@ -136,3 +136,24 @@ p {
     a:last-child  button { @include button($mobile: true); }
   }
 }
+
+// Mobile: stack panels vertically — no horizontal GSAP slide
+@media (max-width: 900px), (hover: none) {
+  :host {
+    overflow: visible;
+    height: auto;
+  }
+
+  .projects-track {
+    width: 100% !important;
+    flex-direction: column !important;
+    height: auto !important;
+    transform: none !important;
+  }
+
+  .project-panel {
+    height: auto !important;
+    min-height: auto;
+    padding-bottom: 48px;
+  }
+}
