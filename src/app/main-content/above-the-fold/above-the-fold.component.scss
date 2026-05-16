@@ -103,15 +103,17 @@ section {
 // ── Name ─────────────────────────────────────────────────────────────────────
 
 .hero-name {
-  // Display: Poppins 200 italic — ultra-thin editorial weight, strong contrast
-  // vs. the 500-weight UI layer. Two-font-weight system: display vs. sans-body.
-  font-size: clamp(58px, 7.5vw, 118px);
-  font-weight: 200;
+  // Cormorant Garamond italic 300 — luxury editorial display, "Schreibschrift" aesthetic
+  // Overrides global h1 rule with larger, tighter sizing for the hero centerpiece
+  font-family: var(--font-display);
   font-style: italic;
-  letter-spacing: 0.04em;
-  line-height: 0.90;
+  font-weight: 300;
+  font-size: clamp(62px, 8vw, 128px);
+  letter-spacing: 0.03em;
+  line-height: 0.88;
   margin-bottom: 26px;
-  background: linear-gradient(155deg, var(--fg) 40%, var(--fg-48) 100%);
+  // Warm gradient: matches the off-white fg token (#ede9e3 → transparent)
+  background: linear-gradient(158deg, var(--fg) 35%, var(--fg-48) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -298,7 +300,7 @@ section {
     border-radius: 18px;
   }
   .hero-photo    { object-position: center 18%; }
-  .hero-name     { font-size: clamp(46px, 10vw, 82px); }
+  .hero-name     { font-size: clamp(50px, 11vw, 92px); }
   .hero-tagline  { max-width: 100%; }
 }
 

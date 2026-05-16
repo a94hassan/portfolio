@@ -28,9 +28,8 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
     this.themeService.init();
 
-    // Header entrance — pre-hide to prevent FOUC, then drop in
     gsap.set('app-header', { y: -72, opacity: 0 });
-    gsap.to('app-header', { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.15 });
+    gsap.to('app-header',  { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.2 });
 
     this.zone.runOutsideAngular(() => {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -38,7 +37,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.initCustomCursor();
     });
 
-    // Wait for Angular router to render main-content
     setTimeout(() => this.initJourney(), 500);
   }
 
@@ -51,233 +49,254 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // JOURNEY — 7-beat pinned scroll experience
+  // TEXT — character-by-character 3D write-in animation
+  // Each character flips up from rotateX:-80° (face-down) to 0° (upright),
+  // staggered left-to-right. Combined with Cormorant Garamond italic 300,
+  // this creates the "being written" handwriting effect.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private splitChars(el: Element): HTMLElement[] {
+    // Guard: already split — return existing spans (no double-wrapping on revisit)
+    if (el.querySelector('[data-char]')) {
+      return Array.from(el.querySelectorAll('[data-char]')) as HTMLElement[];
+    }
+    const text = el.textContent ?? '';
+    el.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    const spans: HTMLElement[] = [];
+    for (const ch of text) {
+      const s = document.createElement('span');
+      s.setAttribute('data-char', '1');
+      s.style.display = 'inline-block';
+      s.textContent = ch === ' ' ? ' ' : ch;
+      frag.appendChild(s);
+      spans.push(s);
+    }
+    el.appendChild(frag);
+    return spans;
+  }
+
+  private writeIn(selector: string, delay = 0): gsap.core.Timeline {
+    const el = document.querySelector(selector);
+    if (!el) return gsap.timeline();
+    gsap.set(el, { perspective: 900, transformStyle: 'preserve-3d' });
+    const chars = this.splitChars(el);
+    return gsap.timeline().fromTo(chars,
+      { opacity: 0, rotateX: -80, y: 18, transformOrigin: '50% 100%' },
+      { opacity: 1, rotateX:   0, y:  0,
+        duration: 0.52, ease: 'back.out(1.4)',
+        stagger: 0.026, delay }
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // JOURNEY — 6-beat pinned scroll, single unified depth transition
   // ════════════════════════════════════════════════════════════════════════════
 
   private initJourney() {
     const stages = gsap.utils.toArray<HTMLElement>('.stage');
     if (stages.length < 5) return;
 
-    if (this.isMobile) {
-      this.initMobileScroll();
-      return;
-    }
+    if (this.isMobile) { this.initMobileScroll(); return; }
 
-    // ── Unified "forward in 3D" transition DNA ──────────────────────────────
-    // Every section transition uses the same metaphor:
-    // outgoing → recedes (z: -200, scale: 0.88, opacity: 0)
-    // incoming → emerges from behind (z: -160 → 0, scale: 0.90 → 1)
-    // This creates a consistent "camera moving forward through space" feeling.
+    // ── Unified "forward through space" transition DNA ───────────────────────
+    // ALL section transitions are identical: outgoing recedes (z → -350, opacity → 0),
+    // incoming emerges from behind (starts at z: -350, comes to z: 0).
+    // scrub:true makes progress perfectly linear with scroll — no resistance.
+    // The single shared easing across every beat creates visual coherence.
 
-    gsap.set(stages[1], { z: -160, scale: 0.90, opacity: 0 });
-    gsap.set(stages[2], { z: -160, scale: 0.90, opacity: 0 });
-    gsap.set(stages[3], { z: -160, scale: 0.90, opacity: 0 });
-    gsap.set(stages[4], { z: -160, scale: 0.90, opacity: 0 });
+    const Z_OFF = -350;   // depth offset for all transitions
+    const SC_OFF = 0.82;  // scale when off-screen (perspective depth cue)
 
-    // Content initial state — hidden, ready for entrance animations
+    // All non-hero stages start behind the viewer (far in the distance)
+    gsap.set(stages[1], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    gsap.set(stages[2], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    gsap.set(stages[3], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    gsap.set(stages[4], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+
+    // Pre-hide content elements for entrance animations
     gsap.set([
-      '.hero-text', '.hero-photo-wrapper',
-      '.about-content', '.about-photo-wrap',
-      '.skills-text', '.skills-grid',
-      '.contact-heading', '.contact-columns',
+      '.hero-name', '.hero-status', '.hero-role-wrap',
+      '.hero-tagline', '.hero-actions', '.hero-email', '.hero-photo-wrapper',
     ], { opacity: 0, y: 10 });
 
-    // Skill items: start small+transparent for particle-stream pop-in
-    gsap.set('.skill-item', { opacity: 0, scale: 0.68, y: 8 });
+    gsap.set([
+      '.about-heading', '.about-body', '.about-trait', '.about-photo-wrap',
+    ], { opacity: 0, y: 10 });
 
-    // ── MASTER TIMELINE — 6 beats, unified forward-3D DNA ──────────────────
-    // All section transitions share identical easing & depth parameters.
-    // The outgoing stage recedes; the incoming stage emerges from behind.
+    gsap.set([
+      '.skills-text h1', '.skills-text > p', '.skills-text > div:last-of-type',
+    ], { opacity: 0, y: 10 });
 
-    const OUT = { z: -200, scale: 0.88, opacity: 0, duration: 1, ease: 'power2.inOut' } as const;
-    const IN  = { z: 0,    scale: 1,    opacity: 1, duration: 1, ease: 'power2.out'  } as const;
+    gsap.set('.skill-item', { opacity: 0, scale: 0.68, y: 10 });
+
+    gsap.set([
+      '.contact-heading h1', '.contact-columns',
+    ], { opacity: 0, y: 10 });
+
+    // ── Master timeline: OUT/IN share identical parameters ───────────────────
+    const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, duration: 1, ease: 'power2.inOut' } as const;
+    const IN  = { z: 0,     scale: 1,      opacity: 1, duration: 1, ease: 'power2.out'  } as const;
 
     const tl = gsap.timeline()
-
       // Beat 0→1: Hero → About
-      .to(stages[0], { ...OUT                   }, 0)
-      .to(stages[1], { ...IN                    }, 0.08)
-
+      .to(stages[0], { ...OUT }, 0)
+      .to(stages[1], { ...IN  }, 0.06)
       // Beat 1→2: About → Skills
-      .to(stages[1], { ...OUT                   }, 1)
-      .to(stages[2], { ...IN                    }, 1.08)
-
+      .to(stages[1], { ...OUT }, 1)
+      .to(stages[2], { ...IN  }, 1.06)
       // Beat 2→3: Skills → Portfolio
-      .to(stages[2], { ...OUT                   }, 2)
-      .to(stages[3], { ...IN                    }, 2.08)
-
-      // Beat 3→4: Portfolio slide — card 1 → 2
+      .to(stages[2], { ...OUT }, 2)
+      .to(stages[3], { ...IN  }, 2.06)
+      // Beat 3→4: Portfolio card 1 → 2
       .to('.projects-track', { xPercent: -33.333, duration: 1, ease: 'power2.inOut' }, 3)
-
-      // Beat 4→5: Portfolio slide — card 2 → 3
+      // Beat 4→5: Portfolio card 2 → 3
       .to('.projects-track', { xPercent: -66.667, duration: 1, ease: 'power2.inOut' }, 4)
-
       // Beat 5→6: Portfolio → Contact
-      .to(stages[3], { ...OUT                   }, 5)
-      .to(stages[4], { ...IN                    }, 5.08);
+      .to(stages[3], { ...OUT }, 5)
+      .to(stages[4], { ...IN  }, 5.06);
 
-    // ── ScrollTrigger — linear scrub, relaxed snap ───────────────────────────
-    //
-    // scrub: true → perfectly linear 1:1 scroll-to-animation mapping.
-    // No resistance, no momentum lag. User has full manual control.
-    //
-    // snap: fires only after 0.9s of stillness (user must intentionally pause).
-    // power2.inOut = gentle, not aggressive. No more "catapulting" into sections.
-
+    // ── ScrollTrigger: perfectly linear scrub, patient snap ─────────────────
     let rawF = 0;
-    const journeyST = ScrollTrigger.create({
+    const st = ScrollTrigger.create({
       trigger: '#journey',
-      start:   'top top',
-      end:     'bottom bottom',
-      scrub:   true,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: true,       // 1:1 linear — zero resistance, full user control
       animation: tl,
       snap: {
-        snapTo:   1 / 6,
-        duration: { min: 0.55, max: 0.85 },
-        delay:    0.9,
-        ease:     'power2.inOut',
+        snapTo: 1 / 6,
+        duration: { min: 0.5, max: 0.8 },
+        delay: 0.9,          // must rest 0.9s before snap fires — prevents unwanted jump
+        ease: 'power2.inOut',
       },
-      onUpdate:      (self) => { rawF = self.progress; },
+      onUpdate:       (self) => { rawF = self.progress; },
       onSnapComplete: (self) => {
         const beat = Math.round(self.progress * 6);
-        // Force timeline to exact beat position — eliminates scrub overshoot
-        tl.seek(beat / 6 * tl.duration());
-        // 2-frame buffer for the seek to render before entrance fires
-        setTimeout(() => this.fireStageAnimation(beat), 32);
+        tl.seek(beat / 6 * tl.duration()); // force exact beat, eliminates scrub lag flash
+        setTimeout(() => this.fireEntrance(beat), 32);
       },
     });
 
     // ── Section link navigation ──────────────────────────────────────────────
-    const BEAT_SCROLL: Record<string, number> = {
-      'above_the_fold_section': 0,
-      'about_me_section':       1,
-      'my_skills_section':      2,
-      'portfolio_section':      3,
-      'contact_section':        6,
+    const BEAT: Record<string, number> = {
+      above_the_fold_section: 0,
+      about_me_section:       1,
+      my_skills_section:      2,
+      portfolio_section:      3,
+      contact_section:        6,
     };
-
-    const getJourneyScrollMax = () => {
-      const journey = document.querySelector('#journey') as HTMLElement;
-      return journey ? journey.scrollHeight - window.innerHeight : 0;
+    const scrollMax = () => {
+      const j = document.querySelector('#journey') as HTMLElement;
+      return j ? j.scrollHeight - window.innerHeight : 0;
     };
-
     document.addEventListener('click', (e) => {
       const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
       if (!a) return;
       const id = a.getAttribute('href')!.slice(1);
-      if (id in BEAT_SCROLL) {
+      if (id in BEAT) {
         e.preventDefault();
-        const targetY = (BEAT_SCROLL[id] / 6) * getJourneyScrollMax();
-        gsap.to(window, { scrollTo: targetY, duration: 1.1, ease: 'power2.inOut' });
+        gsap.to(window, { scrollTo: (BEAT[id] / 6) * scrollMax(), duration: 1.1, ease: 'power2.inOut' });
       }
     });
 
-    // Three.js reads rawF from closure
     (window as any).__journeyProgress = () => rawF;
-
-    this.scrollCleanup = () => { journeyST.kill(); };
-
-    // Hero entrance on load
-    setTimeout(() => this.fireStageAnimation(0), 200);
+    this.scrollCleanup = () => st.kill();
+    setTimeout(() => this.fireEntrance(0), 200);
   }
 
-  private fireStageAnimation(beat: number) {
-    const stageIdx = beat <= 2 ? beat : beat <= 5 ? 3 : 4;
-    const tl = this.buildStageTl(stageIdx, beat);
-    tl?.restart();
+  private fireEntrance(beat: number) {
+    const idx = beat <= 2 ? beat : beat <= 5 ? 3 : 4;
+    const builders = [
+      () => this.heroTl(),
+      () => this.aboutTl(),
+      () => this.skillsTl(),
+      () => this.portfolioTl(beat - 3),
+      () => this.contactTl(),
+    ];
+    builders[idx]?.()?.restart();
   }
 
-  private buildStageTl(stageIdx: number, beat: number): gsap.core.Timeline | null {
-    switch (stageIdx) {
-      case 0: return this.heroTl();
-      case 1: return this.aboutTl();
-      case 2: return this.skillsTl();
-      case 3: return this.portfolioTl(beat - 3);
-      case 4: return this.contactTl();
-      default: return null;
-    }
-  }
-
-  // ── Entrance animations ───────────────────────────────────────────────────
-  // gsap.to() only — captures current state as "from".
-  // Return visit: elements already at final state → no-op → zero flash.
+  // ─── Section entrance timelines ───────────────────────────────────────────
 
   private heroTl() {
     return gsap.timeline()
-      .to('.hero-text',          { opacity: 1, y: 0, duration: 0.72, ease: 'power2.out', delay: 0.12 })
-      .to('.hero-photo-wrapper', { opacity: 1, y: 0, duration: 0.68, ease: 'power2.out' }, '-=0.44');
+      .add(this.writeIn('.hero-name', 0.08))
+      .to('.hero-status',        { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.20)
+      .to('.hero-role-wrap',     { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.30)
+      .to('.hero-tagline',       { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.40)
+      .to('.hero-actions',       { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.50)
+      .to('.hero-email',         { opacity: 1, y: 0, duration: 0.40, ease: 'power2.out' }, 0.58)
+      .to('.hero-photo-wrapper', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.12);
   }
 
   private aboutTl() {
     return gsap.timeline()
-      .to('.about-content',   { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.12 })
-      .to('.about-photo-wrap',{ opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, '-=0.42');
+      .to('.about-photo-wrap', { opacity: 1, y: 0, duration: 0.60, ease: 'power2.out', delay: 0.10 })
+      .add(this.writeIn('.about-heading', 0.15))
+      .to('.about-body',  { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.55)
+      .to('.about-trait', { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', stagger: 0.10 }, 0.65);
   }
 
   private skillsTl() {
-    // Skills reveal: text + grid container fade in first,
-    // then individual skill cards "stream in" like particles — small→large, staggered.
-    // The stagger direction (start) + back.out easing creates the particle-materializing effect.
     return gsap.timeline()
-      .to('.skills-text', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out', delay: 0.10 })
-      .to('.skills-grid', { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }, '-=0.30')
-      .to('.skill-item',  {
+      .add(this.writeIn('.skills-text h1', 0.08))
+      .to('.skills-text > p',               { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.45)
+      .to('.skills-text > div:last-of-type',{ opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.55)
+      .to('.skill-item', {
         opacity: 1, scale: 1, y: 0,
-        duration: 0.42,
-        ease: 'back.out(1.5)',
-        stagger: { amount: 0.65, from: 'start', ease: 'power2.in' },
-      }, '-=0.20');
+        duration: 0.40, ease: 'back.out(1.5)',
+        stagger: { amount: 0.60, from: 'start', ease: 'power2.in' },
+      }, 0.30);
   }
 
   private portfolioTl(cardIdx: number) {
     const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
-    const panel  = panels[cardIdx];
-    if (!panel) return gsap.timeline();
+    const panel  = panels[Math.max(0, cardIdx)] ?? panels[0];
     return gsap.timeline()
-      .to(panel, { opacity: 1, duration: 0.55, ease: 'power2.out', delay: 0.08 });
+      .to(panel ?? '.project-panel', { opacity: 1, duration: 0.55, ease: 'power2.out', delay: 0.08 });
   }
 
   private contactTl() {
     return gsap.timeline()
-      .to('.contact-heading', { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.12 })
-      .to('.contact-columns', { opacity: 1, y: 0, duration: 0.68, ease: 'power2.out' }, '-=0.40');
+      .add(this.writeIn('.contact-heading h1', 0.08))
+      .to('.contact-columns', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.50);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // MOBILE SCROLL — native touch, lightweight ScrollTrigger entrances
+  // MOBILE SCROLL
   // ════════════════════════════════════════════════════════════════════════════
 
   private initMobileScroll() {
-    gsap.from(['.hero-text', '.hero-photo-wrapper'], {
-      opacity: 0, y: 28,
-      duration: 0.65, stagger: 0.14, ease: 'power2.out', delay: 0.35,
-      clearProps: 'opacity,transform',
+    gsap.from(['.hero-name', '.hero-text'], {
+      opacity: 0, y: 24, duration: 0.65, stagger: 0.12,
+      ease: 'power2.out', delay: 0.3, clearProps: 'opacity,transform',
     });
 
     const groups: Array<[string, string[]]> = [
-      ['.about-content',   ['.about-content', '.about-photo-wrap']],
+      ['.about-content',   ['.about-photo-wrap', '.about-content']],
       ['.skills-grid',     ['.skills-grid', '.skills-text']],
       ['.contact-heading', ['.contact-heading', '.contact-columns']],
     ];
 
-    groups.forEach(([triggerSel, targets]) => {
-      const triggerEl = document.querySelector(triggerSel);
-      if (!triggerEl) return;
+    groups.forEach(([trigger, targets]) => {
+      const t = document.querySelector(trigger);
+      if (!t) return;
       targets.forEach((sel, i) => {
         const el = document.querySelector(sel);
         if (!el) return;
         gsap.from(el, {
-          scrollTrigger: { trigger: triggerEl, start: 'top 88%', once: true },
-          opacity: 0, y: 24, duration: 0.65, ease: 'power2.out',
-          delay: i * 0.12, clearProps: 'opacity,transform',
+          scrollTrigger: { trigger: t, start: 'top 88%', once: true },
+          opacity: 0, y: 22, duration: 0.62, ease: 'power2.out',
+          delay: i * 0.11, clearProps: 'opacity,transform',
         });
       });
     });
 
-    gsap.utils.toArray<HTMLElement>('.project-panel').forEach((panel) => {
+    gsap.utils.toArray<HTMLElement>('.project-panel').forEach(panel => {
       gsap.from(panel, {
         scrollTrigger: { trigger: panel, start: 'top 90%', once: true },
-        opacity: 0, y: 30, duration: 0.7, ease: 'power2.out',
+        opacity: 0, y: 28, duration: 0.68, ease: 'power2.out',
         clearProps: 'opacity,transform',
       });
     });
@@ -286,30 +305,22 @@ export class AppComponent implements OnInit, OnDestroy {
       const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
       if (!a) return;
       const id = a.getAttribute('href')!.slice(1);
-      const target = document.getElementById(id);
-      if (target) {
-        e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      e.preventDefault();
     });
 
     (window as any).__journeyProgress = () => 0;
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // THREE.JS — Fish school + camera journey
-  //
-  // Architecture: single organic particle system (fish school metaphor) +
-  // camera spline. Removed multi-layer complexity, wireframes, portals, stars.
-  // Clean, performant, cinematic.
+  // THREE.JS — fish school + camera journey
   // ════════════════════════════════════════════════════════════════════════════
 
   private initGlobalThreeJS() {
     const canvas = document.querySelector('#global-canvas') as HTMLCanvasElement;
     if (!canvas) return;
 
-    let w = window.innerWidth;
-    let h = window.innerHeight;
+    let w = window.innerWidth, h = window.innerHeight;
 
     const scene    = new THREE.Scene();
     const camera   = new THREE.PerspectiveCamera(58, w / h, 0.1, 8000);
@@ -318,206 +329,115 @@ export class AppComponent implements OnInit, OnDestroy {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
     const SY = [0, -h * 1.15, -h * 2.55, -h * 4.05, -h * 5.35];
-
-    // ── 22-point camera spline — cinematic journey through all sections ──────
-    const _c = (x: number, fy: number, z: number) =>
+    const _c  = (x: number, fy: number, z: number) =>
       new THREE.Vector3(x, fy !== 0 ? h * fy : 0, z);
 
-    const camPts = [
-      _c(   0,    0,   560),  //  0 Hero
-      _c( 280, -0.08, 430),  //  1 Hero — drift right
-      _c( -80, -0.26, 710),  //  2 Pre-portal 0
-      _c( 130, -0.50, 270),  //  3 Through portal 0
-      _c(-220, -0.72, 620),  //  4 Emerge left
-      _c(-200, -1.10, 500),  //  5 About — arrive left
-      _c( 180, -1.35, 455),  //  6 About — scan right
-      _c( 370, -1.55, 720),  //  7 Pre-portal 1
-      _c(   0, -1.82, 255),  //  8 Through portal 1
-      _c(-260, -2.02, 610),  //  9 Emerge left
-      _c( 240, -2.40, 485),  // 10 Skills — arrive right
-      _c(-130, -2.70, 515),  // 11 Skills — scan left
-      _c(-175, -3.00, 730),  // 12 Pre-portal 2
-      _c(  85, -3.22, 248),  // 13 Through portal 2
-      _c( 225, -3.50, 595),  // 14 Emerge right
-      _c(-185, -3.90, 530),  // 15 Portfolio — arrive left
-      _c( 220, -4.20, 465),  // 16 Portfolio — scan right
-      _c(  85, -4.50, 715),  // 17 Pre-portal 3
-      _c(-165, -4.75, 262),  // 18 Through portal 3
-      _c(  55, -5.00, 585),  // 19 Emerge
-      _c(  25, -5.22, 565),  // 20 Contact — settle
-      _c(   0, -5.50, 600),  // 21 Contact — arrive
-    ];
+    const camCurve = new THREE.CatmullRomCurve3([
+      _c(   0,    0,   560), _c( 280, -0.08, 430), _c( -80, -0.26, 710),
+      _c( 130, -0.50, 270),  _c(-220, -0.72, 620), _c(-200, -1.10, 500),
+      _c( 180, -1.35, 455),  _c( 370, -1.55, 720), _c(   0, -1.82, 255),
+      _c(-260, -2.02, 610),  _c( 240, -2.40, 485), _c(-130, -2.70, 515),
+      _c(-175, -3.00, 730),  _c(  85, -3.22, 248), _c( 225, -3.50, 595),
+      _c(-185, -3.90, 530),  _c( 220, -4.20, 465), _c(  85, -4.50, 715),
+      _c(-165, -4.75, 262),  _c(  55, -5.00, 585), _c(  25, -5.22, 565),
+      _c(   0, -5.50, 600),
+    ], false, 'catmullrom', 0.4);
 
-    const lkPts = [
-      _c(   0,    0,    0),
-      _c(-180, -0.08,  0),
-      _c( 200, -0.28,  0),
-      _c( -80, -0.52,-65),
-      _c( 160, -0.72,  0),
-      _c( 165, -1.10,  0),
-      _c(-185, -1.35,  0),
-      _c(-200, -1.60,  0),
-      _c(   0, -1.85,-110),
-      _c( 185, -2.05,  0),
-      _c(-185, -2.40,  0),
-      _c( 155, -2.70,  0),
-      _c( 215, -3.02,  0),
-      _c(-100, -3.25,-80),
-      _c(-185, -3.52,  0),
-      _c( 205, -3.90,  0),
-      _c(-165, -4.20,  0),
-      _c(-115, -4.52,  0),
-      _c( 105, -4.78,-90),
-      _c(   0, -5.02,  0),
-      _c( -65, -5.22,  0),
+    const lkCurve = new THREE.CatmullRomCurve3([
+      _c(   0,    0,    0), _c(-180, -0.08,  0), _c( 200, -0.28,  0),
+      _c( -80, -0.52, -65), _c( 160, -0.72,  0), _c( 165, -1.10,  0),
+      _c(-185, -1.35,  0),  _c(-200, -1.60,  0), _c(   0, -1.85,-110),
+      _c( 185, -2.05,  0),  _c(-185, -2.40,  0), _c( 155, -2.70,  0),
+      _c( 215, -3.02,  0),  _c(-100, -3.25, -80),_c(-185, -3.52,  0),
+      _c( 205, -3.90,  0),  _c(-165, -4.20,  0), _c(-115, -4.52,  0),
+      _c( 105, -4.78, -90), _c(   0, -5.02,  0), _c( -65, -5.22,  0),
       _c(   0, -5.50,  0),
-    ];
+    ], false, 'catmullrom', 0.4);
 
-    const camCurve = new THREE.CatmullRomCurve3(camPts, false, 'catmullrom', 0.4);
-    const lkCurve  = new THREE.CatmullRomCurve3(lkPts,  false, 'catmullrom', 0.4);
+    // Fish school: 300 particles, organic sinusoidal drift
+    const PC = 300;
+    const GA = Math.PI * (3 - Math.sqrt(5));
+    const totalY = Math.abs(SY[4]) * 1.12;
 
-    // ── FISH SCHOOL — organic drifting particle cluster ──────────────────────
-    //
-    // Each particle oscillates sinusoidally around its base position with a
-    // unique frequency + phase offset. The result is organic, breathing motion
-    // reminiscent of a school of fish drifting in slow water.
-    //
-    // Bigger particles (size: 7, sizeAttenuation: true) feel zoomed-in and
-    // intimate. Opacity is low (0.20) for subtlety — they're atmosphere, not UI.
-
-    const PC       = 320;   // particle count
-    const totalSpanY = Math.abs(SY[4]) * 1.12;
-
-    // Typed arrays for base positions, frequencies, phases
-    const baseX = new Float32Array(PC);
-    const baseY = new Float32Array(PC);
-    const baseZ = new Float32Array(PC);
-    const freqX = new Float32Array(PC);
-    const freqY = new Float32Array(PC);
-    const freqZ = new Float32Array(PC);
-    const phsX  = new Float32Array(PC);
-    const phsY  = new Float32Array(PC);
-    const phsZ  = new Float32Array(PC);
-
-    const currPos = new Float32Array(PC * 3);
-
-    const GA  = Math.PI * (3 - Math.sqrt(5));  // golden angle
+    const bX = new Float32Array(PC), bY = new Float32Array(PC), bZ = new Float32Array(PC);
+    const fX = new Float32Array(PC), fY = new Float32Array(PC), fZ = new Float32Array(PC);
+    const pX = new Float32Array(PC), pY = new Float32Array(PC), pZ = new Float32Array(PC);
+    const pos = new Float32Array(PC * 3);
 
     for (let i = 0; i < PC; i++) {
-      const t   = i / PC;
-      const ang = GA * i;
-      // Wide elliptical XZ spread, loose clustering — like a real school
-      const r   = 90 + Math.random() * 360;
-      baseX[i] = Math.cos(ang) * r * (0.55 + Math.random() * 0.45);
-      baseY[i] = t * SY[4] + (Math.random() - 0.5) * h * 0.45;
-      // Z: particles are closer to camera (100–420 units behind), creating
-      // the "zoomed in, big particles" look the user requested.
-      baseZ[i] = -100 - Math.random() * 320;
-
-      // Individual oscillation frequencies — slight variation creates organic feel
-      freqX[i] = 0.14 + Math.random() * 0.22;
-      freqY[i] = 0.09 + Math.random() * 0.16;
-      freqZ[i] = 0.06 + Math.random() * 0.10;
-
-      // Phase offsets — ensures no two particles are in sync (school not grid)
-      phsX[i] = Math.random() * Math.PI * 2;
-      phsY[i] = Math.random() * Math.PI * 2;
-      phsZ[i] = Math.random() * Math.PI * 2;
-
-      currPos[i*3]   = baseX[i];
-      currPos[i*3+1] = baseY[i];
-      currPos[i*3+2] = baseZ[i];
+      const t = i / PC, ang = GA * i, r = 90 + Math.random() * 340;
+      bX[i] = Math.cos(ang) * r * (0.55 + Math.random() * 0.45);
+      bY[i] = t * SY[4] + (Math.random() - 0.5) * h * 0.45;
+      bZ[i] = -100 - Math.random() * 320;
+      fX[i] = 0.14 + Math.random() * 0.22;
+      fY[i] = 0.09 + Math.random() * 0.16;
+      fZ[i] = 0.06 + Math.random() * 0.10;
+      pX[i] = Math.random() * Math.PI * 2;
+      pY[i] = Math.random() * Math.PI * 2;
+      pZ[i] = Math.random() * Math.PI * 2;
+      pos[i*3] = bX[i]; pos[i*3+1] = bY[i]; pos[i*3+2] = bZ[i];
     }
 
-    const schoolGeo = new THREE.BufferGeometry();
-    schoolGeo.setAttribute('position', new THREE.BufferAttribute(currPos, 3));
-
-    const schoolMat = new THREE.PointsMaterial({
-      color:           0xc8ccd6,  // cool silver-grey
-      size:            7.5,        // big, close-up fish school
-      transparent:     true,
-      opacity:         0.20,
-      sizeAttenuation: true,       // farther = smaller → natural 3D depth
-      depthWrite:      false,
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({
+      color: 0xc8ccd6, size: 7.5, transparent: true,
+      opacity: 0.18, sizeAttenuation: true, depthWrite: false,
     });
-    scene.add(new THREE.Points(schoolGeo, schoolMat));
+    scene.add(new THREE.Points(geo, mat));
 
-    // ── Camera path line — the invisible "red thread" ────────────────────────
-    // Very faint line tracing the camera journey. Gives spatial continuity
-    // without being visible at a glance — a structural skeleton.
-    const pathPts = camCurve.getPoints(240);
-    const pathGeo = new THREE.BufferGeometry().setFromPoints(pathPts);
-    const pathMat = new THREE.LineBasicMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.007,
-    });
+    const pathGeo = new THREE.BufferGeometry().setFromPoints(camCurve.getPoints(240));
+    const pathMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.006 });
     scene.add(new THREE.Line(pathGeo, pathMat));
 
-    // ── Mouse parallax ────────────────────────────────────────────────────────
     let mNX = 0, mNY = 0, smX = 0, smY = 0;
     const onMouseMove = (e: MouseEvent) => {
       mNX = (e.clientX / w - 0.5) * 2;
       mNY = -((e.clientY / h) - 0.5) * 2;
     };
 
-    // ── Camera state — smoothed interpolation ─────────────────────────────────
-    const sCam  = new THREE.Vector3(0, 0, 600);
-    const sLk   = new THREE.Vector3(0, 0, 0);
-    const tCam  = new THREE.Vector3();
-    const tLk   = new THREE.Vector3();
-    const upVec = new THREE.Vector3(0, 1, 0);
-    let   sFrac = 0;
-    let   time  = 0;
+    const sCam = new THREE.Vector3(0, 0, 600);
+    const sLk  = new THREE.Vector3(0, 0, 0);
+    const tCam = new THREE.Vector3(), tLk = new THREE.Vector3();
+    const upV  = new THREE.Vector3(0, 1, 0);
+    let sFrac = 0, time = 0;
 
-    // ── Render loop ──────────────────────────────────────────────────────────
     const animate = () => {
       if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
-
-      time += 0.007;   // very slow tick — the school drifts, not swims fast
+      time += 0.007;
       smX += (mNX - smX) * 0.055;
       smY += (mNY - smY) * 0.055;
 
       const rawF = (window as any).__journeyProgress?.() ?? 0;
       sFrac += (rawF - sFrac) * 0.038;
 
-      // Camera follows spline
       camCurve.getPoint(Math.min(sFrac, 0.9999), tCam);
       lkCurve.getPoint( Math.min(sFrac, 0.9999), tLk);
-      tCam.x += smX * 16;
-      tCam.y += smY * 7;
-      sCam.lerp(tCam, 0.040);
-      sLk.lerp(tLk,  0.040);
+      tCam.x += smX * 16; tCam.y += smY * 7;
+      sCam.lerp(tCam, 0.04); sLk.lerp(tLk, 0.04);
       camera.position.copy(sCam);
-
-      const roll = Math.sin(sFrac * Math.PI * 7) * 0.028;
-      upVec.set(-roll, 1, 0).normalize();
-      camera.up.lerp(upVec, 0.028);
+      upV.set(-Math.sin(sFrac * Math.PI * 7) * 0.028, 1, 0).normalize();
+      camera.up.lerp(upV, 0.028);
       camera.lookAt(sLk);
 
-      // Fish school: organic sinusoidal oscillation per particle
-      const pos = schoolGeo.attributes['position'].array as Float32Array;
+      const p = geo.attributes['position'].array as Float32Array;
       for (let i = 0; i < PC; i++) {
-        const ix = i * 3, iy = ix + 1, iz = ix + 2;
-
-        // Each particle drifts around its base position independently
-        pos[ix] = baseX[i] + Math.sin(time * freqX[i] + phsX[i]) * 24 + smX * 20;
-        pos[iy] = baseY[i] + Math.sin(time * freqY[i] + phsY[i]) * 16 + smY * 11;
-        pos[iz] = baseZ[i] + Math.sin(time * freqZ[i] + phsZ[i]) * 10;
-
-        // Wrap Y: keeps particles visible as camera scrolls down through sections
-        const deltaY = pos[iy] - sCam.y;
-        if (deltaY >  totalSpanY * 0.52) pos[iy] -= totalSpanY;
-        if (deltaY < -totalSpanY * 0.52) pos[iy] += totalSpanY;
+        const ix = i*3, iy = ix+1, iz = ix+2;
+        p[ix] = bX[i] + Math.sin(time * fX[i] + pX[i]) * 24 + smX * 20;
+        p[iy] = bY[i] + Math.sin(time * fY[i] + pY[i]) * 16 + smY * 11;
+        p[iz] = bZ[i] + Math.sin(time * fZ[i] + pZ[i]) * 10;
+        const dy = p[iy] - sCam.y;
+        if (dy >  totalY * 0.52) p[iy] -= totalY;
+        if (dy < -totalY * 0.52) p[iy] += totalY;
       }
-      schoolGeo.attributes['position'].needsUpdate = true;
-
+      geo.attributes['position'].needsUpdate = true;
       renderer.render(scene, camera);
     };
 
     const onResize = () => {
       w = window.innerWidth; h = window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      camera.aspect = w / h; camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
     const onVis = () => { if (!document.hidden && this.animId === 0) animate(); };
@@ -532,54 +452,43 @@ export class AppComponent implements OnInit, OnDestroy {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize',   onResize);
       document.removeEventListener('visibilitychange', onVis);
-      renderer.dispose();
-      schoolGeo.dispose();
-      schoolMat.dispose();
-      pathGeo.dispose();
-      pathMat.dispose();
+      renderer.dispose(); geo.dispose(); mat.dispose();
+      pathGeo.dispose(); pathMat.dispose();
     };
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // CUSTOM CURSOR — theme-adaptive ring + dot
+  // CUSTOM CURSOR
   // ════════════════════════════════════════════════════════════════════════════
 
   private initCustomCursor() {
     if (!window.matchMedia('(hover: hover)').matches) return;
-
-    const ring = document.getElementById('cursor-ring')!;
-    const dot  = document.getElementById('cursor-dot')!;
+    const ring = document.getElementById('cursor-ring');
+    const dot  = document.getElementById('cursor-dot');
     if (!ring || !dot) return;
 
     gsap.set(ring, { xPercent: -50, yPercent: -50 });
     gsap.set(dot,  { xPercent: -50, yPercent: -50 });
 
     const isLight   = () => document.documentElement.classList.contains('light');
-    const ringBase  = () => isLight() ? 'rgba(17,17,17,0.32)' : 'rgba(255,255,255,0.40)';
-    const ringHover = () => isLight() ? 'rgba(17,17,17,0.72)' : 'rgba(255,255,255,0.75)';
+    const ringBase  = () => isLight() ? 'rgba(17,17,17,0.32)'  : 'rgba(255,255,255,0.40)';
+    const ringHover = () => isLight() ? 'rgba(17,17,17,0.72)'  : 'rgba(255,255,255,0.75)';
 
     let appeared = false;
-    let spotEls: HTMLElement[] = [];
-    let rects:   DOMRect[]     = [];
-    const SEL = '.skill-item,.project-info,.project-img-wrap,.about-icon,.social-icon-link,form,button';
-
+    const SEL = '.skill-item,button,a,input,textarea';
+    let spotEls: HTMLElement[] = [], rects: DOMRect[] = [];
     const refresh = () => { rects = spotEls.map(el => el.getBoundingClientRect()); };
-    setTimeout(() => {
-      spotEls = Array.from(document.querySelectorAll(SEL)) as HTMLElement[];
-      refresh();
-    }, 900);
+    setTimeout(() => { spotEls = Array.from(document.querySelectorAll(SEL)); refresh(); }, 900);
 
     const onMove = (e: MouseEvent) => {
       if (!appeared) { gsap.to([ring, dot], { opacity: 1, duration: 0.4 }); appeared = true; }
       gsap.to(dot,  { x: e.clientX, y: e.clientY, duration: 0 });
       gsap.to(ring, { x: e.clientX, y: e.clientY, duration: 0.18, ease: 'power2.out' });
-      for (let i = 0; i < spotEls.length; i++) {
-        const r = rects[i]; if (!r) continue;
-        spotEls[i].style.setProperty('--mx', `${e.clientX - r.left}px`);
-        spotEls[i].style.setProperty('--my', `${e.clientY - r.top}px`);
-      }
+      rects.forEach((r, i) => {
+        spotEls[i]?.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        spotEls[i]?.style.setProperty('--my', `${e.clientY - r.top}px`);
+      });
     };
-
     const onOver  = (e: MouseEvent) => {
       if ((e.target as Element).closest('a,button,input,textarea'))
         gsap.to(ring, { scale: 1.7, borderColor: ringHover(), duration: 0.22 });

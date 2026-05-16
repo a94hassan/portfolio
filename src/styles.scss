@@ -10,7 +10,7 @@
 
   --bg:         #070608;  // deep space — near-black, slight violet warmth
   --bg-nav:     rgba(7, 6, 8, 0.86);
-  --fg:         #e2e8f0;
+  --fg:         #ede9e3;
   --fg-55:      rgba(226, 232, 240, 0.55);
   --fg-48:      rgba(226, 232, 240, 0.48);
   --fg-40:      rgba(226, 232, 240, 0.40);
@@ -51,6 +51,7 @@
   --btn-solid-color:  #0a0a0a;
   --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.85) inset, 0 4px 20px rgba(0,0,0,0.35);
   --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.90) inset, 0 10px 32px rgba(0,0,0,0.45);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
 }
 
 html.light {
@@ -362,7 +363,6 @@ html.light {
 
 // ─── Poppins — weights 200 (display italic), 400, 500, 700 ──────────────────────
 
-// Display font: Poppins 200 italic — ultra-thin editorial weight for hero name
 @font-face {
   font-display: swap;
   font-family: 'Poppins';
@@ -401,6 +401,18 @@ html.light {
   font-style: normal;
   font-weight: 700;
   src: url('./assets/font/poppins-v20-latin-700.woff2') format('woff2');
+}
+
+// ─── Display typography — two-font system ────────────────────────────────────
+// h1/h2: Cormorant Garamond italic 300 — elegant script-serif display weight
+// Body/UI: Poppins 400/500 — clean geometric sans
+// This creates the high-end editorial contrast: thin italic serif vs. clean sans.
+
+h1, h2 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: 0.02em;
 }
 
 // ─── Journey / Stage ──────────────────────────────────────────────────────────

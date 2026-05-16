@@ -32,8 +32,8 @@ section {
   position: relative;
   z-index: 1;
   height: 100%;
-  padding-top: 90px;
-  padding-bottom: 80px;
+  padding-top: 70px;
+  padding-bottom: 60px;
   @include contentWidth();
   @include flexBox($jc: space-between);
 }
@@ -111,11 +111,10 @@ section {
     justify-content: flex-end;
 
     h1 {
-      font-size: 88px;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 0.95;
-      background: linear-gradient(145deg, var(--fg) 30%, var(--fg-48) 100%);
+      // Display font — Cormorant Garamond italic 300 via global h1 rule
+      font-size: clamp(56px, 6.5vw, 96px);
+      line-height: 0.92;
+      background: linear-gradient(148deg, var(--fg) 35%, var(--fg-48) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -150,7 +149,7 @@ section {
   }
 }
 
-.german { font-size: 74px !important; }
+.german { font-size: clamp(44px, 5.5vw, 78px) !important; }
 
 .skills-mobile-btn {
   display: none;
