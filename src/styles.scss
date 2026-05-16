@@ -23,6 +23,11 @@
   --surface-md: rgba(255, 255, 255, 0.055);
   --surface-hi: rgba(255, 255, 255, 0.09);
 
+  --glass-bg:        rgba(255, 255, 255, 0.055);
+  --glass-bg-hi:     rgba(255, 255, 255, 0.092);
+  --glass-border:    rgba(255, 255, 255, 0.10);
+  --glass-border-hi: rgba(255, 255, 255, 0.18);
+
   --sb-track:   #111111;
   --sb-thumb:   #333333;
   --sb-thumb-h: #555555;
@@ -57,6 +62,11 @@ html.light {
   --surface:    rgba(0, 0, 0, 0.03);
   --surface-md: rgba(0, 0, 0, 0.045);
   --surface-hi: rgba(0, 0, 0, 0.07);
+
+  --glass-bg:        rgba(0, 0, 0, 0.04);
+  --glass-bg-hi:     rgba(0, 0, 0, 0.065);
+  --glass-border:    rgba(0, 0, 0, 0.09);
+  --glass-border-hi: rgba(0, 0, 0, 0.15);
 
   --sb-track:   #e8e7e3;
   --sb-thumb:   #c0bfbc;
@@ -159,6 +169,8 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 
 html {
   background-color: var(--bg);
+  scroll-snap-type: y proximity;
+  scroll-padding-top: 80px;
 }
 
 // ─── Three.js: hidden in light mode ──────────────────────────────────────────
@@ -182,10 +194,10 @@ form {
     border-radius: inherit;
     padding: 1px;
     background: radial-gradient(
-      120px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(255, 210, 140, 0.85),
-      rgba(200, 140, 255, 0.60),
-      rgba(120, 200, 255, 0.35),
+      100px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(255, 210, 140, 0.24),
+      rgba(200, 140, 255, 0.16),
+      rgba(120, 200, 255, 0.09),
       transparent 68%
     );
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -203,8 +215,8 @@ form {
     border-radius: inherit;
     background: radial-gradient(
       90px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(255, 220, 160, 0.055) 0%,
-      rgba(220, 180, 255, 0.025) 55%,
+      rgba(255, 220, 160, 0.020) 0%,
+      rgba(220, 180, 255, 0.010) 55%,
       transparent 75%
     );
     pointer-events: none;
@@ -220,9 +232,9 @@ button::before {
   border-radius: inherit;
   padding: 1px;
   background: radial-gradient(
-    90px circle at var(--mx, -400px) var(--my, -400px),
-    rgba(255, 215, 140, 0.80),
-    rgba(190, 140, 255, 0.55),
+    80px circle at var(--mx, -400px) var(--my, -400px),
+    rgba(255, 215, 140, 0.20),
+    rgba(190, 140, 255, 0.12),
     transparent 65%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
