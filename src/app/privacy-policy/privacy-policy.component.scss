@@ -33,7 +33,7 @@ section {
         >div {
           width: 120px;
           height: 4px;
-          background-color: $firstColor;
+          background-color: var(--fg);
           border-top-left-radius: 2px;
           border-bottom-left-radius: 2px;
         }
@@ -47,7 +47,7 @@ section {
       >div:last-of-type {
         height: 4px;
         width: 100%;
-        background-color: $firstColor;
+        background-color: var(--fg);
       }
     }
     >span {
@@ -61,7 +61,7 @@ section {
     >h4 {
       font-size: 24px;
       font-weight: 400;
-      color: $firstColor;
+      color: var(--fg);
       margin-bottom: 4px;
     }
     >p {
@@ -81,7 +81,7 @@ section {
             text-decoration: none;
             &:hover {
               cursor: pointer;
-              text-decoration: underline 2px $secondColor;
+              text-decoration: underline 2px var(--fg-48);
               text-underline-offset: 8px;
             }
           }

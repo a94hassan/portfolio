@@ -1,7 +1,10 @@
 {
   "nav_about_me": "Über mich",
   "nav_skills": "Skills",
-  "atf_span1": "Ich bin",
+  "nav_portfolio": "Portfolio",
+  "nav_contact": "Kontakt",
+  "atf_span1": "Verfügbar",
+  "atf_tagline": "Digitale Erlebnisse, die begeistern.",
   "atf_h2": "FRONTEND-ENTWICKLER",
   "atf_button": "Reden wir!",
   "atf_span2": "Runterscrollen",

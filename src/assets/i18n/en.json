@@ -1,7 +1,10 @@
 {
   "nav_about_me": "About me",
   "nav_skills": "Skills",
-  "atf_span1": "I am",
+  "nav_portfolio": "Portfolio",
+  "nav_contact": "Contact",
+  "atf_span1": "Available for work",
+  "atf_tagline": "Building digital experiences that leave an impression.",
   "atf_h2": "FRONTEND DEVELOPER",
   "atf_button": "Let’s talk!",
   "atf_span2": "Scroll down",

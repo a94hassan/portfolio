@@ -57,8 +57,9 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.set(stages[1], { y: '5%', opacity: 0, scale: 1.01 });
     // Beat 1→2 (About→Skills): diagonal swing
     gsap.set(stages[2], { x: '110%', y: '50%', rotateZ: 8, opacity: 0 });
-    // Beat 2→3 (Skills→Portfolio): card-flip
-    gsap.set(stages[3], { rotateY: 90, opacity: 0, z: -300 });
+    // Beat 2→3 (Skills→Portfolio): partial card-flip — 90° is degenerate (0px width)
+    // and causes rendering singularities; 55° is a strong flip without the artifact
+    gsap.set(stages[3], { rotateY: 55, opacity: 0, z: -160 });
     // Beat 5→6 (Portfolio→Contact): ascend from below
     gsap.set(stages[4], { y: '-70%', z: -900, scale: 0.6, opacity: 0, rotateX: 15 });
 
@@ -86,8 +87,8 @@ export class AppComponent implements OnInit, OnDestroy {
       .to(stages[2], { x: 0, y: 0, rotateZ: 0, opacity: 1,
                         duration: 1, ease: 'sine.out' }, 1.16)
 
-    // ── Beat 2→3: Skills → Portfolio (CARD FLIP rotateY) ──────────────────
-      .to(stages[2], { rotateY: -90, opacity: 0, z: -300,
+    // ── Beat 2→3: Skills → Portfolio (CARD FLIP — reduced to avoid singularity)
+      .to(stages[2], { rotateY: -55, opacity: 0, z: -160,
                         duration: 1, ease: 'sine.in' }, 2)
       .to(stages[3], { rotateY: 0, opacity: 1, z: 0,
                         duration: 1, ease: 'sine.out' }, 2.14)
@@ -110,18 +111,29 @@ export class AppComponent implements OnInit, OnDestroy {
       trigger: '#journey',
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 1.2,
+      scrub: 0.75,        // reduced from 1.2 → less catch-up lag after snap
       animation: tl,
       snap: {
         snapTo: 1 / 6,
-        duration: { min: 0.55, max: 0.90 },
-        delay: 0.12,
+        duration: { min: 0.50, max: 0.80 },
+        delay: 0.10,
         ease: 'expo.inOut'
       },
       onUpdate: (self) => { rawF = self.progress; },
       onSnapComplete: (self) => {
         const beat = Math.round(self.progress * 6);
-        this.fireStageAnimation(beat);
+        // ─── FLICKER FIX ───────────────────────────────────────────────────
+        // onSnapComplete fires when the SCROLL animation ends, but the scrub
+        // timeline still has residual lag (up to scrubSeconds) before reaching
+        // the exact beat position. This residual movement is the "flicker at
+        // rest" the user sees after a transition.
+        //
+        // tl.seek() forces the timeline to the EXACT beat position right now,
+        // skipping any remaining lag. ScrollTrigger's scrub then confirms this
+        // position in the next RAF (scroll is already at beat position → agrees).
+        tl.seek(beat / 6 * tl.duration());
+        // 2-frame buffer to let the seek render before entrance animation fires
+        setTimeout(() => this.fireStageAnimation(beat), 32);
       }
     });
 

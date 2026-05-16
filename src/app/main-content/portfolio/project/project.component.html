@@ -1,19 +1,21 @@
-@for (project of projectsService.projects; track $index) {
-  <div class="project-card" [ngClass]="{'mirrored-style': $index % 2 !== 0}" id="project{{$index}}">
-    <div class="project-img-wrap">
-      <img src="./../../../../assets/img/4_portfolio_section/{{project.img}}" alt="{{project.name}} image">
-    </div>
-    <div class="project-info">
-      <div class="project-meta">
-        <span class="project-num">0{{$index + 1}}</span>
-        <span class="project-tech">{{project.techStack}}</span>
+<div class="projects-track">
+  @for (project of projectsService.projects; track $index) {
+    <div class="project-panel" id="project{{$index}}">
+      <div class="project-img-wrap">
+        <img src="./../../../../assets/img/4_portfolio_section/{{project.img}}" alt="{{project.name}} image" loading="lazy">
       </div>
-      <h4>{{project.name}}</h4>
-      <p>{{project.description | translate}}</p>
-      <div class="project-actions">
-        <a href="{{project.link}}" target=_blank><button>{{'project_button1' | translate}}</button></a>
-        <a href="{{project.github}}" target=_blank><button>Github</button></a>
+      <div class="project-info">
+        <div class="project-meta">
+          <span class="project-num">0{{$index + 1}}</span>
+          <span class="project-tech">{{project.techStack}}</span>
+        </div>
+        <h4>{{project.name}}</h4>
+        <p>{{project.description | translate}}</p>
+        <div class="project-actions">
+          <a href="{{project.link}}" target="_blank" rel="noopener noreferrer"><button>{{'project_button1' | translate}}</button></a>
+          <a href="{{project.github}}" target="_blank" rel="noopener noreferrer"><button>Github</button></a>
+        </div>
       </div>
     </div>
-  </div>
-}
+  }
+</div>

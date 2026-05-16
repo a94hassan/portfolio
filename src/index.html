@@ -2,20 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Portfolio</title>
+  <title>Hassan Ammar — Frontend Developer</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hassan Ammar — Frontend Developer aus Saarbrücken, spezialisiert auf Angular, TypeScript und moderne Web-Erlebnisse mit cinematic UI-Design.">
+  <meta name="author" content="Hassan Ammar">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hassan-ammar.com/">
+  <meta property="og:title" content="Hassan Ammar — Frontend Developer">
+  <meta property="og:description" content="Angular & TypeScript Developer mit Fokus auf cinematic UI und immersive Web-Erlebnisse.">
+  <meta property="og:image" content="https://hassan-ammar.com/assets/img/1_above_the_fold_section/photo_atf.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Hassan Ammar — Frontend Developer">
+  <meta name="twitter:description" content="Angular & TypeScript Developer mit Fokus auf cinematic UI und immersive Web-Erlebnisse.">
+  <meta name="twitter:image" content="https://hassan-ammar.com/assets/img/1_above_the_fold_section/photo_atf.png">
+
+  <link rel="canonical" href="https://hassan-ammar.com/">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <script>
-    (function () {
-      var r = sessionStorage.redirect;
-      delete sessionStorage.redirect;
-      if (r && r !== location.href) history.replaceState(null, null, r);
-    })();
+
+  <!-- Font preload (kritische Gewichte) -->
+  <link rel="preload" href="assets/font/poppins-v20-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/font/poppins-v20-latin-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/font/poppins-v20-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Hassan Ammar",
+    "url": "https://hassan-ammar.com",
+    "jobTitle": "Frontend Developer",
+    "knowsAbout": ["Angular", "TypeScript", "Firebase", "Three.js", "GSAP"],
+    "sameAs": [
+      "https://github.com/a94hassan",
+      "https://www.linkedin.com/in/hassan-ammar-/"
+    ]
+  }
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <app-root></app-root>

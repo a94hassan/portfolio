@@ -180,6 +180,15 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
               border-color 150ms ease-in-out,
               box-shadow 150ms ease-in-out;
 
+  // ── Font-smoothing — CRITICAL for preventing font flicker ─────────────────
+  // When GSAP promotes/demotes GPU compositor layers (e.g. during opacity:0→1
+  // animations), Chrome/Safari switches between subpixel and non-subpixel
+  // antialiasing. This appears as fonts "jumping" or briefly blurring.
+  // Forcing non-subpixel antialiasing globally keeps rendering consistent
+  // regardless of compositor layer state.
+  -webkit-font-smoothing: antialiasing;
+  -moz-osx-font-smoothing: grayscale;
+
   &::-webkit-scrollbar { width: 8px; }
   &::-webkit-scrollbar-track { background: var(--sb-track); }
   &::-webkit-scrollbar-thumb {
@@ -190,8 +199,11 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   }
 }
 
-// GSAP-controlled elements: disable CSS transitions on transform/opacity
-// to prevent the CSS layer fighting the GSAP animation layer → no flicker
+// ── GSAP-controlled elements: no CSS transitions, stable GPU layer ────────────
+// transition:none prevents CSS fighting GSAP.
+// translateZ(0) forces a persistent GPU compositor layer — prevents the
+// "blit artifact" that appears when GSAP opacity animations end and the
+// browser demotes the temporary GPU layer back to the main surface.
 .stage,
 .hero-text,
 .hero-photo-wrapper,
@@ -202,6 +214,17 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 .contact-heading,
 .contact-columns {
   transition: none !important;
+  transform: translateZ(0);     // persistent GPU layer — no blit on animation end
+  backface-visibility: hidden;  // disables subpixel AA on this layer (matches font fix)
+}
+
+// ── Images: stable GPU layer to prevent repaint during 3D parent transitions ─
+// Without this, images repaint when parent stages change their 3D transform
+// state, causing a visible flash specifically at the end of transitions.
+img {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  // Do NOT add transition here — individual components override as needed
 }
 
 html {

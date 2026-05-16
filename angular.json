@@ -28,9 +28,7 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              { "glob": "404.html", "input": "src", "output": "/" },
-              { "glob": "CNAME", "input": "src", "output": "/" }
+              "src/assets"
             ],
             "styles": [
               "src/styles.scss"
