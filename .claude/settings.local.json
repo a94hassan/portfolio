@@ -10,7 +10,8 @@
       "Bash(node \"C:\\\\Dev\\\\projects\\\\developer_akademie\\\\modul15\\\\portfolio\\\\node_modules\\\\@angular\\\\cli\\\\bin\\\\ng.js\" build --configuration production)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(xargs grep -l \"atf_span1\\\\|atf_h2\\\\|atf_button\")"
     ]
   }
 }
