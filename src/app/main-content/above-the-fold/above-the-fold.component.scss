@@ -98,17 +98,18 @@ section {
 // ── Name ─────────────────────────────────────────────────────────────────────
 
 .hero-name {
-  // Cormorant Garamond italic 300 — luxury editorial display, "Schreibschrift" aesthetic
-  // Overrides global h1 rule with larger, tighter sizing for the hero centerpiece
+  // Cormorant Garamond italic 300 — luxury editorial, "Schreibschrift"
+  // Self-hosted, zero FOUT. Oversized + gradient fade = airy, cinematic.
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 300;
-  font-size: clamp(62px, 8vw, 128px);
-  letter-spacing: 0.03em;
-  line-height: 0.88;
-  margin-bottom: 26px;
-  // Warm gradient: matches the off-white fg token (#ede9e3 → transparent)
-  background: linear-gradient(158deg, var(--fg) 35%, var(--fg-48) 100%);
+  font-size: clamp(80px, 11vw, 160px);
+  letter-spacing: 0.015em;
+  line-height: 0.84;
+  margin-bottom: 30px;
+  // Strong fade: solid near-white → fully transparent
+  // Creates the "written in smoke" high-fashion editorial look
+  background: linear-gradient(160deg, var(--fg) 15%, rgba(237, 233, 227, 0.55) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -295,7 +296,7 @@ section {
     border-radius: 18px;
   }
   .hero-photo    { object-position: center 18%; }
-  .hero-name     { font-size: clamp(50px, 11vw, 92px); }
+  .hero-name     { font-size: clamp(58px, 13vw, 108px); }
   .hero-tagline  { max-width: 100%; }
 }
 
@@ -307,8 +308,12 @@ section {
   .hero-tagline     { font-size: 13px; margin-bottom: 28px; }
 }
 
+@media (max-width: 600px) {
+  .hero-name { font-size: clamp(52px, 14vw, 88px); }
+}
+
 @media (max-width: 400px) {
-  .hero-name          { font-size: clamp(40px, 11.5vw, 58px); }
+  .hero-name          { font-size: clamp(44px, 14vw, 72px); }
   .hero-photo-wrapper { aspect-ratio: 4 / 3; }
   .hero-actions       { gap: 12px; }
 }
