@@ -88,7 +88,7 @@ export class AppComponent implements OnInit, OnDestroy {
       trigger: '#journey',
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 1.5,
+      scrub: 2.0,
       animation: tl,
       snap: {
         snapTo: 1 / 6,
@@ -301,32 +301,107 @@ export class AppComponent implements OnInit, OnDestroy {
     const camCurve = new THREE.CatmullRomCurve3(camPts, false, 'catmullrom', 0.4);
     const lkCurve  = new THREE.CatmullRomCurve3(lkPts,  false, 'catmullrom', 0.4);
 
-    // ── Particles (Fibonacci / golden-angle) ─────────────────────────────────
-    const PC   = mob ? 85 : 160;
-    const pPos = new Float32Array(PC * 3);
-    const pCol = new Float32Array(PC * 3).fill(1);
-    const pVel = new Float32Array(PC * 2);
-    const span = Math.abs(SY[4]) * 1.10;
+    // ── DUAL PARTICLE SYSTEM ─────────────────────────────────────────────────
+    // Main: section-patterned particles with mouse repulsion + copper shimmer
+    // Stars: cool blue-silver background, far Z plane
+    const PC        = mob ? 110 : 220;  // main particles
+    const SC        = mob ?  45 :  90;  // background stars
+    const totalSpan = Math.abs(SY[4]) * 1.08;
+    const secCount  = 5;
+    const perSec    = Math.ceil(PC / secCount);
+
+    // Section-specific XZ pattern helper (returns [xOffset, zOffset])
+    const sectionXZ = (si: number, li: number, ln: number): [number, number] => {
+      const t = li / Math.max(ln - 1, 1);
+      switch (si) {
+        case 0: { // Hero — Fibonacci spiral
+          const ang = GA * li;
+          const r   = 160 + t * 240;
+          return [Math.cos(ang) * r, Math.sin(ang) * r * 0.34 - 160];
+        }
+        case 1: { // About — golden-angle scatter
+          const ang = GA * li * PHI;
+          const r   = 80 + Math.sqrt(t) * 310;
+          return [Math.cos(ang) * r, Math.sin(ang) * r * 0.38 - 120];
+        }
+        case 2: { // Skills — grid + jitter
+          const cols = Math.ceil(Math.sqrt(ln * 1.6));
+          const row  = Math.floor(li / cols);
+          const col  = li % cols;
+          return [(col - cols / 2) * 72 + (Math.random() - 0.5) * 28,
+                  (row - cols / 2) * 50 + (Math.random() - 0.5) * 20 - 120];
+        }
+        case 3: { // Portfolio — φ logarithmic spiral
+          const ang = t * Math.PI * 6;
+          const r   = 48 * Math.pow(PHI, t * 1.6);
+          return [Math.cos(ang) * r * 1.1, Math.sin(ang) * r * 0.36 - 130];
+        }
+        case 4: { // Contact — converging rings
+          const ang = GA * li;
+          const r   = 280 * (1 - t * 0.55) + 60;
+          return [Math.cos(ang) * r * 0.9, Math.sin(ang) * r * 0.30 - 100];
+        }
+        default: return [0, -120];
+      }
+    };
+
+    // Main particle buffers
+    const pPos  = new Float32Array(PC * 3);
+    const pCol  = new Float32Array(PC * 3);
+    const pVel  = new Float32Array(PC * 2);
+    const pBase = new Float32Array(PC * 3); // section-hue reference
+    const _tc   = new THREE.Color();
 
     for (let i = 0; i < PC; i++) {
-      const t    = i / PC;
-      const incl = Math.acos(1 - 2 * t);
-      const azim = GA * i;
-      const r    = 255 + Math.random() * 380;
-      pPos[i*3]   =  Math.sin(incl) * Math.cos(azim) * r;
-      pPos[i*3+1] =  t * SY[4] * 1.06 + (Math.random() - 0.5) * h * 0.65;
-      pPos[i*3+2] =  Math.sin(incl) * Math.sin(azim) * r - 180;
-      pVel[i*2]   = (Math.random() - 0.5) * 0.020;
-      pVel[i*2+1] = (Math.random() - 0.5) * 0.016;
+      const si  = Math.min(Math.floor(i / perSec), secCount - 1);
+      const li  = i - si * perSec;
+      const ln  = Math.min(perSec, PC - si * perSec);
+      const [xO, zO] = sectionXZ(si, li, ln);
+
+      pPos[i*3]   = xO + (Math.random() - 0.5) * 14;
+      pPos[i*3+1] = SY[si] + (Math.random() - 0.5) * h * 0.55;
+      pPos[i*3+2] = zO - 80 + (Math.random() - 0.5) * 60;
+
+      // Section-graduated base hue: copper (hsl 25°) → sage-teal (hsl 155°)
+      _tc.setHSL(0.069 + (si / (secCount - 1)) * 0.360, 0.55, 0.64);
+      pCol[i*3] = _tc.r; pCol[i*3+1] = _tc.g; pCol[i*3+2] = _tc.b;
+      // Store base color for drift-back in animate loop
+      pBase[i*3] = _tc.r; pBase[i*3+1] = _tc.g; pBase[i*3+2] = _tc.b;
+
+      pVel[i*2]   = (Math.random() - 0.5) * 0.016;
+      pVel[i*2+1] = (Math.random() - 0.5) * 0.012;
     }
 
     const pGeo = new THREE.BufferGeometry();
     pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
     pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
     const pMat = new THREE.PointsMaterial({
-      vertexColors: true, size: 2.0, transparent: true, opacity: 0.24, sizeAttenuation: false
+      vertexColors: true, size: 1.8, transparent: true, opacity: 0.30, sizeAttenuation: false
     });
     scene.add(new THREE.Points(pGeo, pMat));
+
+    // Background stars — cool blue-silver, far Z
+    const sPos = new Float32Array(SC * 3);
+    const sCol = new Float32Array(SC * 3);
+
+    for (let i = 0; i < SC; i++) {
+      const t   = i / SC;
+      const ang = GA * i * PHI;
+      const r   = 380 + Math.random() * 520;
+      sPos[i*3]   =  Math.cos(ang) * r;
+      sPos[i*3+1] =  t * SY[4] * 1.10 + (Math.random() - 0.5) * h * 0.40;
+      sPos[i*3+2] = -500 + Math.sin(ang) * r * 0.26 + (Math.random() - 0.5) * 110;
+      _tc.setHSL(0.58 + Math.random() * 0.10, 0.28, 0.82 + Math.random() * 0.18);
+      sCol[i*3] = _tc.r; sCol[i*3+1] = _tc.g; sCol[i*3+2] = _tc.b;
+    }
+
+    const sGeo = new THREE.BufferGeometry();
+    sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+    sGeo.setAttribute('color',    new THREE.BufferAttribute(sCol, 3));
+    const sMat = new THREE.PointsMaterial({
+      vertexColors: true, size: 1.2, transparent: true, opacity: 0.13, sizeAttenuation: false
+    });
+    scene.add(new THREE.Points(sGeo, sMat));
 
     // ── Wireframe helper ─────────────────────────────────────────────────────
     const wMeshes: THREE.LineSegments[] = [];
@@ -466,33 +541,53 @@ export class AppComponent implements OnInit, OnDestroy {
         p.scale.set(sc, sc, 1.0 + t * 0.12);
       });
 
-      // particles
+      // particles — main with mouse repulsion + copper shimmer
+      const mWX     = sCam.x + mNX * 240;
+      const mWY     = sCam.y + mNY * 130;
+      const REPEL_R = 155;
+      const REPEL_F = 0.0046;
+
       const pos = pGeo.attributes['position'].array as Float32Array;
       const col = pGeo.attributes['color'].array as Float32Array;
-      const ts  = Date.now() * 0.000105;
 
       for (let i = 0; i < PC; i++) {
         pos[i*3]   += pVel[i*2];
         pos[i*3+1] += pVel[i*2+1];
-        pVel[i*2]   += (Math.random() - 0.5) * 0.0008;
-        pVel[i*2+1] += (Math.random() - 0.5) * 0.0008;
-        pVel[i*2]   *= 0.974;
-        pVel[i*2+1] *= 0.974;
 
-        if (pos[i*3+1] - sCam.y >  span * 0.5) pos[i*3+1] -= span;
-        if (pos[i*3+1] - sCam.y < -span * 0.5) pos[i*3+1] += span;
+        pVel[i*2]   += (Math.random() - 0.5) * 0.00060;
+        pVel[i*2+1] += (Math.random() - 0.5) * 0.00060;
+        pVel[i*2]   *= 0.978;
+        pVel[i*2+1] *= 0.978;
 
+        // Mouse repulsion (world XY plane)
+        const rDX = pos[i*3]   - mWX;
+        const rDY = pos[i*3+1] - mWY;
+        const rD  = Math.sqrt(rDX * rDX + rDY * rDY);
+        if (rD < REPEL_R && rD > 0.1) {
+          const f = REPEL_F * (1 - rD / REPEL_R);
+          pVel[i*2]   += (rDX / rD) * f;
+          pVel[i*2+1] += (rDY / rD) * f;
+        }
+
+        // Wrap Y around camera travel span
+        if (pos[i*3+1] - sCam.y >  totalSpan * 0.5) pos[i*3+1] -= totalSpan;
+        if (pos[i*3+1] - sCam.y < -totalSpan * 0.5) pos[i*3+1] += totalSpan;
+
+        // Proximity copper shimmer near camera
         const dx = pos[i*3] - sCam.x, dy = pos[i*3+1] - sCam.y, dz = pos[i*3+2] - sCam.z;
         const d3 = Math.sqrt(dx*dx + dy*dy + dz*dz);
-        const cr = 250;
-        if (d3 < cr) {
-          const frac = 1 - d3 / cr;
-          const hue  = (((Math.atan2(dy, dx) / (Math.PI * 2)) + 0.5 + ts) % 1 + 1) % 1;
-          tCol.setHSL(hue, 0.84, 0.68);
-          col[i*3]   = 1 - frac + tCol.r * frac;
-          col[i*3+1] = 1 - frac + tCol.g * frac;
-          col[i*3+2] = 1 - frac + tCol.b * frac;
-        } else { col[i*3] = col[i*3+1] = col[i*3+2] = 1; }
+        if (d3 < 280) {
+          const fr = (1 - d3 / 280) * 0.52;
+          tCol.setHSL(0.069, 0.68, 0.72); // copper hsl(25°, 68%, 72%)
+          col[i*3]   += (tCol.r - col[i*3])   * fr;
+          col[i*3+1] += (tCol.g - col[i*3+1]) * fr;
+          col[i*3+2] += (tCol.b - col[i*3+2]) * fr;
+        } else {
+          // Drift back to section base hue
+          col[i*3]   += (pBase[i*3]   - col[i*3])   * 0.006;
+          col[i*3+1] += (pBase[i*3+1] - col[i*3+1]) * 0.006;
+          col[i*3+2] += (pBase[i*3+2] - col[i*3+2]) * 0.006;
+        }
       }
       pGeo.attributes['position'].needsUpdate = true;
       pGeo.attributes['color'].needsUpdate    = true;
@@ -520,6 +615,7 @@ export class AppComponent implements OnInit, OnDestroy {
       document.removeEventListener('visibilitychange', onVis);
       renderer.dispose();
       pGeo.dispose(); pMat.dispose();
+      sGeo.dispose(); sMat.dispose();
       sp1.g.dispose(); sp1.m.dispose();
       sp2.g.dispose(); sp2.m.dispose();
       wMeshes.forEach(m  => { m.geometry.dispose(); (m.material as THREE.LineBasicMaterial).dispose(); });

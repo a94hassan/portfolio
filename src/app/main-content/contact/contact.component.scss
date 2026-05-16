@@ -10,13 +10,14 @@ $invalid: #E61C40;
   flex-direction: column;
   position: relative;
 
+  // Atmospheric gradient — deep indigo + copper warmth closing the journey
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 55% 50% at 20% 55%, rgba(40, 80, 240, 0.06) 0%, transparent 65%),
-      radial-gradient(ellipse 40% 40% at 80% 30%, rgba(80, 40, 200, 0.04) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 50% at 22% 56%, rgba(60, 70, 200, 0.05) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 38% at 82% 28%, rgba(200, 124, 70, 0.038) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }

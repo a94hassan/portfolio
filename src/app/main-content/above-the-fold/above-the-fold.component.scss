@@ -15,14 +15,14 @@ section {
   z-index: 1;
   overflow: hidden;
 
-  // Atmospheric gradient per section
+  // Atmospheric gradient — copper warmth from hero photo (GA 137.5° axis)
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 70% 55% at 72% 46%, rgba(110, 60, 230, 0.07) 0%, transparent 65%),
-      radial-gradient(ellipse 45% 35% at 20% 75%, rgba(40, 110, 255, 0.05) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 50% at 72% 46%, rgba(200, 124, 70, 0.06) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 34% at 18% 72%, rgba(140, 80, 180, 0.04) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }

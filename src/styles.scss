@@ -3,8 +3,13 @@
 :root {
   color-scheme: dark;
 
-  --bg:         #0a0a0a;
-  --bg-nav:     rgba(10, 10, 10, 0.82);
+  // ── Phi / Golden ratio constants ────────────────────────────────────────────
+  // φ = 1.618  |  GA = 137.5°  |  Fibonacci spacing: 8, 13, 21, 34, 55, 89px
+  // Accent "red thread": warm copper extracted from hero photo skin tones
+  // → rgba(200, 124, 70, α)  =  hsl(25°, 68%, 53%)
+
+  --bg:         #070608;  // deep space — near-black, slight violet warmth
+  --bg-nav:     rgba(7, 6, 8, 0.86);
   --fg:         #e2e8f0;
   --fg-55:      rgba(226, 232, 240, 0.55);
   --fg-48:      rgba(226, 232, 240, 0.48);
@@ -23,10 +28,22 @@
   --surface-md: rgba(255, 255, 255, 0.055);
   --surface-hi: rgba(255, 255, 255, 0.09);
 
-  --glass-bg:        rgba(255, 255, 255, 0.055);
-  --glass-bg-hi:     rgba(255, 255, 255, 0.092);
-  --glass-border:    rgba(255, 255, 255, 0.10);
-  --glass-border-hi: rgba(255, 255, 255, 0.18);
+  --glass-bg:        rgba(255, 255, 255, 0.030);
+  --glass-bg-hi:     rgba(255, 255, 255, 0.058);
+  --glass-border:    rgba(255, 255, 255, 0.065);
+  --glass-border-hi: rgba(255, 255, 255, 0.115);
+
+  // ── Copper "red thread" accent (φ-derived) ──────────────────────────────
+  // Extracted from hero skin tones: hsl(25°, 68%, 53%) = rgb(200, 124, 70)
+  --accent-phi:      200, 124, 70;          // base copper
+  --accent-phi-a10:  rgba(200, 124, 70, 0.10);
+  --accent-phi-a18:  rgba(200, 124, 70, 0.18);
+  --accent-phi-a28:  rgba(200, 124, 70, 0.28);
+  --accent-phi-a40:  rgba(200, 124, 70, 0.40);
+  // φ-complementary cool: hsl(205°, 40%, 52%) — from sage/grey background
+  --accent-cool:     100, 140, 190;
+  --accent-cool-a10: rgba(100, 140, 190, 0.10);
+  --accent-cool-a18: rgba(100, 140, 190, 0.18);
 
   --sb-track:   #111111;
   --sb-thumb:   #333333;
@@ -194,9 +211,9 @@ form {
     padding: 1px;
     background: radial-gradient(
       100px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(255, 210, 140, 0.24),
-      rgba(200, 140, 255, 0.16),
-      rgba(120, 200, 255, 0.09),
+      rgba(200, 124, 70, 0.18),
+      rgba(160, 100, 200, 0.10),
+      rgba(80, 140, 200, 0.06),
       transparent 68%
     );
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -214,8 +231,8 @@ form {
     border-radius: inherit;
     background: radial-gradient(
       90px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(255, 220, 160, 0.020) 0%,
-      rgba(220, 180, 255, 0.010) 55%,
+      rgba(200, 124, 70, 0.016) 0%,
+      rgba(160, 100, 200, 0.008) 55%,
       transparent 75%
     );
     pointer-events: none;
@@ -232,8 +249,8 @@ button::before {
   padding: 1px;
   background: radial-gradient(
     80px circle at var(--mx, -400px) var(--my, -400px),
-    rgba(255, 215, 140, 0.20),
-    rgba(190, 140, 255, 0.12),
+    rgba(200, 124, 70, 0.15),
+    rgba(150, 90, 190, 0.08),
     transparent 65%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -244,7 +261,7 @@ button::before {
   transition: none;
 }
 
-// Light mode spotlight — darker palette
+// Light mode spotlight — warm amber palette
 html.light {
   .skill-item::before,
   .project-info::before,
@@ -254,9 +271,9 @@ html.light {
   form::before {
     background: radial-gradient(
       120px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(60, 80, 200, 0.50),
-      rgba(120, 40, 180, 0.32),
-      rgba(20, 100, 200, 0.18),
+      rgba(160, 90, 30, 0.40),
+      rgba(110, 60, 160, 0.22),
+      rgba(30, 80, 160, 0.12),
       transparent 68%
     );
   }
@@ -264,8 +281,8 @@ html.light {
   button::before {
     background: radial-gradient(
       90px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(60, 80, 200, 0.48),
-      rgba(120, 40, 180, 0.30),
+      rgba(160, 90, 30, 0.36),
+      rgba(110, 60, 160, 0.18),
       transparent 65%
     );
   }

@@ -8,13 +8,14 @@
   position: relative;
   overflow: hidden;
 
+  // Atmospheric gradient — indigo peak + copper ember (portfolio centrepiece)
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 55% 40% at 75% 20%, rgba(120,50,220,0.05) 0%, transparent 65%),
-      radial-gradient(ellipse 45% 40% at 20% 70%, rgba(40,80,220,0.04) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 40% at 76% 22%, rgba(100, 50, 200, 0.045) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 40% at 18% 68%, rgba(200, 124, 70, 0.040) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }

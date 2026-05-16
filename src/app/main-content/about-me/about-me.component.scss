@@ -14,13 +14,14 @@ section {
   position: relative;
   z-index: 1;
 
+  // Atmospheric gradient — warm sand + sage from about-me photo
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 55% 50% at 80% 55%, rgba(60, 100, 230, 0.06) 0%, transparent 65%),
-      radial-gradient(ellipse 40% 40% at 15% 30%, rgba(130, 60, 220, 0.04) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 50% at 78% 52%, rgba(180, 140, 90, 0.055) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 40% at 16% 32%, rgba(80, 120, 100, 0.038) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
