@@ -7,14 +7,14 @@
   @include flexBox();
   position: relative;
 
-  // Atmospheric — achromatic, no colour
+  // Atmospheric — theme-adaptive
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 50% at 24% 50%, rgba(255, 255, 255, 0.016) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 44% at 82% 28%, rgba(255, 255, 255, 0.009) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 50% at 24% 50%, var(--fg-04) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 44% at 82% 28%, var(--fg-03) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }

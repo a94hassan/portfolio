@@ -72,14 +72,14 @@ html.light {
   --fg-04:      rgba(17, 17, 17, 0.04);
   --fg-03:      rgba(17, 17, 17, 0.03);
 
-  --surface:    rgba(0, 0, 0, 0.03);
-  --surface-md: rgba(0, 0, 0, 0.045);
-  --surface-hi: rgba(0, 0, 0, 0.07);
+  --surface:    rgba(0, 0, 0, 0.050);
+  --surface-md: rgba(0, 0, 0, 0.070);
+  --surface-hi: rgba(0, 0, 0, 0.110);
 
-  --glass-bg:        rgba(0, 0, 0, 0.04);
-  --glass-bg-hi:     rgba(0, 0, 0, 0.065);
-  --glass-border:    rgba(0, 0, 0, 0.09);
-  --glass-border-hi: rgba(0, 0, 0, 0.15);
+  --glass-bg:        rgba(0, 0, 0, 0.060);
+  --glass-bg-hi:     rgba(0, 0, 0, 0.095);
+  --glass-border:    rgba(0, 0, 0, 0.130);
+  --glass-border-hi: rgba(0, 0, 0, 0.220);
 
   --sb-track:   #e8e7e3;
   --sb-thumb:   #c0bfbc;
@@ -185,9 +185,12 @@ html {
   /* scroll-snap handled entirely by GSAP ScrollToPlugin */
 }
 
-// ─── Three.js: hidden in light mode ──────────────────────────────────────────
+// ─── Three.js: inverted in light mode (white particles → dark on light bg) ───
 
-html.light #global-canvas { display: none; }
+html.light #global-canvas {
+  filter: invert(1);
+  opacity: 0.48;
+}
 
 // ─── Spotlight border (pearl shimmer) ────────────────────────────────────────
 
@@ -271,6 +274,20 @@ html.light {
       rgba(8, 8, 12, 0.32),
       rgba(20, 20, 30, 0.16),
       transparent 68%
+    );
+  }
+
+  // Surface glow also needs to be dark in light mode
+  .skill-item::after,
+  .project-info::after,
+  .project-img-wrap::after,
+  .about-icon::after,
+  .social-icon-link::after,
+  form::after {
+    background: radial-gradient(
+      90px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(8, 8, 12, 0.014) 0%,
+      transparent 75%
     );
   }
 

@@ -8,14 +8,14 @@
   position: relative;
   overflow: hidden;
 
-  // Atmospheric — achromatic, no colour
+  // Atmospheric — theme-adaptive
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 40% at 76% 22%, rgba(255, 255, 255, 0.016) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 40% at 18% 68%, rgba(255, 255, 255, 0.010) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 40% at 76% 22%, var(--fg-04) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 40% at 18% 68%, var(--fg-03) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }

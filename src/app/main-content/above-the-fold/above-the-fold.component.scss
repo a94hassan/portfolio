@@ -15,14 +15,14 @@ section {
   z-index: 1;
   overflow: hidden;
 
-  // Atmospheric — achromatic silver glow, no colour
+  // Atmospheric — theme-adaptive (var(--fg-*) = light-on-dark / dark-on-light)
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 55% at 68% 44%, rgba(255, 255, 255, 0.022) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 40% at 22% 70%, rgba(255, 255, 255, 0.010) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 55% at 68% 44%, var(--fg-05) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 40% at 22% 70%, var(--fg-03) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -156,23 +156,30 @@ section {
   border: 1px solid var(--glass-border);
   box-shadow:
     0 0 0 1px var(--fg-03),
-    0 0 80px rgba(100, 60, 220, 0.12),
+    0 0 80px var(--fg-07),
     0 48px 100px rgba(0, 0, 0, 0.60);
   will-change: transform;
 
-  // ── B&W silver-screen vignette ──────────────────────────────────────────
+  // ── B&W vignette ────────────────────────────────────────────────────────
   &::after {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 1;
-    // Pure vignette — no colour, deep shadow at edges
     background: radial-gradient(
       ellipse 78% 78% at 50% 50%,
       transparent 38%,
       rgba(4, 4, 6, 0.50) 100%
     );
+    // Light mode: much softer vignette (dark edge on bright bg)
+    :host-context(html.light) & {
+      background: radial-gradient(
+        ellipse 78% 78% at 50% 50%,
+        transparent 42%,
+        rgba(200, 198, 194, 0.40) 100%
+      );
+    }
   }
 }
 

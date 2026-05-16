@@ -14,14 +14,14 @@ section {
   position: relative;
   z-index: 1;
 
-  // Atmospheric — achromatic, no colour
+  // Atmospheric — theme-adaptive
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 50% at 78% 52%, rgba(255, 255, 255, 0.018) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 40% at 16% 32%, rgba(255, 255, 255, 0.008) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 50% at 78% 52%, var(--fg-04) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 40% at 16% 32%, var(--fg-03) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -115,7 +115,7 @@ section {
   box-shadow:
     0 0 0 6px var(--glass-bg),
     0 0 0 7px var(--glass-border),
-    0 0 60px rgba(160, 110, 60, 0.10),
+    0 0 60px var(--fg-07),
     0 24px 70px rgba(0, 0, 0, 0.50);
   position: relative;
 
@@ -132,6 +132,13 @@ section {
       transparent 32%,
       rgba(4, 4, 6, 0.38) 100%
     );
+    :host-context(html.light) & {
+      background: radial-gradient(
+        circle at 50% 50%,
+        transparent 36%,
+        rgba(200, 198, 194, 0.32) 100%
+      );
+    }
   }
 
   img {
