@@ -1,34 +1,53 @@
 <nav>
   <a href="#about_me_section">{{'nav_about_me' | translate}}</a>
   <a href="#my_skills_section">{{'nav_skills' | translate}}</a>
-  <a href="#portfolio_section">Portfolio</a>
-  <div class="language_selector" (click)="toggleDropdown()">
-    <div [ngClass]="{'active': showDropdown}">
-      <img src="./../../../../../assets/img/0_header/language_icon.png">
+  <a href="#portfolio_section">{{'nav_portfolio' | translate}}</a>
+
+  <div class="lang-selector" (click)="toggleDropdown()">
+    <div [class.active]="showDropdown">
+      <!-- Globe — language selector -->
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
       <span>{{ selectedOption.text }}</span>
     </div>
     @if (showDropdown) {
       <ul>
         @for (option of options; track $index) {
-          <li (click)="selectOption($index); translate.switchLanguage(option.text.toLowerCase())" [ngClass]="{'selected': selectedIndex === $index}">
-            <img [src]="option.image">
-            <span>{{ option.text }}</span>
+          <li (click)="selectOption($index)" [class.selected]="selectedIndex === $index">
+            {{ option.text }}
           </li>
         }
       </ul>
     }
   </div>
+
+  <button class="theme-toggle" (click)="theme.toggle()" [attr.aria-label]="theme.isDark ? 'Light mode' : 'Dark mode'">
+    @if (theme.isDark) {
+      <!-- Sun — switch to light mode -->
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+    } @else {
+      <!-- Moon — switch to dark mode -->
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    }
+  </button>
+
   <div class="burger_menu" #navIcon (click)="toggleIcon(navIcon, dialog)">
-    <span></span>
-    <span></span>
-    <span></span>
+    <span></span><span></span><span></span>
   </div>
 </nav>
+
 <div #dialog>
   <div>
-    <a href="#about_me_section" (click)="toggleIcon(navIcon, dialog)">About me</a>
-    <a href="#my_skills_section" (click)="toggleIcon(navIcon, dialog)">My skills</a>
-    <a href="#portfolio_section" (click)="toggleIcon(navIcon, dialog)">Portfolio</a>
-    <a href="#contact_section" (click)="toggleIcon(navIcon, dialog)">Contact</a>
+    <a href="#about_me_section" (click)="toggleIcon(navIcon, dialog)">{{'nav_about_me' | translate}}</a>
+    <a href="#my_skills_section" (click)="toggleIcon(navIcon, dialog)">{{'nav_skills' | translate}}</a>
+    <a href="#portfolio_section" (click)="toggleIcon(navIcon, dialog)">{{'nav_portfolio' | translate}}</a>
+    <a href="#contact_section" (click)="toggleIcon(navIcon, dialog)">{{'nav_contact' | translate}}</a>
   </div>
 </div>

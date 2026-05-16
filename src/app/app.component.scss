@@ -11,13 +11,16 @@
   position: fixed;
   left: 0;
   top: 0;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.40);
   pointer-events: none;
   z-index: 9999;
   opacity: 0;
+  // Only transition border-color for smooth theme switch — NOT transform/scale
+  // (those are owned by GSAP to avoid fighting the cursor animation)
+  transition: border-color 0.25s ease;
 }
 
 #cursor-dot {
@@ -31,4 +34,14 @@
   pointer-events: none;
   z-index: 9999;
   opacity: 0;
+  transition: background 0.25s ease;
+}
+
+// Light mode — invert cursor to dark on warm-ivory background
+html.light #cursor-ring {
+  border-color: rgba(28, 26, 24, 0.32);
+}
+
+html.light #cursor-dot {
+  background: rgba(28, 26, 24, 0.82);
 }
