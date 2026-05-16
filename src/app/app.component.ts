@@ -100,13 +100,11 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.isMobile) { this.initMobileScroll(); return; }
 
     // ── Unified "forward through space" transition DNA ───────────────────────
-    // ALL section transitions are identical: outgoing recedes (z → -350, opacity → 0),
-    // incoming emerges from behind (starts at z: -350, comes to z: 0).
-    // scrub:true makes progress perfectly linear with scroll — no resistance.
-    // The single shared easing across every beat creates visual coherence.
+    // Identical parameters for EVERY beat: outgoing recedes, incoming emerges.
+    // Z_OFF / SC_OFF are intentionally subtle — the depth shift is felt, not seen.
 
-    const Z_OFF = -350;   // depth offset for all transitions
-    const SC_OFF = 0.82;  // scale when off-screen (perspective depth cue)
+    const Z_OFF  = -200;  // reduced: was -350 (too aggressive, caused flash)
+    const SC_OFF = 0.93;  // near-1: barely visible scale — depth cue, not distortion
 
     // All non-hero stages start behind the viewer (far in the distance)
     gsap.set(stages[1], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
@@ -156,24 +154,27 @@ export class AppComponent implements OnInit, OnDestroy {
       .to(stages[3], { ...OUT }, 5)
       .to(stages[4], { ...IN  }, 5.06);
 
-    // ── ScrollTrigger: perfectly linear scrub, patient snap ─────────────────
+    // ── ScrollTrigger: smooth scrub, fire entrance on snap ──────────────────
+    // scrub: 0.8 → 0.8s of gentle lag — feels like smooth inertia, not rubber-band.
+    // snap delay: 1.5s → snap only fires when user is genuinely done scrolling.
+    // This eliminates the "catapult" effect while keeping sections aligned.
     let rawF = 0;
     const st = ScrollTrigger.create({
       trigger: '#journey',
       start: 'top top',
       end: 'bottom bottom',
-      scrub: true,       // 1:1 linear — zero resistance, full user control
+      scrub: 0.8,
       animation: tl,
       snap: {
-        snapTo: 1 / 6,
-        duration: { min: 0.5, max: 0.8 },
-        delay: 0.9,          // must rest 0.9s before snap fires — prevents unwanted jump
-        ease: 'power2.inOut',
+        snapTo:   1 / 6,
+        duration: { min: 0.6, max: 0.9 },
+        delay:    1.5,           // long pause required before snap activates
+        ease:     'power1.inOut', // very gentle pull — no catapult
       },
       onUpdate:       (self) => { rawF = self.progress; },
       onSnapComplete: (self) => {
         const beat = Math.round(self.progress * 6);
-        tl.seek(beat / 6 * tl.duration()); // force exact beat, eliminates scrub lag flash
+        tl.seek(beat / 6 * tl.duration());
         setTimeout(() => this.fireEntrance(beat), 32);
       },
     });
@@ -354,9 +355,20 @@ export class AppComponent implements OnInit, OnDestroy {
       _c(   0, -5.50,  0),
     ], false, 'catmullrom', 0.4);
 
-    // Fish school: 300 particles, organic sinusoidal drift
-    const PC = 300;
-    const GA = Math.PI * (3 - Math.sqrt(5));
+    // ── PARTICLE FIELD — ring distribution, true 3D depth, uniform screen size ─
+    //
+    // Distribution design:
+    //  • Ring (not sphere): inner void 200px, outer edge 800px → particles spread
+    //    from screen edges, not center — center stays clear for content
+    //  • True 3D depth: Z from -350 to -1100 → real layered depth in 3D space
+    //  • sizeAttenuation: false → all particles identical screen size regardless
+    //    of Z depth — creates a flat, minimal, consistent field, not a fog effect
+    //  • Organic drift: individual sinusoidal oscillation per particle (fish school)
+
+    const PC     = 340;
+    const GA     = Math.PI * (3 - Math.sqrt(5));   // golden angle
+    const R_IN   = 200;   // inner void radius — center kept clear
+    const R_OUT  = 820;   // outer ring edge
     const totalY = Math.abs(SY[4]) * 1.12;
 
     const bX = new Float32Array(PC), bY = new Float32Array(PC), bZ = new Float32Array(PC);
@@ -365,24 +377,40 @@ export class AppComponent implements OnInit, OnDestroy {
     const pos = new Float32Array(PC * 3);
 
     for (let i = 0; i < PC; i++) {
-      const t = i / PC, ang = GA * i, r = 90 + Math.random() * 340;
-      bX[i] = Math.cos(ang) * r * (0.55 + Math.random() * 0.45);
-      bY[i] = t * SY[4] + (Math.random() - 0.5) * h * 0.45;
-      bZ[i] = -100 - Math.random() * 320;
-      fX[i] = 0.14 + Math.random() * 0.22;
-      fY[i] = 0.09 + Math.random() * 0.16;
-      fZ[i] = 0.06 + Math.random() * 0.10;
+      const t   = i / PC;
+      const ang = GA * i;
+
+      // Annular (ring) distribution: sqrt-bias pushes density toward outer edge
+      const r = R_IN + Math.sqrt(Math.random()) * (R_OUT - R_IN);
+      bX[i] = Math.cos(ang) * r;
+
+      // Full journey Y span, slightly randomised within each section band
+      bY[i] = t * SY[4] + (Math.random() - 0.5) * h * 0.55;
+
+      // True 3D depth: -350 to -1100 (more distant than before, real 3D spread)
+      bZ[i] = -350 - Math.random() * 750;
+
+      // Unique oscillation frequencies — organic, no two particles in sync
+      fX[i] = 0.10 + Math.random() * 0.18;
+      fY[i] = 0.07 + Math.random() * 0.12;
+      fZ[i] = 0.04 + Math.random() * 0.08;
+
       pX[i] = Math.random() * Math.PI * 2;
       pY[i] = Math.random() * Math.PI * 2;
       pZ[i] = Math.random() * Math.PI * 2;
+
       pos[i*3] = bX[i]; pos[i*3+1] = bY[i]; pos[i*3+2] = bZ[i];
     }
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const mat = new THREE.PointsMaterial({
-      color: 0xc8ccd6, size: 7.5, transparent: true,
-      opacity: 0.18, sizeAttenuation: true, depthWrite: false,
+      color:           0xd0d4dc,
+      size:            2.2,            // fixed screen size — all particles equal
+      transparent:     true,
+      opacity:         0.28,
+      sizeAttenuation: false,          // NO perspective scaling — uniform field
+      depthWrite:      false,
     });
     scene.add(new THREE.Points(geo, mat));
 

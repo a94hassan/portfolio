@@ -187,7 +187,7 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   // antialiasing. This appears as fonts "jumping" or briefly blurring.
   // Forcing non-subpixel antialiasing globally keeps rendering consistent
   // regardless of compositor layer state.
-  -webkit-font-smoothing: antialiasing;
+  -webkit-font-smoothing: antialiased;   /* correct value — was typo 'antialiasing' */
   -moz-osx-font-smoothing: grayscale;
 
   &::-webkit-scrollbar { width: 8px; }
@@ -219,13 +219,14 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   backface-visibility: hidden;  // disables subpixel AA on this layer (matches font fix)
 }
 
-// ── Images: stable GPU layer to prevent repaint during 3D parent transitions ─
-// Without this, images repaint when parent stages change their 3D transform
-// state, causing a visible flash specifically at the end of transitions.
+// ── Images: stable GPU layer — translateZ(0) only ────────────────────────────
+// backface-visibility:hidden is deliberately REMOVED from img.
+// When the parent stage does z-axis 3D transforms, backface-visibility on a
+// child image causes the browser to re-evaluate face orientation on every frame,
+// triggering repaints → flicker. translateZ(0) alone is sufficient to keep the
+// image on a dedicated compositor layer without the repaint penalty.
 img {
-  backface-visibility: hidden;
   transform: translateZ(0);
-  // Do NOT add transition here — individual components override as needed
 }
 
 html {
@@ -440,9 +441,10 @@ h1, h2 {
   position: absolute;
   inset: 0;
   will-change: transform, opacity;
-  // Note: backface-visibility:hidden + transform-style:preserve-3d removed —
-  // they caused GPU compositing flicker during 3D scroll transitions.
-  // will-change:transform alone is sufficient for compositor promotion.
+  // preserve-3d required: stages use z-axis 3D transforms (z: -350 → 0).
+  // Without this, child elements don't participate in the 3D context and the
+  // z value is ignored, making all transitions flat (no depth).
+  transform-style: preserve-3d;
 
   // Angular host component fills the stage
   > * {

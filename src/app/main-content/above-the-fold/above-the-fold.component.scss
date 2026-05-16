@@ -15,17 +15,12 @@ section {
   z-index: 1;
   overflow: hidden;
 
-  // ── Layered pearlescent atmosphere ────────────────────────────────────────
+  // ── Uniform atmosphere — same across all sections (no lighting shift) ────
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(ellipse 85% 95% at 78% 42%, var(--fg-05) 0%, transparent 72%),
-      radial-gradient(ellipse 65% 75% at 12% 60%, var(--fg-03) 0%, transparent 68%),
-      radial-gradient(ellipse 100% 22% at 50% 0%,  var(--fg-03) 0%, transparent 55%),
-      radial-gradient(ellipse 70% 65% at 72% 38%, rgba(220, 226, 248, 0.022) 0%, transparent 65%),
-      radial-gradient(ellipse 55% 50% at 84% 55%, rgba(248, 224, 232, 0.016) 0%, transparent 60%);
+    background: radial-gradient(ellipse 90% 70% at 50% 50%, var(--fg-04) 0%, transparent 68%);
     pointer-events: none;
     z-index: 0;
   }
