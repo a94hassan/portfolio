@@ -169,8 +169,7 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 
 html {
   background-color: var(--bg);
-  scroll-snap-type: y proximity;
-  scroll-padding-top: 80px;
+  /* scroll-snap handled entirely by GSAP ScrollToPlugin */
 }
 
 // ─── Three.js: hidden in light mode ──────────────────────────────────────────

@@ -7,8 +7,6 @@ $invalid: #E61C40;
   width: 100%;
   display: flex;
   flex-direction: column;
-  scroll-snap-align: start;
-  scroll-margin-top: 80px;
   position: relative;
 
   &::before {

@@ -6,8 +6,6 @@
   padding-top: 90px;
   padding-bottom: 120px;
   @include flexBox();
-  scroll-snap-align: start;
-  scroll-margin-top: 80px;
   position: relative;
 
   &::before {
