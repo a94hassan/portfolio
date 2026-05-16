@@ -14,14 +14,22 @@ section {
   position: relative;
   z-index: 1;
 
-  // Atmospheric — theme-adaptive
+  // ── Layered pearlescent atmosphere ──────────────────────────────────────
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 50% at 78% 52%, var(--fg-04) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 40% at 16% 32%, var(--fg-03) 0%, transparent 60%);
+      // Main: wide glow centred on photo (right column)
+      radial-gradient(ellipse 80% 90% at 82% 50%, var(--fg-05) 0%, transparent 70%),
+      // Left: diffuse ambient wrap
+      radial-gradient(ellipse 60% 80% at 10% 46%, var(--fg-03) 0%, transparent 65%),
+      // Bottom edge warmth
+      radial-gradient(ellipse 90% 18% at 50% 100%, var(--fg-03) 0%, transparent 52%),
+      // Pearl layer 1 — pale cyan tint on photo
+      radial-gradient(ellipse 62% 58% at 80% 44%, rgba(220, 238, 248, 0.020) 0%, transparent 62%),
+      // Pearl layer 2 — pale gold offset
+      radial-gradient(ellipse 50% 45% at 70% 60%, rgba(248, 242, 220, 0.014) 0%, transparent 58%);
     pointer-events: none;
     z-index: 0;
   }
@@ -147,8 +155,8 @@ section {
     object-fit: cover;
     object-position: top center;
     display: block;
-    // Silver-screen grade matching hero
-    filter: grayscale(1) brightness(1.02) contrast(1.10);
+    // Original colour preserved
+    filter: brightness(1.01) contrast(1.03);
   }
 }
 

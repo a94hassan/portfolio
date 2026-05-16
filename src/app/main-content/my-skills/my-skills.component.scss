@@ -7,14 +7,22 @@
   @include flexBox();
   position: relative;
 
-  // Atmospheric — theme-adaptive
+  // ── Layered pearlescent atmosphere ──────────────────────────────────────
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 50% at 24% 50%, var(--fg-04) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 44% at 82% 28%, var(--fg-03) 0%, transparent 60%);
+      // Main: wide glow on grid side (left)
+      radial-gradient(ellipse 78% 90% at 20% 50%, var(--fg-05) 0%, transparent 70%),
+      // Right: soft text column fill
+      radial-gradient(ellipse 58% 70% at 88% 42%, var(--fg-03) 0%, transparent 65%),
+      // Top edge
+      radial-gradient(ellipse 95% 20% at 50% 0%,  var(--fg-03) 0%, transparent 50%),
+      // Pearl layer 1 — pale silver on grid
+      radial-gradient(ellipse 65% 60% at 18% 52%, rgba(228, 230, 242, 0.020) 0%, transparent 64%),
+      // Pearl layer 2 — faint rose right
+      radial-gradient(ellipse 48% 44% at 92% 35%, rgba(244, 224, 238, 0.014) 0%, transparent 58%);
     pointer-events: none;
     z-index: 0;
   }

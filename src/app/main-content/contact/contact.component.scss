@@ -10,14 +10,22 @@ $invalid: #E61C40;
   flex-direction: column;
   position: relative;
 
-  // Atmospheric — theme-adaptive
+  // ── Layered pearlescent atmosphere ──────────────────────────────────────
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 50% at 22% 56%, var(--fg-04) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 38% at 82% 28%, var(--fg-03) 0%, transparent 60%);
+      // Main: wide bottom-anchored glow (desk-lamp feel)
+      radial-gradient(ellipse 80% 85% at 25% 72%, var(--fg-05) 0%, transparent 72%),
+      // Right: form column ambient
+      radial-gradient(ellipse 60% 75% at 85% 50%, var(--fg-04) 0%, transparent 68%),
+      // Bottom edge bleed
+      radial-gradient(ellipse 95% 18% at 50% 100%, var(--fg-03) 0%, transparent 50%),
+      // Pearl layer 1 — pale silver left
+      radial-gradient(ellipse 65% 65% at 22% 68%, rgba(228, 228, 238, 0.020) 0%, transparent 64%),
+      // Pearl layer 2 — faint blush right
+      radial-gradient(ellipse 52% 48% at 88% 46%, rgba(245, 226, 235, 0.015) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }

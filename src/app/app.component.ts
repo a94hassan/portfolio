@@ -57,6 +57,13 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.set(stages[3], { rotateY: 90, opacity: 0, z: -300 });
     gsap.set(stages[4], { y: '-70%', z: -900, scale: 0.6, opacity: 0, rotateX: 15 });
 
+    // Pre-hide entrance targets so fromTo() starts from a defined state
+    // (prevents flash if elements were previously visible from a prior snap)
+    gsap.set(['.hero-text', '.hero-photo-wrapper',
+              '.about-content', '.about-photo-wrap',
+              '.skills-text', '.skills-grid',
+              '.contact-heading', '.contact-columns'], { opacity: 0, y: 10 });
+
     // MASTER TIMELINE — 6 beats total
     const tl = gsap.timeline();
 
@@ -155,40 +162,60 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ── Entrance animations — minimal, compositor-safe (opacity + tiny y only)
-  // Max 2 elements per section, no stagger → zero layout jitter ──────────────
+  // ── Entrance animations — flicker-free ────────────────────────────────────
+  // gsap.from() is banned here: it instantly sets elements to opacity:0 while
+  // the scrub animation already made them visible → guaranteed flash.
+  // Instead: gsap.fromTo() with explicit start state, or pure gsap.to().
+  // Elements start invisible via gsap.set() in the stage init, NOT via from().
 
   private heroTl() {
     return gsap.timeline()
-      .from('.hero-text',          { opacity: 0, y: 10, duration: 0.70, ease: 'power2.out', delay: 0.08 })
-      .from('.hero-photo-wrapper', { opacity: 0, y:  8, duration: 0.65, ease: 'power2.out' }, '-=0.42');
+      .fromTo('.hero-text',
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.72, ease: 'power2.out', delay: 0.10 })
+      .fromTo('.hero-photo-wrapper',
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.68, ease: 'power2.out' }, '-=0.44');
   }
 
   private aboutTl() {
     return gsap.timeline()
-      .from('.about-content',    { opacity: 0, y: 10, duration: 0.68, ease: 'power2.out', delay: 0.08 })
-      .from('.about-photo-wrap', { opacity: 0, y:  8, duration: 0.62, ease: 'power2.out' }, '-=0.40');
+      .fromTo('.about-content',
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.10 })
+      .fromTo('.about-photo-wrap',
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, '-=0.42');
   }
 
   private skillsTl() {
     return gsap.timeline()
-      .from('.skills-text', { opacity: 0, y: 10, duration: 0.68, ease: 'power2.out', delay: 0.08 })
-      .from('.skills-grid', { opacity: 0, y:  8, duration: 0.62, ease: 'power2.out' }, '-=0.38');
+      .fromTo('.skills-text',
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.10 })
+      .fromTo('.skills-grid',
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, '-=0.40');
   }
 
   private portfolioTl(cardIdx: number) {
     const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
     const panel  = panels[cardIdx];
     if (!panel) return gsap.timeline();
-    // Fade only the panel content — track sliding already provides the motion
     return gsap.timeline()
-      .from(panel, { opacity: 0, duration: 0.55, ease: 'power2.out', delay: 0.05 });
+      .fromTo(panel,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.55, ease: 'power2.out', delay: 0.06 });
   }
 
   private contactTl() {
     return gsap.timeline()
-      .from('.contact-heading', { opacity: 0, y: 10, duration: 0.68, ease: 'power2.out', delay: 0.08 })
-      .from('.contact-columns', { opacity: 0, y:  8, duration: 0.65, ease: 'power2.out' }, '-=0.38');
+      .fromTo('.contact-heading',
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.10 })
+      .fromTo('.contact-columns',
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.68, ease: 'power2.out' }, '-=0.40');
   }
 
   // ════════════════════════════════════════════════════════════════════════════

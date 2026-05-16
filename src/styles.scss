@@ -363,10 +363,9 @@ html.light {
   position: absolute;
   inset: 0;
   will-change: transform, opacity;
-  // Promote each stage to its own compositing layer
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
+  // Note: backface-visibility:hidden + transform-style:preserve-3d removed —
+  // they caused GPU compositing flicker during 3D scroll transitions.
+  // will-change:transform alone is sufficient for compositor promotion.
 
   // Angular host component fills the stage
   > * {

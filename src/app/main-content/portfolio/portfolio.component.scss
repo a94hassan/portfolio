@@ -8,14 +8,21 @@
   position: relative;
   overflow: hidden;
 
-  // Atmospheric — theme-adaptive
+  // ── Layered pearlescent atmosphere ──────────────────────────────────────
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 40% at 76% 22%, var(--fg-04) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 40% at 18% 68%, var(--fg-03) 0%, transparent 60%);
+      // Main: wide diffuse centre glow (content spotlight)
+      radial-gradient(ellipse 90% 70% at 50% 62%, var(--fg-05) 0%, transparent 72%),
+      // Top corners bleed
+      radial-gradient(ellipse 55% 45% at 88% 14%, var(--fg-03) 0%, transparent 62%),
+      radial-gradient(ellipse 50% 40% at 10% 18%, var(--fg-03) 0%, transparent 60%),
+      // Pearl layer 1 — pale silver centre
+      radial-gradient(ellipse 75% 60% at 50% 58%, rgba(230, 230, 240, 0.018) 0%, transparent 68%),
+      // Pearl layer 2 — faint lavender top-right
+      radial-gradient(ellipse 45% 42% at 85% 12%, rgba(235, 228, 248, 0.014) 0%, transparent 58%);
     pointer-events: none;
     z-index: 0;
   }
