@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npx ng *)",
+      "Bash(dir \"C:\\\\Dev\\\\projects\\\\developer_akademie\\\\modul15\\\\portfolio\\\\.claude\\\\worktrees\\\\upbeat-hypatia-8ccdd8\\\\dist\\\\portfolio\" /b)",
+      "Bash(firebase deploy *)",
+      "Bash(npm run *)",
+      "PowerShell(cd \"C:\\\\Dev\\\\projects\\\\developer_akademie\\\\modul15\\\\portfolio\\\\.claude\\\\worktrees\\\\upbeat-hypatia-8ccdd8\"; Get-ChildItem -Path src\\\\assets\\\\img -Recurse -File | ForEach-Object { $_.FullName.Replace\\(\\(Get-Location\\).Path + '\\\\', ''\\) })",
+      "Bash(node \"C:\\\\Dev\\\\projects\\\\developer_akademie\\\\modul15\\\\portfolio\\\\node_modules\\\\@angular\\\\cli\\\\bin\\\\ng.js\" build --configuration production)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

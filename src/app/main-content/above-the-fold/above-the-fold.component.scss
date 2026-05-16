@@ -159,6 +159,27 @@ section {
     0 0 80px rgba(100, 60, 220, 0.12),
     0 48px 100px rgba(0, 0, 0, 0.60);
   will-change: transform;
+
+  // ── Cinematic color-grade overlay (copper warmth + vignette) ────────────
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    // Warm copper grade + peripheral vignette
+    background:
+      radial-gradient(ellipse 80% 80% at 50% 50%,
+        transparent 40%,
+        rgba(4, 3, 6, 0.42) 100%),
+      linear-gradient(
+        185deg,
+        rgba(200, 110, 50, 0.055) 0%,
+        rgba(80, 50, 130, 0.030) 55%,
+        rgba(4, 3, 6, 0.18) 100%
+      );
+    mix-blend-mode: multiply;
+  }
 }
 
 .hero-photo {
@@ -167,6 +188,9 @@ section {
   object-fit: cover;
   object-position: center top;
   display: block;
+  // Cinematic grade: warm the highlights, pull down exposure slightly,
+  // desaturate just enough to feel like a LUT without looking processed
+  filter: sepia(0.10) saturate(1.08) brightness(0.93) contrast(1.06);
 }
 
 // ─── Scroll indicator ─────────────────────────────────────────────────────────

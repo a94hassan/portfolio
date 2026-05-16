@@ -115,8 +115,25 @@ section {
   box-shadow:
     0 0 0 6px var(--glass-bg),
     0 0 0 7px var(--glass-border),
-    0 0 60px rgba(100, 60, 220, 0.12),
+    0 0 60px rgba(160, 110, 60, 0.10),
     0 24px 70px rgba(0, 0, 0, 0.50);
+  position: relative;
+
+  // ── Cinematic overlay (warm sand grade) ────────────────────────────────
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    background: radial-gradient(
+      circle at 50% 50%,
+      transparent 35%,
+      rgba(4, 3, 6, 0.28) 100%
+    );
+    mix-blend-mode: multiply;
+  }
 
   img {
     width: 100%;
@@ -124,6 +141,8 @@ section {
     object-fit: cover;
     object-position: top center;
     display: block;
+    // Warm sand + muted sage grade — matches the background wall tone
+    filter: sepia(0.08) saturate(0.92) brightness(0.96) contrast(1.04) hue-rotate(-6deg);
   }
 }
 

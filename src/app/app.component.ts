@@ -61,26 +61,26 @@ export class AppComponent implements OnInit, OnDestroy {
     const tl = gsap.timeline();
 
     // ── Beat 0→1: Hero → About (Z-TUNNEL forward dive) ──
-    tl.to(stages[0], { z: 900, scale: 1.8, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
-      .to(stages[1], { z: 0, opacity: 1, scale: 1, rotateX: 0, duration: 1, ease: 'power2.out' }, 0.18)
+    tl.to(stages[0], { z: 900, scale: 1.8, opacity: 0, duration: 1, ease: 'sine.in' }, 0)
+      .to(stages[1], { z: 0, opacity: 1, scale: 1, rotateX: 0, duration: 1, ease: 'sine.out' }, 0.18)
 
     // ── Beat 1→2: About → Skills (DIAGONAL SWING) ──
-      .to(stages[1], { x: '-110%', y: '-50%', rotateZ: -8, opacity: 0, duration: 1, ease: 'power2.in' }, 1)
-      .to(stages[2], { x: 0, y: 0, rotateZ: 0, opacity: 1, duration: 1, ease: 'power2.out' }, 1.16)
+      .to(stages[1], { x: '-110%', y: '-50%', rotateZ: -8, opacity: 0, duration: 1, ease: 'sine.in' }, 1)
+      .to(stages[2], { x: 0, y: 0, rotateZ: 0, opacity: 1, duration: 1, ease: 'sine.out' }, 1.16)
 
     // ── Beat 2→3: Skills → Portfolio (CARD FLIP rotateY) ──
-      .to(stages[2], { rotateY: -90, opacity: 0, z: -300, duration: 1, ease: 'power2.in' }, 2)
-      .to(stages[3], { rotateY: 0, opacity: 1, z: 0, duration: 1, ease: 'power2.out' }, 2.14)
+      .to(stages[2], { rotateY: -90, opacity: 0, z: -300, duration: 1, ease: 'sine.in' }, 2)
+      .to(stages[3], { rotateY: 0, opacity: 1, z: 0, duration: 1, ease: 'sine.out' }, 2.14)
 
     // ── Beat 3→4: Portfolio project 1 → 2 (HORIZONTAL TRACK SLIDE) ──
-      .to('.projects-track', { xPercent: -33.333, duration: 1, ease: 'power2.inOut' }, 3)
+      .to('.projects-track', { xPercent: -33.333, duration: 1, ease: 'sine.inOut' }, 3)
 
     // ── Beat 4→5: Portfolio project 2 → 3 ──
-      .to('.projects-track', { xPercent: -66.667, duration: 1, ease: 'power2.inOut' }, 4)
+      .to('.projects-track', { xPercent: -66.667, duration: 1, ease: 'sine.inOut' }, 4)
 
     // ── Beat 5→6: Portfolio → Contact (ASCEND from below) ──
-      .to(stages[3], { y: '70%', z: -900, scale: 0.6, opacity: 0, rotateX: -15, duration: 1, ease: 'power2.in' }, 5)
-      .to(stages[4], { y: 0, z: 0, scale: 1, opacity: 1, rotateX: 0, duration: 1, ease: 'power2.out' }, 5.14);
+      .to(stages[3], { y: '70%', z: -900, scale: 0.6, opacity: 0, rotateX: -15, duration: 1, ease: 'sine.in' }, 5)
+      .to(stages[4], { y: 0, z: 0, scale: 1, opacity: 1, rotateX: 0, duration: 1, ease: 'sine.out' }, 5.14);
 
     // ── ScrollTrigger — scrub + snap ──
     let rawF = 0;
@@ -88,13 +88,13 @@ export class AppComponent implements OnInit, OnDestroy {
       trigger: '#journey',
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 2.0,
+      scrub: 1.2,           // tighter scrub — less lag → less oscillation on snap
       animation: tl,
       snap: {
         snapTo: 1 / 6,
-        duration: { min: 0.3, max: 0.8 },
-        delay: 0.05,
-        ease: 'power2.inOut'
+        duration: { min: 0.55, max: 0.90 },
+        delay: 0.12,          // wait longer before committing to snap
+        ease: 'expo.inOut'    // exponential ease feels much smoother than power
       },
       onUpdate: (self) => { rawF = self.progress; },
       onSnapComplete: (self) => {
@@ -475,8 +475,9 @@ export class AppComponent implements OnInit, OnDestroy {
     const sp1 = mkSpiral(0,       2.2, 0.50, -450, 0.016);
     const sp2 = mkSpiral(Math.PI, 2.0, 0.38, -480, 0.010);
 
-    // ── Mouse parallax ───────────────────────────────────────────────────────
-    let mNX = 0, mNY = 0;
+    // ── Mouse parallax (raw + smoothed separately) ────────────────────────────
+    let mNX = 0, mNY = 0;   // raw
+    let smX = 0, smY = 0;   // smoothed — used for camera + repulsion
     const onMouseMove = (e: MouseEvent) => {
       mNX = (e.clientX / w - 0.5) * 2;
       mNY = -((e.clientY / h) - 0.5) * 2;
@@ -507,21 +508,25 @@ export class AppComponent implements OnInit, OnDestroy {
       if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
 
+      // Smooth mouse before use — prevents camera jitter from rapid moves
+      smX += (mNX - smX) * 0.055;
+      smY += (mNY - smY) * 0.055;
+
       // __journeyProgress gives us a clean 0-1 progress — lerp into sFrac
       const rawF = (window as any).__journeyProgress?.() ?? 0;
-      sFrac += (rawF - sFrac) * 0.052;
+      sFrac += (rawF - sFrac) * 0.038;  // slower lerp = glassier camera follow
 
-      camCurve.getPoint(sFrac, tCam);
-      lkCurve.getPoint(sFrac,  tLk);
-      tCam.x += mNX * 18;
-      tCam.y += mNY * 8;
-      sCam.lerp(tCam, 0.046);
-      sLk.lerp(tLk,  0.046);
+      camCurve.getPoint(Math.min(sFrac, 0.9999), tCam);
+      lkCurve.getPoint(Math.min(sFrac, 0.9999),  tLk);
+      tCam.x += smX * 16;
+      tCam.y += smY * 7;
+      sCam.lerp(tCam, 0.040);
+      sLk.lerp(tLk,  0.040);
       camera.position.copy(sCam);
 
-      const roll = Math.sin(sFrac * Math.PI * 7) * 0.044;
+      const roll = Math.sin(sFrac * Math.PI * 7) * 0.028;
       upVec.set(-roll, 1, 0).normalize();
-      camera.up.lerp(upVec, 0.04);
+      camera.up.lerp(upVec, 0.028);
       camera.lookAt(sLk);
 
       // room markers
@@ -542,8 +547,8 @@ export class AppComponent implements OnInit, OnDestroy {
       });
 
       // particles — main with mouse repulsion + copper shimmer
-      const mWX     = sCam.x + mNX * 240;
-      const mWY     = sCam.y + mNY * 130;
+      const mWX     = sCam.x + smX * 240;  // use smoothed mouse
+      const mWY     = sCam.y + smY * 130;
       const REPEL_R = 155;
       const REPEL_F = 0.0046;
 
