@@ -56,41 +56,46 @@
 html.light {
   color-scheme: light;
 
-  --bg:         #f5f4f0;
-  --bg-nav:     rgba(245, 244, 240, 0.86);
-  --fg:         #111111;
-  --fg-55:      rgba(17, 17, 17, 0.62);
-  --fg-48:      rgba(17, 17, 17, 0.55);
-  --fg-40:      rgba(17, 17, 17, 0.46);
-  --fg-35:      rgba(17, 17, 17, 0.40);
-  --fg-28:      rgba(17, 17, 17, 0.34);
-  --fg-18:      rgba(17, 17, 17, 0.18);
-  --fg-12:      rgba(17, 17, 17, 0.12);
-  --fg-09:      rgba(17, 17, 17, 0.09);
-  --fg-07:      rgba(17, 17, 17, 0.07);
-  --fg-05:      rgba(17, 17, 17, 0.05);
-  --fg-04:      rgba(17, 17, 17, 0.04);
-  --fg-03:      rgba(17, 17, 17, 0.03);
+  // Warm ivory background — easier on the eyes than pure white
+  --bg:         #f6f4f1;
+  --bg-nav:     rgba(246, 244, 241, 0.88);
 
-  --surface:    rgba(0, 0, 0, 0.050);
-  --surface-md: rgba(0, 0, 0, 0.070);
-  --surface-hi: rgba(0, 0, 0, 0.110);
+  // Slightly warm near-black text — softer than #111
+  --fg:         #1c1a18;
+  --fg-55:      rgba(28, 26, 24, 0.58);
+  --fg-48:      rgba(28, 26, 24, 0.52);
+  --fg-40:      rgba(28, 26, 24, 0.44);
+  --fg-35:      rgba(28, 26, 24, 0.38);
+  --fg-28:      rgba(28, 26, 24, 0.30);
+  --fg-18:      rgba(28, 26, 24, 0.18);
+  --fg-12:      rgba(28, 26, 24, 0.12);
+  --fg-09:      rgba(28, 26, 24, 0.09);
+  --fg-07:      rgba(28, 26, 24, 0.07);
+  --fg-05:      rgba(28, 26, 24, 0.05);
+  --fg-04:      rgba(28, 26, 24, 0.04);
+  --fg-03:      rgba(28, 26, 24, 0.03);
 
-  --glass-bg:        rgba(0, 0, 0, 0.060);
-  --glass-bg-hi:     rgba(0, 0, 0, 0.095);
-  --glass-border:    rgba(0, 0, 0, 0.130);
-  --glass-border-hi: rgba(0, 0, 0, 0.220);
+  // Slightly warmer surfaces
+  --surface:    rgba(0, 0, 0, 0.045);
+  --surface-md: rgba(0, 0, 0, 0.065);
+  --surface-hi: rgba(0, 0, 0, 0.100);
 
-  --sb-track:   #e8e7e3;
-  --sb-thumb:   #c0bfbc;
-  --sb-thumb-h: #a09f9b;
+  // Glass — warmer tone, visible but not harsh
+  --glass-bg:        rgba(0, 0, 0, 0.055);
+  --glass-bg-hi:     rgba(0, 0, 0, 0.085);
+  --glass-border:    rgba(0, 0, 0, 0.110);
+  --glass-border-hi: rgba(0, 0, 0, 0.190);
 
-  --btn-solid-from:   #1a1a1a;
-  --btn-solid-to:     #0d0d0d;
-  --btn-solid-border: rgba(0, 0, 0, 0.35);
-  --btn-solid-color:  #f5f4f0;
-  --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 20px rgba(0,0,0,0.22);
-  --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.06) inset, 0 10px 32px rgba(0,0,0,0.32);
+  --sb-track:   #ebe9e5;
+  --sb-thumb:   #c4c2be;
+  --sb-thumb-h: #a6a4a0;
+
+  --btn-solid-from:   #252220;
+  --btn-solid-to:     #161412;
+  --btn-solid-border: rgba(0, 0, 0, 0.28);
+  --btn-solid-color:  #f6f4f1;
+  --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.08) inset, 0 4px 20px rgba(0,0,0,0.18);
+  --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.08) inset, 0 10px 32px rgba(0,0,0,0.26);
 }
 
 // ─── Layout vars ──────────────────────────────────────────────────────────────
@@ -168,7 +173,12 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
   color: var(--fg);
-  transition: $transition;
+  // Explicit property list — NOT 'all' or shorthand, to avoid fighting GSAP
+  // transform / opacity are deliberately excluded: GSAP owns those on .stage
+  transition: color 150ms ease-in-out,
+              background-color 150ms ease-in-out,
+              border-color 150ms ease-in-out,
+              box-shadow 150ms ease-in-out;
 
   &::-webkit-scrollbar { width: 8px; }
   &::-webkit-scrollbar-track { background: var(--sb-track); }
@@ -180,16 +190,31 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   }
 }
 
+// GSAP-controlled elements: disable CSS transitions on transform/opacity
+// to prevent the CSS layer fighting the GSAP animation layer → no flicker
+.stage,
+.hero-text,
+.hero-photo-wrapper,
+.about-content,
+.about-photo-wrap,
+.skills-text,
+.skills-grid,
+.contact-heading,
+.contact-columns {
+  transition: none !important;
+}
+
 html {
   background-color: var(--bg);
   /* scroll-snap handled entirely by GSAP ScrollToPlugin */
 }
 
-// ─── Three.js: inverted in light mode (white particles → dark on light bg) ───
+// ─── Three.js: inverted in light mode (white particles → dark on warm-ivory bg) ─
+// sepia(0.08) adds a barely-visible warmth to match the ivory --bg tone
 
 html.light #global-canvas {
-  filter: invert(1);
-  opacity: 0.48;
+  filter: invert(1) sepia(0.08);
+  opacity: 0.42;
 }
 
 // ─── Spotlight border (pearl shimmer) ────────────────────────────────────────
