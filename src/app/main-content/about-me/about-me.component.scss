@@ -14,14 +14,14 @@ section {
   position: relative;
   z-index: 1;
 
-  // Atmospheric gradient — warm sand + sage from about-me photo
+  // Atmospheric — achromatic, no colour
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 50% at 78% 52%, rgba(180, 140, 90, 0.055) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 40% at 16% 32%, rgba(80, 120, 100, 0.038) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 50% at 78% 52%, rgba(255, 255, 255, 0.018) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 40% at 16% 32%, rgba(255, 255, 255, 0.008) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -119,7 +119,7 @@ section {
     0 24px 70px rgba(0, 0, 0, 0.50);
   position: relative;
 
-  // ── Cinematic overlay (warm sand grade) ────────────────────────────────
+  // ── B&W circular vignette ───────────────────────────────────────────────
   &::after {
     content: '';
     position: absolute;
@@ -129,10 +129,9 @@ section {
     z-index: 1;
     background: radial-gradient(
       circle at 50% 50%,
-      transparent 35%,
-      rgba(4, 3, 6, 0.28) 100%
+      transparent 32%,
+      rgba(4, 4, 6, 0.38) 100%
     );
-    mix-blend-mode: multiply;
   }
 
   img {
@@ -141,8 +140,8 @@ section {
     object-fit: cover;
     object-position: top center;
     display: block;
-    // Warm sand + muted sage grade — matches the background wall tone
-    filter: sepia(0.08) saturate(0.92) brightness(0.96) contrast(1.04) hue-rotate(-6deg);
+    // Silver-screen grade matching hero
+    filter: grayscale(1) brightness(1.02) contrast(1.10);
   }
 }
 

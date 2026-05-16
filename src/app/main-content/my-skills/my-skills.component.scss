@@ -7,14 +7,14 @@
   @include flexBox();
   position: relative;
 
-  // Atmospheric gradient — cool teal-blue (φ-complementary to copper)
+  // Atmospheric — achromatic, no colour
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 50% at 24% 50%, rgba(60, 140, 160, 0.05) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 44% at 82% 28%, rgba(80, 90, 200, 0.036) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 50% at 24% 50%, rgba(255, 255, 255, 0.016) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 44% at 82% 28%, rgba(255, 255, 255, 0.009) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }

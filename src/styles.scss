@@ -33,17 +33,13 @@
   --glass-border:    rgba(255, 255, 255, 0.065);
   --glass-border-hi: rgba(255, 255, 255, 0.115);
 
-  // ── Copper "red thread" accent (φ-derived) ──────────────────────────────
-  // Extracted from hero skin tones: hsl(25°, 68%, 53%) = rgb(200, 124, 70)
-  --accent-phi:      200, 124, 70;          // base copper
-  --accent-phi-a10:  rgba(200, 124, 70, 0.10);
-  --accent-phi-a18:  rgba(200, 124, 70, 0.18);
-  --accent-phi-a28:  rgba(200, 124, 70, 0.28);
-  --accent-phi-a40:  rgba(200, 124, 70, 0.40);
-  // φ-complementary cool: hsl(205°, 40%, 52%) — from sage/grey background
-  --accent-cool:     100, 140, 190;
-  --accent-cool-a10: rgba(100, 140, 190, 0.10);
-  --accent-cool-a18: rgba(100, 140, 190, 0.18);
+  // ── Silver / Pearl accent system ────────────────────────────────────────
+  // Achromatic palette — black, white, silver, pearlescent iridescence only
+  --silver:       rgba(210, 212, 218, 1);
+  --silver-a08:   rgba(210, 212, 218, 0.08);
+  --silver-a14:   rgba(210, 212, 218, 0.14);
+  --silver-a22:   rgba(210, 212, 218, 0.22);
+  --silver-a36:   rgba(210, 212, 218, 0.36);
 
   --sb-track:   #111111;
   --sb-thumb:   #333333;
@@ -209,11 +205,13 @@ form {
     inset: 0;
     border-radius: inherit;
     padding: 1px;
+    // Pearlescent: pure white centre → barely-tinted pastels → transparent
+    // Resembles thin-film iridescence / nacre shimmer
     background: radial-gradient(
-      100px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(200, 124, 70, 0.18),
-      rgba(160, 100, 200, 0.10),
-      rgba(80, 140, 200, 0.06),
+      110px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(255, 255, 255, 0.26),
+      rgba(215, 225, 240, 0.13),
+      rgba(240, 218, 232, 0.07),
       transparent 68%
     );
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -231,8 +229,7 @@ form {
     border-radius: inherit;
     background: radial-gradient(
       90px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(200, 124, 70, 0.016) 0%,
-      rgba(160, 100, 200, 0.008) 55%,
+      rgba(255, 255, 255, 0.018) 0%,
       transparent 75%
     );
     pointer-events: none;
@@ -249,8 +246,8 @@ button::before {
   padding: 1px;
   background: radial-gradient(
     80px circle at var(--mx, -400px) var(--my, -400px),
-    rgba(200, 124, 70, 0.15),
-    rgba(150, 90, 190, 0.08),
+    rgba(255, 255, 255, 0.22),
+    rgba(220, 228, 245, 0.10),
     transparent 65%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -261,7 +258,7 @@ button::before {
   transition: none;
 }
 
-// Light mode spotlight — warm amber palette
+// Light mode spotlight — dark mirror / obsidian reflection
 html.light {
   .skill-item::before,
   .project-info::before,
@@ -271,9 +268,8 @@ html.light {
   form::before {
     background: radial-gradient(
       120px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(160, 90, 30, 0.40),
-      rgba(110, 60, 160, 0.22),
-      rgba(30, 80, 160, 0.12),
+      rgba(8, 8, 12, 0.32),
+      rgba(20, 20, 30, 0.16),
       transparent 68%
     );
   }
@@ -281,8 +277,8 @@ html.light {
   button::before {
     background: radial-gradient(
       90px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(160, 90, 30, 0.36),
-      rgba(110, 60, 160, 0.18),
+      rgba(8, 8, 12, 0.28),
+      rgba(20, 20, 30, 0.12),
       transparent 65%
     );
   }

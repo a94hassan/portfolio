@@ -155,70 +155,40 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ── Entrance animations — minimal, compositor-safe (opacity + tiny y only)
+  // Max 2 elements per section, no stagger → zero layout jitter ──────────────
+
   private heroTl() {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.hero-label',        { y: 30, opacity: 0, duration: 0.55, delay: 0.1 })
-      .from('.hero-name',          { y: 72, opacity: 0, skewY: 4, duration: 0.90 }, '-=0.30')
-      .from('.hero-role',          { y: 28, opacity: 0, duration: 0.60 }, '-=0.45')
-      .from('.hero-social-line',   { scaleX: 0, opacity: 0, duration: 0.48, transformOrigin: 'left' }, '-=0.35')
-      .from('.hero-links a, .hero-links .hero-email', { y: 20, opacity: 0, stagger: 0.07, duration: 0.46 }, '-=0.30')
-      .from('.hero-cta',           { y: 20, opacity: 0, scale: 0.90, duration: 0.50 }, '-=0.28')
-      .from('.hero-photo-wrapper', { y: 50, opacity: 0, scale: 0.82, duration: 0.92, ease: 'back.out(1.4)' }, '-=0.72')
-      .from('.hero-arrow',         { opacity: 0, y: -14, duration: 0.55 }, '-=0.22');
-    return tl;
+    return gsap.timeline()
+      .from('.hero-text',          { opacity: 0, y: 10, duration: 0.70, ease: 'power2.out', delay: 0.08 })
+      .from('.hero-photo-wrapper', { opacity: 0, y:  8, duration: 0.65, ease: 'power2.out' }, '-=0.42');
   }
 
   private aboutTl() {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.about-photo-wrap', { scale: 0.65, opacity: 0, rotation: -16, duration: 1.1, ease: 'back.out(1.7)' })
-      .from('.about-heading',     { x: -50, opacity: 0, duration: 0.72 }, '-=0.65')
-      .from('.about-body',        { y: 28, opacity: 0, duration: 0.60 }, '-=0.42')
-      .from('.about-trait',       { y: 24, opacity: 0, duration: 0.55, stagger: 0.14 }, '-=0.36')
-      .from('.about-icon',        { scale: 0, opacity: 0, duration: 0.46, stagger: 0.10, ease: 'back.out(2.4)' }, '-=0.30')
-      .from('.social-icon-link',  { y: 20, opacity: 0, duration: 0.45, stagger: 0.09 }, '-=0.22');
-    return tl;
+    return gsap.timeline()
+      .from('.about-content',    { opacity: 0, y: 10, duration: 0.68, ease: 'power2.out', delay: 0.08 })
+      .from('.about-photo-wrap', { opacity: 0, y:  8, duration: 0.62, ease: 'power2.out' }, '-=0.40');
   }
 
   private skillsTl() {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.skills-text h1',      { x: 70, opacity: 0, duration: 0.82 })
-      .from('.skills-text > div > div', { scaleX: 0, opacity: 0, duration: 0.50, transformOrigin: 'right' }, '-=0.44')
-      .from('.skills-text > p',     { x: 48, opacity: 0, duration: 0.68 }, '-=0.44')
-      .from('.skills-text button, .skills-mobile-btn button', { x: 36, opacity: 0, scale: 0.90, duration: 0.54 }, '-=0.34')
-      .from('.skill-item',          { y: 46, opacity: 0, scale: 0.78, duration: 0.58,
-          stagger: { amount: 1.0, from: 'start', grid: 'auto' }, ease: 'back.out(1.6)' }, '-=0.48');
-    return tl;
+    return gsap.timeline()
+      .from('.skills-text', { opacity: 0, y: 10, duration: 0.68, ease: 'power2.out', delay: 0.08 })
+      .from('.skills-grid', { opacity: 0, y:  8, duration: 0.62, ease: 'power2.out' }, '-=0.38');
   }
 
   private portfolioTl(cardIdx: number) {
     const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
-    const panel = panels[cardIdx];
+    const panel  = panels[cardIdx];
     if (!panel) return gsap.timeline();
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    if (cardIdx === 0) {
-      tl.from('.portfolio-heading h1', { y: 40, opacity: 0, duration: 0.72 })
-        .from('.portfolio-sub',         { y: 22, opacity: 0, duration: 0.58 }, '-=0.38');
-    }
-    tl.from(panel.querySelector('.project-img-wrap'), { x: -60, opacity: 0, duration: 0.82 }, cardIdx === 0 ? '-=0.44' : 0)
-      .from(panel.querySelector('.project-info'),      { x: 60, opacity: 0, duration: 0.82 }, '-=0.62')
-      .from(panel.querySelectorAll('.project-num, .project-tech'), { y: 18, opacity: 0, stagger: 0.10, duration: 0.48 }, '-=0.40')
-      .from(panel.querySelector('h4'),                 { y: 26, opacity: 0, duration: 0.56 }, '-=0.32')
-      .from(panel.querySelector('p'),                  { y: 20, opacity: 0, duration: 0.52 }, '-=0.28')
-      .from(panel.querySelectorAll('.project-actions a'), { y: 16, opacity: 0, stagger: 0.11, duration: 0.46, ease: 'back.out(1.3)' }, '-=0.22');
-    return tl;
+    // Fade only the panel content — track sliding already provides the motion
+    return gsap.timeline()
+      .from(panel, { opacity: 0, duration: 0.55, ease: 'power2.out', delay: 0.05 });
   }
 
   private contactTl() {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from('.contact-rule',       { scaleX: 0, opacity: 0, duration: 0.58, transformOrigin: 'left' })
-      .from('.contact-heading h1', { y: 44, opacity: 0, duration: 0.78 }, '-=0.30')
-      .from('.contact-info h4',    { y: 30, opacity: 0, duration: 0.66 }, '-=0.44')
-      .from('.contact-info p, .contact-info span', { y: 22, opacity: 0, stagger: 0.11, duration: 0.56 }, '-=0.34')
-      .from('.contact-form',       { y: 44, opacity: 0, scale: 0.95, duration: 0.80, ease: 'back.out(1.3)' }, '-=0.44')
-      .from('.form-field',         { y: 18, opacity: 0, stagger: 0.10, duration: 0.46 }, '-=0.46')
-      .from('.form-privacy',       { y: 14, opacity: 0, duration: 0.44 }, '-=0.22')
-      .from('.contact-form > button', { y: 14, opacity: 0, scale: 0.88, duration: 0.48, ease: 'back.out(1.5)' }, '-=0.20');
-    return tl;
+    return gsap.timeline()
+      .from('.contact-heading', { opacity: 0, y: 10, duration: 0.68, ease: 'power2.out', delay: 0.08 })
+      .from('.contact-columns', { opacity: 0, y:  8, duration: 0.65, ease: 'power2.out' }, '-=0.38');
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -362,8 +332,10 @@ export class AppComponent implements OnInit, OnDestroy {
       pPos[i*3+1] = SY[si] + (Math.random() - 0.5) * h * 0.55;
       pPos[i*3+2] = zO - 80 + (Math.random() - 0.5) * 60;
 
-      // Section-graduated base hue: copper (hsl 25°) → sage-teal (hsl 155°)
-      _tc.setHSL(0.069 + (si / (secCount - 1)) * 0.360, 0.55, 0.64);
+      // Silver / pearl — achromatic base, slight hue variance for depth
+      // Each particle gets a slightly different silver tone (no colour)
+      const sv = 0.72 + Math.random() * 0.20;  // lightness 72-92%
+      _tc.setHSL(0, 0, sv);
       pCol[i*3] = _tc.r; pCol[i*3+1] = _tc.g; pCol[i*3+2] = _tc.b;
       // Store base color for drift-back in animate loop
       pBase[i*3] = _tc.r; pBase[i*3+1] = _tc.g; pBase[i*3+2] = _tc.b;
@@ -391,7 +363,7 @@ export class AppComponent implements OnInit, OnDestroy {
       sPos[i*3]   =  Math.cos(ang) * r;
       sPos[i*3+1] =  t * SY[4] * 1.10 + (Math.random() - 0.5) * h * 0.40;
       sPos[i*3+2] = -500 + Math.sin(ang) * r * 0.26 + (Math.random() - 0.5) * 110;
-      _tc.setHSL(0.58 + Math.random() * 0.10, 0.28, 0.82 + Math.random() * 0.18);
+      _tc.setHSL(0, 0, 0.78 + Math.random() * 0.22);  // pure white/silver stars
       sCol[i*3] = _tc.r; sCol[i*3+1] = _tc.g; sCol[i*3+2] = _tc.b;
     }
 
@@ -578,17 +550,19 @@ export class AppComponent implements OnInit, OnDestroy {
         if (pos[i*3+1] - sCam.y >  totalSpan * 0.5) pos[i*3+1] -= totalSpan;
         if (pos[i*3+1] - sCam.y < -totalSpan * 0.5) pos[i*3+1] += totalSpan;
 
-        // Proximity copper shimmer near camera
+        // Proximity shimmer — pearlescent thin-film iridescence near camera
+        // Very low saturation so it reads as silver/nacre, not colour
         const dx = pos[i*3] - sCam.x, dy = pos[i*3+1] - sCam.y, dz = pos[i*3+2] - sCam.z;
         const d3 = Math.sqrt(dx*dx + dy*dy + dz*dz);
-        if (d3 < 280) {
-          const fr = (1 - d3 / 280) * 0.52;
-          tCol.setHSL(0.069, 0.68, 0.72); // copper hsl(25°, 68%, 72%)
+        if (d3 < 260) {
+          const fr   = (1 - d3 / 260) * 0.55;
+          const pHue = ((Date.now() * 0.000055) + i * 0.062) % 1;
+          tCol.setHSL(pHue, 0.16, 0.90); // very low sat = pearlescent, not rainbow
           col[i*3]   += (tCol.r - col[i*3])   * fr;
           col[i*3+1] += (tCol.g - col[i*3+1]) * fr;
           col[i*3+2] += (tCol.b - col[i*3+2]) * fr;
         } else {
-          // Drift back to section base hue
+          // Drift back to silver base
           col[i*3]   += (pBase[i*3]   - col[i*3])   * 0.006;
           col[i*3+1] += (pBase[i*3+1] - col[i*3+1]) * 0.006;
           col[i*3+2] += (pBase[i*3+2] - col[i*3+2]) * 0.006;

@@ -15,14 +15,14 @@ section {
   z-index: 1;
   overflow: hidden;
 
-  // Atmospheric gradient — copper warmth from hero photo (GA 137.5° axis)
+  // Atmospheric — achromatic silver glow, no colour
   &::before {
     content: '';
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(ellipse 61.8% 50% at 72% 46%, rgba(200, 124, 70, 0.06) 0%, transparent 61.8%),
-      radial-gradient(ellipse 38.2% 34% at 18% 72%, rgba(140, 80, 180, 0.04) 0%, transparent 60%);
+      radial-gradient(ellipse 61.8% 55% at 68% 44%, rgba(255, 255, 255, 0.022) 0%, transparent 61.8%),
+      radial-gradient(ellipse 38.2% 40% at 22% 70%, rgba(255, 255, 255, 0.010) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -160,25 +160,19 @@ section {
     0 48px 100px rgba(0, 0, 0, 0.60);
   will-change: transform;
 
-  // ── Cinematic color-grade overlay (copper warmth + vignette) ────────────
+  // ── B&W silver-screen vignette ──────────────────────────────────────────
   &::after {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 1;
-    // Warm copper grade + peripheral vignette
-    background:
-      radial-gradient(ellipse 80% 80% at 50% 50%,
-        transparent 40%,
-        rgba(4, 3, 6, 0.42) 100%),
-      linear-gradient(
-        185deg,
-        rgba(200, 110, 50, 0.055) 0%,
-        rgba(80, 50, 130, 0.030) 55%,
-        rgba(4, 3, 6, 0.18) 100%
-      );
-    mix-blend-mode: multiply;
+    // Pure vignette — no colour, deep shadow at edges
+    background: radial-gradient(
+      ellipse 78% 78% at 50% 50%,
+      transparent 38%,
+      rgba(4, 4, 6, 0.50) 100%
+    );
   }
 }
 
@@ -188,9 +182,8 @@ section {
   object-fit: cover;
   object-position: center top;
   display: block;
-  // Cinematic grade: warm the highlights, pull down exposure slightly,
-  // desaturate just enough to feel like a LUT without looking processed
-  filter: sepia(0.10) saturate(1.08) brightness(0.93) contrast(1.06);
+  // Silver-screen grade: full desaturation, lifted contrast
+  filter: grayscale(1) brightness(1.04) contrast(1.14);
 }
 
 // ─── Scroll indicator ─────────────────────────────────────────────────────────
