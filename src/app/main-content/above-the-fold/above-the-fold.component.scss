@@ -4,10 +4,11 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
 }
 
 section {
-  height: 100svh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;

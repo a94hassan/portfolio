@@ -17,20 +17,18 @@ import * as THREE from 'three';
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'portfolio';
-  private zone       = inject(NgZone);
+  private zone         = inject(NgZone);
   private themeService = inject(ThemeService);
-  private animId     = 0;
+  private animId       = 0;
   private threeCleanup?: () => void;
   private cursorCleanup?: () => void;
   private scrollCleanup?: () => void;
 
   ngOnInit() {
+    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
     this.themeService.init();
 
-    // ── Register all GSAP plugins once ──────────────────────────────────────
-    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
-
-    // ── Header drops in ─────────────────────────────────────────────────────
+    // Header drops in
     gsap.from('app-header', { y: -80, opacity: 0, duration: 0.7, ease: 'power3.out', delay: 0.1 });
 
     this.zone.runOutsideAngular(() => {
@@ -39,237 +37,192 @@ export class AppComponent implements OnInit, OnDestroy {
       this.initCustomCursor();
     });
 
-    // ── GSAP owns all scrolling ──────────────────────────────────────────────
-    this.initGSAPScroll();
-
-    // wait for DOM (router-outlet renders async)
-    setTimeout(() => this.initSectionAnimations(), 600);
-  }
-
-  // ════════════════════════════════════════════════════════════════════════════
-  // GSAP SCROLL  —  gsap.to(window, scrollTo) replaces every RAF line
-  // ════════════════════════════════════════════════════════════════════════════
-
-  private initGSAPScroll() {
-    const IDS = [
-      '#above_the_fold_section',
-      '#about_me_section',
-      '#my_skills_section',
-      '#portfolio_section',
-      '#contact_section'
-    ];
-
-    let sections: HTMLElement[] = [];
-    let current  = 0;
-    let busy     = false;
-    const HEADER = 80;
-
-    // find which section is currently in the viewport centre
-    const findCurrent = () => {
-      const mid = window.innerHeight * 0.45;
-      for (let i = 0; i < sections.length; i++) {
-        const r = sections[i]?.getBoundingClientRect();
-        if (r && r.top <= mid && r.bottom >= mid) { current = i; return; }
-      }
-    };
-
-    // ── Pure GSAP scroll — ScrollToPlugin ───────────────────────────────────
-    const goTo = (idx: number) => {
-      const el = sections[idx];
-      if (!el) return;
-      busy    = true;
-      current = idx;
-      gsap.killTweensOf(window);          // cancel any in-progress scroll
-      gsap.to(window, {
-        scrollTo: { y: el, offsetY: HEADER },
-        duration: 1.15,
-        ease: 'power3.inOut',
-        onComplete: () => setTimeout(() => { busy = false; }, 100)
-      });
-    };
-
-    const navigate = (dir: 1 | -1) => {
-      if (!sections.length || busy) return;
-      const rect = sections[current]?.getBoundingClientRect();
-      // let the user scroll naturally within a tall section
-      if (dir ===  1 && rect && rect.bottom > window.innerHeight + 20) return;
-      if (dir === -1 && rect && rect.top    < -20)                       return;
-      const nxt = Math.max(0, Math.min(sections.length - 1, current + dir));
-      if (nxt === current) return;
-      goTo(nxt);
-    };
-
-    // ── Input handlers ───────────────────────────────────────────────────────
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) < 8) return;
-      if (busy) { e.preventDefault(); return; }
-      navigate(e.deltaY > 0 ? 1 : -1);
-      if (busy) e.preventDefault();
-    };
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); navigate( 1); }
-      if (e.key === 'ArrowUp'   || e.key === 'PageUp')   { e.preventDefault(); navigate(-1); }
-    };
-
-    let touchY = 0;
-    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0].clientY; };
-    const onTouchEnd   = (e: TouchEvent) => {
-      const d = touchY - e.changedTouches[0].clientY;
-      if (Math.abs(d) < 52) return;
-      navigate(d > 0 ? 1 : -1);
-    };
-
+    // Wait for Angular router to render main-content
     setTimeout(() => {
-      sections = IDS.map(id => document.querySelector(id) as HTMLElement).filter(Boolean);
-    }, 400);
-
-    window.addEventListener('scroll',     findCurrent,  { passive: true  });
-    window.addEventListener('wheel',      onWheel,      { passive: false  });
-    window.addEventListener('keydown',    onKey);
-    window.addEventListener('touchstart', onTouchStart, { passive: true  });
-    window.addEventListener('touchend',   onTouchEnd,   { passive: true  });
-
-    this.scrollCleanup = () => {
-      window.removeEventListener('scroll',     findCurrent);
-      window.removeEventListener('wheel',      onWheel);
-      window.removeEventListener('keydown',    onKey);
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchend',   onTouchEnd);
-    };
+      this.initJourney();
+    }, 500);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // GSAP SECTION ANIMATIONS  — per-section timelines, all ScrollTrigger-driven
+  // JOURNEY — 7-beat pinned scroll experience
   // ════════════════════════════════════════════════════════════════════════════
 
-  private initSectionAnimations() {
+  private initJourney() {
+    const stages = gsap.utils.toArray<HTMLElement>('.stage');
+    if (stages.length < 5) return;
 
-    // ── Hero — plays on page load, no ScrollTrigger needed ──────────────────
-    gsap.timeline({ defaults: { ease: 'power3.out' } })
-      .from('.hero-label',
-        { y: 28, opacity: 0, duration: 0.55, delay: 0.28 })
-      .from('.hero-name',
-        { y: 72, opacity: 0, skewY: 3, duration: 0.90 }, '-=0.30')
-      .from('.hero-role',
-        { y: 30, opacity: 0, duration: 0.62 }, '-=0.48')
-      .from('.hero-social-line',
-        { scaleX: 0, opacity: 0, duration: 0.50, transformOrigin: 'left center' }, '-=0.38')
-      .from('.hero-links a, .hero-links .hero-email',
-        { y: 20, opacity: 0, duration: 0.48, stagger: 0.07 }, '-=0.32')
-      .from('.hero-cta',
-        { y: 22, opacity: 0, scale: 0.90, duration: 0.52 }, '-=0.28')
-      .from('.hero-photo-wrapper',
-        { y: 48, opacity: 0, scale: 0.84, duration: 0.95, ease: 'back.out(1.4)' }, '-=0.72')
-      .from('.hero-arrow',
-        { opacity: 0, y: -12, duration: 0.55 }, '-=0.20');
+    // Set initial hidden states for all non-hero stages
+    gsap.set(stages[1], { z: -1600, opacity: 0, scale: 0.15, rotateX: 12 });
+    gsap.set(stages[2], { x: '110%', y: '50%', rotateZ: 8, opacity: 0 });
+    gsap.set(stages[3], { rotateY: 90, opacity: 0, z: -300 });
+    gsap.set(stages[4], { y: '-70%', z: -900, scale: 0.6, opacity: 0, rotateX: 15 });
 
-    // ── About ───────────────────────────────────────────────────────────────
-    const aboutTl = gsap.timeline({
-      scrollTrigger: { trigger: '#about_me_section', start: 'top 70%' }
-    });
-    aboutTl
-      .from('.about-photo-wrap',
-        { scale: 0.68, opacity: 0, rotation: -14, duration: 1.05, ease: 'back.out(1.6)' })
-      .from('.about-heading',
-        { x: -44, opacity: 0, duration: 0.70, ease: 'power3.out' }, '-=0.60')
-      .from('.about-content p, .about-content span',
-        { y: 26, opacity: 0, duration: 0.58, stagger: 0.12, ease: 'power2.out' }, '-=0.42')
-      .from('.about-icon',
-        { scale: 0, opacity: 0, duration: 0.46, stagger: 0.09, ease: 'back.out(2.2)' }, '-=0.22')
-      .from('.social-icon-link',
-        { y: 18, opacity: 0, duration: 0.44, stagger: 0.08, ease: 'power2.out' }, '-=0.18');
+    // MASTER TIMELINE — 6 beats total
+    const tl = gsap.timeline();
 
-    // ── Skills ──────────────────────────────────────────────────────────────
-    const skillsTl = gsap.timeline({
-      scrollTrigger: { trigger: '#my_skills_section', start: 'top 72%' }
-    });
-    skillsTl
-      .from('.skills-text h1',
-        { x: 68, opacity: 0, duration: 0.80, ease: 'power3.out' })
-      .from('.skills-text > div > div',         // decorative rule
-        { scaleX: 0, opacity: 0, duration: 0.50, ease: 'power3.out', transformOrigin: 'right center' }, '-=0.42')
-      .from('.skills-text > p',
-        { x: 44, opacity: 0, duration: 0.65, ease: 'power3.out' }, '-=0.42')
-      .from('.skills-text button, .skills-mobile-btn button',
-        { x: 32, opacity: 0, scale: 0.92, duration: 0.52, ease: 'back.out(1.3)' }, '-=0.32')
-      .from('.skill-item',
-        { y: 44, opacity: 0, scale: 0.80, duration: 0.55,
-          stagger: { amount: 0.95, from: 'start', grid: 'auto', ease: 'power1.in' },
-          ease: 'back.out(1.5)' }, '-=0.46');
+    // ── Beat 0→1: Hero → About (Z-TUNNEL forward dive) ──
+    tl.to(stages[0], { z: 900, scale: 1.8, opacity: 0, duration: 1, ease: 'power2.in' }, 0)
+      .to(stages[1], { z: 0, opacity: 1, scale: 1, rotateX: 0, duration: 1, ease: 'power2.out' }, 0.18)
 
-    // ── Portfolio — per-card ─────────────────────────────────────────────────
-    document.querySelectorAll('.project-card').forEach((card, i) => {
-      const fromL = i % 2 === 0;
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: card, start: 'top 80%' }
-      });
-      tl.from(card.querySelector('.project-img-wrap'),
-          { x: fromL ? -70 : 70, opacity: 0, duration: 0.85, ease: 'power3.out' })
-        .from(card.querySelector('.project-info'),
-          { x: fromL ? 70 : -70, opacity: 0, duration: 0.85, ease: 'power3.out' }, '-=0.65')
-        .from(card.querySelectorAll('.project-num, .project-tech'),
-          { y: 18, opacity: 0, duration: 0.46, stagger: 0.09, ease: 'power2.out' }, '-=0.42')
-        .from(card.querySelector('h4'),
-          { y: 26, opacity: 0, duration: 0.58, ease: 'power2.out' }, '-=0.32')
-        .from(card.querySelector('p'),
-          { y: 20, opacity: 0, duration: 0.52, ease: 'power2.out' }, '-=0.28')
-        .from(card.querySelectorAll('.project-actions a'),
-          { y: 16, opacity: 0, duration: 0.46, stagger: 0.10, ease: 'back.out(1.3)' }, '-=0.22');
-    });
+    // ── Beat 1→2: About → Skills (DIAGONAL SWING) ──
+      .to(stages[1], { x: '-110%', y: '-50%', rotateZ: -8, opacity: 0, duration: 1, ease: 'power2.in' }, 1)
+      .to(stages[2], { x: 0, y: 0, rotateZ: 0, opacity: 1, duration: 1, ease: 'power2.out' }, 1.16)
 
-    // ── Contact ─────────────────────────────────────────────────────────────
-    const contactTl = gsap.timeline({
-      scrollTrigger: { trigger: '#contact_section', start: 'top 72%' }
-    });
-    contactTl
-      .from('.contact-rule',
-        { scaleX: 0, opacity: 0, duration: 0.58, transformOrigin: 'left center', ease: 'power3.out' })
-      .from('.contact-heading h1',
-        { y: 44, opacity: 0, duration: 0.78, ease: 'power3.out' }, '-=0.32')
-      .from('.contact-info h4',
-        { y: 30, opacity: 0, duration: 0.65, ease: 'power3.out' }, '-=0.44')
-      .from('.contact-info p, .contact-info span',
-        { y: 22, opacity: 0, duration: 0.56, stagger: 0.10, ease: 'power2.out' }, '-=0.32')
-      .from('.contact-form',
-        { y: 44, opacity: 0, scale: 0.95, duration: 0.80, ease: 'back.out(1.25)' }, '-=0.44')
-      .from('.form-field',
-        { y: 18, opacity: 0, duration: 0.46, stagger: 0.10, ease: 'power2.out' }, '-=0.46')
-      .from('.form-privacy',
-        { y: 14, opacity: 0, duration: 0.44, ease: 'power2.out' }, '-=0.20')
-      .from('.contact-form > button',
-        { y: 14, opacity: 0, scale: 0.90, duration: 0.48, ease: 'back.out(1.4)' }, '-=0.18');
+    // ── Beat 2→3: Skills → Portfolio (CARD FLIP rotateY) ──
+      .to(stages[2], { rotateY: -90, opacity: 0, z: -300, duration: 1, ease: 'power2.in' }, 2)
+      .to(stages[3], { rotateY: 0, opacity: 1, z: 0, duration: 1, ease: 'power2.out' }, 2.14)
 
-    // ── Subtle scroll-parallax on hero photo ────────────────────────────────
-    gsap.to('.hero-photo-wrapper', {
-      yPercent: 18,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '#above_the_fold_section',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1.4
+    // ── Beat 3→4: Portfolio project 1 → 2 (HORIZONTAL TRACK SLIDE) ──
+      .to('.projects-track', { xPercent: -33.333, duration: 1, ease: 'power2.inOut' }, 3)
+
+    // ── Beat 4→5: Portfolio project 2 → 3 ──
+      .to('.projects-track', { xPercent: -66.667, duration: 1, ease: 'power2.inOut' }, 4)
+
+    // ── Beat 5→6: Portfolio → Contact (ASCEND from below) ──
+      .to(stages[3], { y: '70%', z: -900, scale: 0.6, opacity: 0, rotateX: -15, duration: 1, ease: 'power2.in' }, 5)
+      .to(stages[4], { y: 0, z: 0, scale: 1, opacity: 1, rotateX: 0, duration: 1, ease: 'power2.out' }, 5.14);
+
+    // ── ScrollTrigger — scrub + snap ──
+    let rawF = 0;
+    const journeyST = ScrollTrigger.create({
+      trigger: '#journey',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 1.5,
+      animation: tl,
+      snap: {
+        snapTo: 1 / 6,
+        duration: { min: 0.3, max: 0.8 },
+        delay: 0.05,
+        ease: 'power2.inOut'
+      },
+      onUpdate: (self) => { rawF = self.progress; },
+      onSnapComplete: (self) => {
+        const beat = Math.round(self.progress * 6);
+        this.fireStageAnimation(beat);
       }
     });
 
-    // ── Heading parallax on every section ───────────────────────────────────
-    [
-      { sel: '.about-heading',       trigger: '#about_me_section'  },
-      { sel: '.skills-text h1',      trigger: '#my_skills_section' },
-      { sel: '.portfolio-heading h1',trigger: '#portfolio_section' },
-      { sel: '.contact-heading h1',  trigger: '#contact_section'   },
-    ].forEach(({ sel, trigger }) => {
-      gsap.to(sel, {
-        yPercent: -12, ease: 'none',
-        scrollTrigger: { trigger, start: 'top bottom', end: 'bottom top', scrub: 1.8 }
-      });
+    // ── Section link navigation ──
+    const BEAT_SCROLL: Record<string, number> = {
+      'above_the_fold_section': 0,
+      'about_me_section':       1,
+      'my_skills_section':      2,
+      'portfolio_section':      3,
+      'contact_section':        6
+    };
+
+    const getJourneyScrollMax = () => {
+      const journey = document.querySelector('#journey') as HTMLElement;
+      return journey ? journey.scrollHeight - window.innerHeight : 0;
+    };
+
+    document.addEventListener('click', (e) => {
+      const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!a) return;
+      const id = a.getAttribute('href')!.slice(1);
+      if (id in BEAT_SCROLL) {
+        e.preventDefault();
+        const targetY = (BEAT_SCROLL[id] / 6) * getJourneyScrollMax();
+        gsap.to(window, { scrollTo: targetY, duration: 1.2, ease: 'power3.inOut' });
+      }
     });
 
-    ScrollTrigger.refresh();
+    // Three.js reads rawF from closure via this global
+    (window as any).__journeyProgress = () => rawF;
+
+    this.scrollCleanup = () => { journeyST.kill(); };
+
+    // Fire hero entrance on load
+    setTimeout(() => this.fireStageAnimation(0), 200);
+  }
+
+  private fireStageAnimation(beat: number) {
+    // Map beat to stage index
+    const stageIdx = beat <= 2 ? beat : beat <= 5 ? 3 : 4;
+    const tl = this.buildStageTl(stageIdx, beat);
+    tl?.restart();
+  }
+
+  private buildStageTl(stageIdx: number, beat: number): gsap.core.Timeline | null {
+    switch (stageIdx) {
+      case 0: return this.heroTl();
+      case 1: return this.aboutTl();
+      case 2: return this.skillsTl();
+      case 3: return this.portfolioTl(beat - 3); // 0=card1, 1=card2, 2=card3
+      case 4: return this.contactTl();
+      default: return null;
+    }
+  }
+
+  private heroTl() {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('.hero-label',        { y: 30, opacity: 0, duration: 0.55, delay: 0.1 })
+      .from('.hero-name',          { y: 72, opacity: 0, skewY: 4, duration: 0.90 }, '-=0.30')
+      .from('.hero-role',          { y: 28, opacity: 0, duration: 0.60 }, '-=0.45')
+      .from('.hero-social-line',   { scaleX: 0, opacity: 0, duration: 0.48, transformOrigin: 'left' }, '-=0.35')
+      .from('.hero-links a, .hero-links .hero-email', { y: 20, opacity: 0, stagger: 0.07, duration: 0.46 }, '-=0.30')
+      .from('.hero-cta',           { y: 20, opacity: 0, scale: 0.90, duration: 0.50 }, '-=0.28')
+      .from('.hero-photo-wrapper', { y: 50, opacity: 0, scale: 0.82, duration: 0.92, ease: 'back.out(1.4)' }, '-=0.72')
+      .from('.hero-arrow',         { opacity: 0, y: -14, duration: 0.55 }, '-=0.22');
+    return tl;
+  }
+
+  private aboutTl() {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('.about-photo-wrap', { scale: 0.65, opacity: 0, rotation: -16, duration: 1.1, ease: 'back.out(1.7)' })
+      .from('.about-heading',     { x: -50, opacity: 0, duration: 0.72 }, '-=0.65')
+      .from('.about-body',        { y: 28, opacity: 0, duration: 0.60 }, '-=0.42')
+      .from('.about-trait',       { y: 24, opacity: 0, duration: 0.55, stagger: 0.14 }, '-=0.36')
+      .from('.about-icon',        { scale: 0, opacity: 0, duration: 0.46, stagger: 0.10, ease: 'back.out(2.4)' }, '-=0.30')
+      .from('.social-icon-link',  { y: 20, opacity: 0, duration: 0.45, stagger: 0.09 }, '-=0.22');
+    return tl;
+  }
+
+  private skillsTl() {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('.skills-text h1',      { x: 70, opacity: 0, duration: 0.82 })
+      .from('.skills-text > div > div', { scaleX: 0, opacity: 0, duration: 0.50, transformOrigin: 'right' }, '-=0.44')
+      .from('.skills-text > p',     { x: 48, opacity: 0, duration: 0.68 }, '-=0.44')
+      .from('.skills-text button, .skills-mobile-btn button', { x: 36, opacity: 0, scale: 0.90, duration: 0.54 }, '-=0.34')
+      .from('.skill-item',          { y: 46, opacity: 0, scale: 0.78, duration: 0.58,
+          stagger: { amount: 1.0, from: 'start', grid: 'auto' }, ease: 'back.out(1.6)' }, '-=0.48');
+    return tl;
+  }
+
+  private portfolioTl(cardIdx: number) {
+    const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
+    const panel = panels[cardIdx];
+    if (!panel) return gsap.timeline();
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    if (cardIdx === 0) {
+      tl.from('.portfolio-heading h1', { y: 40, opacity: 0, duration: 0.72 })
+        .from('.portfolio-sub',         { y: 22, opacity: 0, duration: 0.58 }, '-=0.38');
+    }
+    tl.from(panel.querySelector('.project-img-wrap'), { x: -60, opacity: 0, duration: 0.82 }, cardIdx === 0 ? '-=0.44' : 0)
+      .from(panel.querySelector('.project-info'),      { x: 60, opacity: 0, duration: 0.82 }, '-=0.62')
+      .from(panel.querySelectorAll('.project-num, .project-tech'), { y: 18, opacity: 0, stagger: 0.10, duration: 0.48 }, '-=0.40')
+      .from(panel.querySelector('h4'),                 { y: 26, opacity: 0, duration: 0.56 }, '-=0.32')
+      .from(panel.querySelector('p'),                  { y: 20, opacity: 0, duration: 0.52 }, '-=0.28')
+      .from(panel.querySelectorAll('.project-actions a'), { y: 16, opacity: 0, stagger: 0.11, duration: 0.46, ease: 'back.out(1.3)' }, '-=0.22');
+    return tl;
+  }
+
+  private contactTl() {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('.contact-rule',       { scaleX: 0, opacity: 0, duration: 0.58, transformOrigin: 'left' })
+      .from('.contact-heading h1', { y: 44, opacity: 0, duration: 0.78 }, '-=0.30')
+      .from('.contact-info h4',    { y: 30, opacity: 0, duration: 0.66 }, '-=0.44')
+      .from('.contact-info p, .contact-info span', { y: 22, opacity: 0, stagger: 0.11, duration: 0.56 }, '-=0.34')
+      .from('.contact-form',       { y: 44, opacity: 0, scale: 0.95, duration: 0.80, ease: 'back.out(1.3)' }, '-=0.44')
+      .from('.form-field',         { y: 18, opacity: 0, stagger: 0.10, duration: 0.46 }, '-=0.46')
+      .from('.form-privacy',       { y: 14, opacity: 0, duration: 0.44 }, '-=0.22')
+      .from('.contact-form > button', { y: 14, opacity: 0, scale: 0.88, duration: 0.48, ease: 'back.out(1.5)' }, '-=0.20');
+    return tl;
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // THREE.JS — camera progress now fed by ScrollTrigger, not window.scrollY
+  // THREE.JS — camera progress fed by __journeyProgress, not window.scrollY
   // ════════════════════════════════════════════════════════════════════════════
 
   private initGlobalThreeJS() {
@@ -463,14 +416,6 @@ export class AppComponent implements OnInit, OnDestroy {
     const tCol  = new THREE.Color();
     let   sFrac = 0;
 
-    // ── ScrollTrigger feeds rawF — GSAP owns the scroll value ───────────────
-    let rawF = 0;
-    const st = ScrollTrigger.create({
-      start: 0,
-      end: 'max',
-      onUpdate: (self) => { rawF = self.progress; }
-    });
-
     const rotR = [
       [ 0.00036,  0.00050,  0      ],
       [ 0,        0.00030, -0.00040],
@@ -487,7 +432,8 @@ export class AppComponent implements OnInit, OnDestroy {
       if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
 
-      // ScrollTrigger gives us a clean 0-1 progress — lerp into sFrac
+      // __journeyProgress gives us a clean 0-1 progress — lerp into sFrac
+      const rawF = (window as any).__journeyProgress?.() ?? 0;
       sFrac += (rawF - sFrac) * 0.052;
 
       camCurve.getPoint(sFrac, tCam);
@@ -568,7 +514,6 @@ export class AppComponent implements OnInit, OnDestroy {
     animate();
 
     this.threeCleanup = () => {
-      st.kill();
       cancelAnimationFrame(this.animId);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize',   onResize);

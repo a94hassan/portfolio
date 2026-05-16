@@ -5,6 +5,7 @@ $invalid: #E61C40;
 
 :host {
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -66,14 +67,13 @@ $invalid: #E61C40;
 section {
   position: relative;
   z-index: 2;
-  scroll-margin-top: 80px;
   width: 100%;
   max-width: $contentWidth;
   margin: 0 auto;
   padding: 100px $paddingLR 80px;
   display: flex;
   flex-direction: column;
-  min-height: 100svh;
+  height: 100%;
 }
 
 // ─── Heading ──────────────────────────────────────────────────────────────────

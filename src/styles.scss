@@ -307,3 +307,34 @@ html.light {
   font-weight: 700;
   src: url('./assets/font/poppins-v20-latin-700.woff2') format('woff2');
 }
+
+// ─── Journey / Stage ──────────────────────────────────────────────────────────
+
+#journey {
+  height: 700vh;
+  position: relative;
+}
+
+#stages {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  perspective: 1000px;
+  perspective-origin: 50% 50%;
+  z-index: 1;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+
+  // Angular host component fills the stage
+  > * {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+  }
+}

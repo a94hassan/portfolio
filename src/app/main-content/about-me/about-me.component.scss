@@ -2,15 +2,15 @@
 
 :host {
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 section {
-  min-height: 100svh;
+  height: 100%;
   display: flex;
   align-items: center;
-  scroll-margin-top: 80px;
   position: relative;
   z-index: 1;
 

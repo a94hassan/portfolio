@@ -10,7 +10,7 @@ import { ContactComponent } from './contact/contact.component';
   standalone: true,
   imports: [AboveTheFoldComponent, AboutMeComponent, MySkillsComponent, PortfolioComponent, ContactComponent],
   templateUrl: './main-content.component.html',
-  styles: []
+  styleUrl: './main-content.component.scss'
 })
 export class MainContentComponent {
 }
