@@ -39,7 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
     setTimeout(() => this.initSectionTransitions(), 800);
   }
 
-  // ─── Full-page scroll hijacking ────────────────────────────────────────────
+  // ─── Full-page scroll snap controller ─────────────────────────────────────
 
   private initScrollSnap() {
     const SECTION_IDS = [
@@ -53,7 +53,7 @@ export class AppComponent implements OnInit, OnDestroy {
     let sections: HTMLElement[] = [];
     let current = 0;
     let locked = false;
-    const LOCK_MS = 1050;
+    const LOCK_MS = 1100;
     const HEADER_H = 80;
 
     const init = () => {
@@ -83,11 +83,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
       const curr = sections[current];
       const rect = curr?.getBoundingClientRect();
-      const dir = e.deltaY > 0 ? 1 : -1;
+      const dir  = e.deltaY > 0 ? 1 : -1;
 
-      // Allow native scroll within sections taller than viewport
-      if (rect && dir === 1 && rect.bottom > window.innerHeight + 20) return;
-      if (rect && dir === -1 && rect.top < -(20)) return;
+      if (rect && dir ===  1 && rect.bottom > window.innerHeight + 20) return;
+      if (rect && dir === -1 && rect.top    < -20)                       return;
 
       const next = Math.max(0, Math.min(sections.length - 1, current + dir));
       if (next === current || locked) return;
@@ -101,56 +100,51 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (!sections.length || locked) return;
-      if (e.key === 'ArrowDown' || e.key === 'PageDown') {
-        e.preventDefault();
-        const next = Math.min(sections.length - 1, current + 1);
-        if (next !== current) { locked = true; scrollTo(next); current = next; setTimeout(() => { locked = false; }, LOCK_MS); }
-      } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
-        e.preventDefault();
-        const prev = Math.max(0, current - 1);
-        if (prev !== current) { locked = true; scrollTo(prev); current = prev; setTimeout(() => { locked = false; }, LOCK_MS); }
-      }
+      let dir = 0;
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') dir =  1;
+      if (e.key === 'ArrowUp'   || e.key === 'PageUp')   dir = -1;
+      if (!dir) return;
+      e.preventDefault();
+      const next = Math.max(0, Math.min(sections.length - 1, current + dir));
+      if (next === current) return;
+      locked = true; scrollTo(next); current = next;
+      setTimeout(() => { locked = false; }, LOCK_MS);
     };
 
     let touchY = 0;
     const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0].clientY; };
-    const onTouchEnd = (e: TouchEvent) => {
+    const onTouchEnd   = (e: TouchEvent) => {
       if (!sections.length || locked) return;
       const delta = touchY - e.changedTouches[0].clientY;
-      if (Math.abs(delta) < 48) return;
-      const dir = delta > 0 ? 1 : -1;
-
+      if (Math.abs(delta) < 52) return;
+      const dir  = delta > 0 ? 1 : -1;
       const curr = sections[current];
       const rect = curr?.getBoundingClientRect();
-      if (rect && dir === 1 && rect.bottom > window.innerHeight + 20) return;
-      if (rect && dir === -1 && rect.top < -(20)) return;
-
+      if (rect && dir ===  1 && rect.bottom > window.innerHeight + 20) return;
+      if (rect && dir === -1 && rect.top    < -20) return;
       const next = Math.max(0, Math.min(sections.length - 1, current + dir));
       if (next === current) return;
-      locked = true;
-      scrollTo(next);
-      current = next;
+      locked = true; scrollTo(next); current = next;
       setTimeout(() => { locked = false; }, LOCK_MS);
     };
 
     setTimeout(init, 400);
-
-    window.addEventListener('scroll', findCurrent, { passive: true });
-    window.addEventListener('wheel', onWheel, { passive: false });
-    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('scroll',     findCurrent,  { passive: true });
+    window.addEventListener('wheel',      onWheel,      { passive: false });
+    window.addEventListener('keydown',    onKeyDown);
     window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('touchend',   onTouchEnd,   { passive: true });
 
     this.scrollCleanup = () => {
-      window.removeEventListener('scroll', findCurrent);
-      window.removeEventListener('wheel', onWheel);
-      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('scroll',     findCurrent);
+      window.removeEventListener('wheel',      onWheel);
+      window.removeEventListener('keydown',    onKeyDown);
       window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchend',   onTouchEnd);
     };
   }
 
-  // ─── 3D section entrance animations ───────────────────────────────────────
+  // ─── 3D section entrance animations (GSAP + ScrollTrigger) ────────────────
 
   private initSectionTransitions() {
     const sections = Array.from(
@@ -159,33 +153,20 @@ export class AppComponent implements OnInit, OnDestroy {
 
     sections.forEach(section => {
       gsap.set(section, {
-        opacity: 0,
-        y: 80,
-        scale: 0.92,
-        rotateX: 9,
-        transformPerspective: 1400,
-        transformOrigin: 'top center'
+        opacity: 0, y: 80, scale: 0.92, rotateX: 9,
+        transformPerspective: 1400, transformOrigin: 'top center'
       });
-
       gsap.to(section, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        rotateX: 0,
+        opacity: 1, y: 0, scale: 1, rotateX: 0,
         ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 92%',
-          end: 'top 10%',
-          scrub: 2.0
-        }
+        scrollTrigger: { trigger: section, start: 'top 92%', end: 'top 10%', scrub: 2.0 }
       });
     });
 
     ScrollTrigger.refresh();
   }
 
-  // ─── Three.js background ───────────────────────────────────────────────────
+  // ─── Three.js — Phi-space journey ─────────────────────────────────────────
 
   private initGlobalThreeJS() {
     const canvas = document.querySelector('#global-canvas') as HTMLCanvasElement;
@@ -195,175 +176,278 @@ export class AppComponent implements OnInit, OnDestroy {
     let h = window.innerHeight;
     const isMobile = w <= 768;
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 3000);
-    camera.position.z = 600;
-
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    const scene    = new THREE.Scene();
+    const camera   = new THREE.PerspectiveCamera(58, w / h, 0.1, 12000);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: !isMobile });
     renderer.setSize(w, h);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    const COUNT = isMobile ? 50 : 80;
-    const positions = new Float32Array(COUNT * 3);
-    const velocities = new Float32Array(COUNT * 2);
+    // ── Golden ratio constants ─────────────────────────────────────────────
+    const PHI = (1 + Math.sqrt(5)) / 2;          // ≈ 1.6180
+    const GA  = Math.PI * (3 - Math.sqrt(5));    // golden angle ≈ 137.5°
 
-    for (let i = 0; i < COUNT; i++) {
-      positions[i * 3]     = (Math.random() - 0.5) * w * 1.4;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * h * 1.4;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 80;
-      velocities[i * 2]     = (Math.random() - 0.5) * 0.04;
-      velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.04;
+    // ── Section world-Y positions (spaced by ~1 viewport height each) ──────
+    const SY = [0, -h * 1.15, -h * 2.55, -h * 4.05, -h * 5.35];
+
+    // ── Camera spline — winds through the scene as scroll progresses ───────
+    // Camera oscillates left/right while descending, creating oblique views.
+    // lookAt target is mirrored to create rotation as the camera swings.
+    const camPts = [
+      new THREE.Vector3(    0,  SY[0],  600),
+      new THREE.Vector3( -170,  SY[1],  530),
+      new THREE.Vector3(  230,  SY[2],  490),
+      new THREE.Vector3( -140,  SY[3],  550),
+      new THREE.Vector3(   55,  SY[4],  600),
+    ];
+    const lkPts = [
+      new THREE.Vector3(    0,  SY[0],  0),
+      new THREE.Vector3(  140,  SY[1],  0),
+      new THREE.Vector3( -185,  SY[2],  0),
+      new THREE.Vector3(  110,  SY[3],  0),
+      new THREE.Vector3(    0,  SY[4],  0),
+    ];
+    const camCurve = new THREE.CatmullRomCurve3(camPts, false, 'catmullrom', 0.5);
+    const lkCurve  = new THREE.CatmullRomCurve3(lkPts,  false, 'catmullrom', 0.5);
+
+    // ── Fibonacci particle field ───────────────────────────────────────────
+    // Particles placed via golden-angle spiral (sunflower seed distribution)
+    const PC   = isMobile ? 90 : 165;
+    const pPos = new Float32Array(PC * 3);
+    const pCol = new Float32Array(PC * 3).fill(1);
+    const pVel = new Float32Array(PC * 2);
+    const totalSpan = Math.abs(SY[4]) * 1.08;
+
+    for (let i = 0; i < PC; i++) {
+      const t    = i / PC;
+      const incl = Math.acos(1 - 2 * t);
+      const azim = GA * i;
+      const r    = 260 + Math.random() * 380;
+      pPos[i*3]   =  Math.sin(incl) * Math.cos(azim) * r;
+      pPos[i*3+1] =  t * SY[4] * 1.05 + (Math.random() - 0.5) * h * 0.7;
+      pPos[i*3+2] =  Math.sin(incl) * Math.sin(azim) * r - 190;
+      pVel[i*2]   = (Math.random() - 0.5) * 0.022;
+      pVel[i*2+1] = (Math.random() - 0.5) * 0.018;
     }
 
-    const colors = new Float32Array(COUNT * 3).fill(1);
-    const particleGeo = new THREE.BufferGeometry();
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    particleGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    const particleMat = new THREE.PointsMaterial({
-      vertexColors: true, size: 2.5, transparent: true, opacity: 0.28, sizeAttenuation: false
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
+    const pMat = new THREE.PointsMaterial({
+      vertexColors: true, size: 2.1, transparent: true, opacity: 0.26, sizeAttenuation: false
     });
-    scene.add(new THREE.Points(particleGeo, particleMat));
+    scene.add(new THREE.Points(pGeo, pMat));
 
-    const makeWf = (geo: THREE.BufferGeometry, opacity: number) => {
+    // ── Wireframe helper ──────────────────────────────────────────────────
+    const allWfMeshes: THREE.LineSegments[] = [];
+    const allWfMats:   THREE.LineBasicMaterial[] = [];
+    const allWfBase:   number[] = [];
+
+    const mkWf = (
+      geo: THREE.BufferGeometry, opa: number,
+      px: number, py: number, pz: number,
+      rx = 0, ry = 0, rz = 0
+    ) => {
       const edges = new THREE.EdgesGeometry(geo);
-      const mat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity });
-      const mesh = new THREE.LineSegments(edges, mat);
+      const mat   = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: opa });
+      const mesh  = new THREE.LineSegments(edges, mat);
+      mesh.position.set(px, py, pz);
+      mesh.rotation.set(rx, ry, rz);
       geo.dispose();
-      return { mesh, edges, mat };
+      scene.add(mesh);
+      allWfMeshes.push(mesh);
+      allWfMats.push(mat);
+      allWfBase.push(opa);
+      return mesh;
     };
 
+    // ── Room markers — each section has a characteristic Phi-scaled shape ──
     const dim = Math.min(w, h);
-    const VIRTUAL_H = h * 5.0;
+    const S   = dim * 0.26;  // base size
 
-    const { mesh: ico1, edges: ico1e, mat: ico1m } = makeWf(new THREE.IcosahedronGeometry(dim * 0.68, 1), 0.040);
-    ico1.position.set(w * 0.54, h * 0.06, -140);
-    scene.add(ico1);
+    // Section 0 — Hero: large icosahedron (Platonic solid of highest symmetry)
+    mkWf(new THREE.IcosahedronGeometry(S * 1.00, 1), 0.036,  dim * 0.29,  SY[0],         -300);
+    // Secondary shape — smaller, offset
+    mkWf(new THREE.IcosahedronGeometry(S * 0.38, 1), 0.022, -dim * 0.18,  SY[0] - h*0.2, -200);
 
-    const { mesh: torus1, edges: tor1e, mat: tor1m } = makeWf(new THREE.TorusGeometry(dim * 0.50, dim * 0.10, 8, 52), 0.028);
-    torus1.position.set(-w * 0.52, -VIRTUAL_H * 0.22, -260);
-    scene.add(torus1);
+    // Section 1 — About: dodecahedron (12 pentagonal faces, Phi proportions)
+    mkWf(new THREE.DodecahedronGeometry(S / PHI,    0), 0.032, -dim * 0.27,  SY[1],         -250,  0.2, 0.4, 0);
+    mkWf(new THREE.DodecahedronGeometry(S / PHI / PHI, 0), 0.020, dim * 0.14, SY[1] + h*0.2, -160);
 
-    const { mesh: octa, edges: octae, mat: octam } = makeWf(new THREE.OctahedronGeometry(dim * 0.60, 0), 0.032);
-    octa.position.set(w * 0.52, -VIRTUAL_H * 0.44, -180);
-    scene.add(octa);
+    // Section 2 — Skills: octahedron (dual of cube, precise geometry)
+    mkWf(new THREE.OctahedronGeometry(S * PHI / 2, 0), 0.034,  dim * 0.31,  SY[2],         -220,  0.3, 0.1, 0.2);
+    mkWf(new THREE.OctahedronGeometry(S / 3,       0), 0.020, -dim * 0.12,  SY[2] - h*0.2, -180);
 
-    const { mesh: ico2, edges: ico2e, mat: ico2m } = makeWf(new THREE.IcosahedronGeometry(dim * 0.56, 1), 0.030);
-    ico2.position.set(-w * 0.50, -VIRTUAL_H * 0.66, -110);
-    scene.add(ico2);
+    // Section 3 — Portfolio: torus knot (mathematical elegance)
+    mkWf(new THREE.TorusKnotGeometry(S * 0.42, S * 0.09, 80, 7), 0.024, -dim * 0.25, SY[3], -270,  0.1, 0, 0.15);
 
-    const { mesh: torus2, edges: tor2e, mat: tor2m } = makeWf(new THREE.TorusGeometry(dim * 0.44, dim * 0.09, 8, 48), 0.028);
-    torus2.position.set(w * 0.52, -VIRTUAL_H * 0.88, -220);
-    scene.add(torus2);
+    // Section 4 — Contact: geodesic sphere (frequency-2 icosahedron)
+    mkWf(new THREE.IcosahedronGeometry(S * 0.88, 2), 0.030,  dim * 0.22,  SY[4],         -210,  0.2, 0.3, 0);
 
-    const meshes  = [ico1, torus1, octa, ico2, torus2];
-    const baseX   = [w * 0.54, -w * 0.52, w * 0.52, -w * 0.50, w * 0.52];
-    const baseY   = [h * 0.06, -VIRTUAL_H * 0.22, -VIRTUAL_H * 0.44, -VIRTUAL_H * 0.66, -VIRTUAL_H * 0.88];
-    const pxStr   = [22, 18, 20, 18, 20];
-    const pyStr   = [ 9,  7,  9,  7,  8];
-    const baseOpa = [0.040, 0.028, 0.032, 0.030, 0.028];
-    const allMats = [ico1m, tor1m, octam, ico2m, tor2m];
+    // ── Portal rings — at section transition midpoints ─────────────────────
+    // Torus proportions: outer/inner = φ² (≈ 2.618)
+    const portalY: number[] = SY.slice(0, 4).map((y, i) => (y + SY[i + 1]) * 0.5);
+    const portalX = [-55, 85, -45, 22];
+    const portalRot = [0.10, -0.08, 0.12, -0.07];
+    const portalMeshes: THREE.LineSegments[] = [];
+    const portalMats:   THREE.LineBasicMaterial[] = [];
 
-    let mouseNX = 0;
-    let mouseNY = 0;
-    let mousePX = w / 2;
-    let mousePY = h / 2;
+    portalY.forEach((py, i) => {
+      const outerR = dim * 0.28;
+      const tubeR  = outerR / (PHI * PHI);
+      const geo    = new THREE.TorusGeometry(outerR, tubeR, 5, 48);
+      const mat    = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.013 });
+      const edges  = new THREE.EdgesGeometry(geo);
+      geo.dispose();
+      const mesh = new THREE.LineSegments(edges, mat);
+      mesh.position.set(portalX[i], py, -90);
+      mesh.rotation.x = portalRot[i];
+      scene.add(mesh);
+      portalMeshes.push(mesh);
+      portalMats.push(mat);
+    });
 
+    // ── Golden logarithmic spiral — spine of the journey ──────────────────
+    // r(θ) = a · φ^(bθ) — grows by factor φ with each unit turn
+    const SPN = 340;
+    const spPts: THREE.Vector3[] = [];
+    for (let i = 0; i < SPN; i++) {
+      const t   = i / SPN;
+      const ang = t * Math.PI * 12;           // 6 full turns through the journey
+      const r   = 55 * Math.pow(PHI, t * 2.4);
+      spPts.push(new THREE.Vector3(
+        Math.cos(ang) * r * 0.52,
+        t * SY[4] * 1.03,
+        Math.sin(ang) * r * 0.33 - 460
+      ));
+    }
+    const spGeo = new THREE.BufferGeometry().setFromPoints(spPts);
+    const spMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.018 });
+    scene.add(new THREE.Line(spGeo, spMat));
+
+    // ── Second lighter spiral (phase offset) ──────────────────────────────
+    const sp2Pts: THREE.Vector3[] = [];
+    for (let i = 0; i < SPN; i++) {
+      const t   = i / SPN;
+      const ang = t * Math.PI * 12 + Math.PI; // 180° offset
+      const r   = 40 * Math.pow(PHI, t * 2.2);
+      sp2Pts.push(new THREE.Vector3(
+        Math.cos(ang) * r * 0.42,
+        t * SY[4] * 1.03,
+        Math.sin(ang) * r * 0.28 - 480
+      ));
+    }
+    const sp2Geo = new THREE.BufferGeometry().setFromPoints(sp2Pts);
+    const sp2Mat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.012 });
+    scene.add(new THREE.Line(sp2Geo, sp2Mat));
+
+    // ── Mouse ─────────────────────────────────────────────────────────────
+    let mNX = 0, mNY = 0;
     const onMouseMove = (e: MouseEvent) => {
-      mouseNX = (e.clientX / w - 0.5) * 2;
-      mouseNY = -((e.clientY / h) - 0.5) * 2;
-      mousePX = e.clientX;
-      mousePY = e.clientY;
+      mNX = (e.clientX / w - 0.5) * 2;
+      mNY = -((e.clientY / h) - 0.5) * 2;
     };
 
-    const TAN30 = Math.tan(Math.PI / 6);
-    const TILE_H = h * 1.6;
-    const REPULSE_R = Math.min(w, h) * 0.14;
-    const tempColor = new THREE.Color();
+    // ── Smooth camera state ────────────────────────────────────────────────
+    const smoothCam  = new THREE.Vector3(0, 0, 600);
+    const smoothLk   = new THREE.Vector3(0, 0, 0);
+    const tmpCam     = new THREE.Vector3();
+    const tmpLk      = new THREE.Vector3();
+    const tCol       = new THREE.Color();
+    let   smoothFrac = 0;
 
+    // Rotation speeds for each room marker (unique per shape, avoid repetition)
+    const rotRates = [
+      [ 0.00036,  0.00050,  0],
+      [ 0,        0.00042,  0.00030],
+      [ 0.00045,  0,        0.00034],
+      [ 0.00028,  0.00036,  0.00018],
+      [-0.00022,  0.00038,  0.00026],
+      [ 0.00032, -0.00028,  0],
+      [ 0.00020,  0,        0.00040],
+      [ 0.00030,  0.00022,  0],
+      [ 0.00016,  0.00034, -0.00020],
+      [ 0,        0.00028,  0.00036],
+    ];
+
+    // ── Render loop ───────────────────────────────────────────────────────
     const animate = () => {
       if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
 
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const scrollFrac = max > 0 ? window.scrollY / max : 0;
+      // Scroll-driven fraction with smooth lerp
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const rawFrac   = maxScroll > 0 ? Math.max(0, Math.min(1, window.scrollY / maxScroll)) : 0;
+      smoothFrac     += (rawFrac - smoothFrac) * 0.038;
 
-      camera.position.y += (-scrollFrac * VIRTUAL_H - camera.position.y) * 0.045;
-      camera.position.x += (mouseNX * 16 - camera.position.x) * 0.030;
-      const camY = camera.position.y;
+      // Camera follows spline + mouse parallax
+      camCurve.getPoint(smoothFrac, tmpCam);
+      lkCurve.getPoint(smoothFrac, tmpLk);
+      tmpCam.x += mNX * 20;
+      tmpCam.y += mNY * 9;
+      smoothCam.lerp(tmpCam, 0.042);
+      smoothLk.lerp(tmpLk,   0.042);
+      camera.position.copy(smoothCam);
+      camera.lookAt(smoothLk);
 
-      const wHalfH = camera.position.z * TAN30;
-      const wHalfW = wHalfH * (w / h);
-      const worldMX = camera.position.x + ((mousePX / w) * 2 - 1) * wHalfW;
-      const worldMY = camera.position.y - ((mousePY / h) * 2 - 1) * wHalfH;
+      // ── Room markers: rotate + proximity brightness ──────────────────
+      const roomSectionMap = [0, 0, 1, 1, 2, 2, 3, 4, 4, 4]; // which section each mesh belongs to
+      allWfMeshes.forEach((m, i) => {
+        const rs = rotRates[i] ?? [0, 0.0003, 0];
+        m.rotation.x += rs[0]; m.rotation.y += rs[1]; m.rotation.z += rs[2];
+        const sIdx = roomSectionMap[i] ?? i;
+        const sY   = SY[sIdx] ?? 0;
+        const dist = Math.abs(smoothCam.y - sY);
+        const rng  = h * 0.88;
+        allWfMats[i].opacity = allWfBase[i] + Math.max(0, 1 - dist / rng) * 0.054;
+      });
 
-      const pos = particleGeo.attributes['position'].array as Float32Array;
-      const repRadSq = REPULSE_R * REPULSE_R;
+      // ── Portal rings: glow + scale as camera approaches ───────────────
+      portalMeshes.forEach((p, i) => {
+        p.rotation.z += 0.00016 * (i % 2 === 0 ? 1 : -1);
+        const dist  = Math.abs(smoothCam.y - portalY[i]);
+        const range = h * 0.78;
+        const t     = Math.max(0, 1 - dist / range);
+        portalMats[i].opacity = 0.012 + t * 0.055;   // dezent: max ~0.067
+        const sc = 1.0 + t * 0.25;
+        p.scale.set(sc, sc, 1.0 + t * 0.10);          // slight Z compression for depth illusion
+      });
 
-      for (let i = 0; i < COUNT; i++) {
-        const dx = pos[i * 3]     - worldMX;
-        const dy = pos[i * 3 + 1] - worldMY;
-        const dSq = dx * dx + dy * dy;
+      // ── Fibonacci particles: drift + color near camera ────────────────
+      const pos = pGeo.attributes['position'].array as Float32Array;
+      const col = pGeo.attributes['color'].array as Float32Array;
+      const ts  = Date.now() * 0.00011;
 
-        if (dSq < repRadSq && dSq > 0.01) {
-          const d = Math.sqrt(dSq);
-          const f = (1 - d / REPULSE_R) * 0.028;
-          velocities[i * 2]     += (dx / d) * f;
-          velocities[i * 2 + 1] += (dy / d) * f;
-        }
+      for (let i = 0; i < PC; i++) {
+        pos[i*3]   += pVel[i*2];
+        pos[i*3+1] += pVel[i*2+1];
+        pVel[i*2]   += (Math.random() - 0.5) * 0.0009;
+        pVel[i*2+1] += (Math.random() - 0.5) * 0.0009;
+        pVel[i*2]   *= 0.972;
+        pVel[i*2+1] *= 0.972;
 
-        velocities[i * 2]     += (Math.random() - 0.5) * 0.0018;
-        velocities[i * 2 + 1] += (Math.random() - 0.5) * 0.0018;
-        velocities[i * 2]     *= 0.96;
-        velocities[i * 2 + 1] *= 0.96;
+        // Tile vertically around camera
+        if (pos[i*3+1] - smoothCam.y >  totalSpan * 0.5) pos[i*3+1] -= totalSpan;
+        if (pos[i*3+1] - smoothCam.y < -totalSpan * 0.5) pos[i*3+1] += totalSpan;
 
-        pos[i * 3]     += velocities[i * 2];
-        pos[i * 3 + 1] += velocities[i * 2 + 1];
-
-        const halfW = w * 0.72;
-        if (pos[i * 3] >  halfW) pos[i * 3] = -halfW;
-        if (pos[i * 3] < -halfW) pos[i * 3] =  halfW;
-
-        if (pos[i * 3 + 1] - camY >  TILE_H) pos[i * 3 + 1] -= TILE_H * 2;
-        if (pos[i * 3 + 1] - camY < -TILE_H) pos[i * 3 + 1] += TILE_H * 2;
-      }
-      particleGeo.attributes['position'].needsUpdate = true;
-
-      const col = particleGeo.attributes['color'].array as Float32Array;
-      const colorR = REPULSE_R * 3.0;
-      const timeShift = Date.now() * 0.00014;
-      for (let i = 0; i < COUNT; i++) {
-        const dx2 = pos[i * 3] - worldMX;
-        const dy2 = pos[i * 3 + 1] - worldMY;
-        const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-        if (d2 < colorR) {
-          const t = 1 - d2 / colorR;
-          const hue = (((Math.atan2(dy2, dx2) / (Math.PI * 2)) + 0.5 + timeShift) % 1 + 1) % 1;
-          tempColor.setHSL(hue, 0.90, 0.72);
-          col[i * 3]     = 1 - t + tempColor.r * t;
-          col[i * 3 + 1] = 1 - t + tempColor.g * t;
-          col[i * 3 + 2] = 1 - t + tempColor.b * t;
+        // Colour shimmer near camera
+        const dx = pos[i*3]   - smoothCam.x;
+        const dy = pos[i*3+1] - smoothCam.y;
+        const dz = pos[i*3+2] - smoothCam.z;
+        const d3 = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        const cr = 255;
+        if (d3 < cr) {
+          const t2  = 1 - d3 / cr;
+          const hue = (((Math.atan2(dy, dx) / (Math.PI * 2)) + 0.5 + ts) % 1 + 1) % 1;
+          tCol.setHSL(hue, 0.86, 0.68);
+          col[i*3]   = 1 - t2 + tCol.r * t2;
+          col[i*3+1] = 1 - t2 + tCol.g * t2;
+          col[i*3+2] = 1 - t2 + tCol.b * t2;
         } else {
-          col[i * 3] = 1; col[i * 3 + 1] = 1; col[i * 3 + 2] = 1;
+          col[i*3] = col[i*3+1] = col[i*3+2] = 1;
         }
       }
-      particleGeo.attributes['color'].needsUpdate = true;
-
-      ico1.rotation.x   += 0.00040; ico1.rotation.y   += 0.00055;
-      torus1.rotation.x += 0.00030; torus1.rotation.z += 0.00045;
-      octa.rotation.x   += 0.00050; octa.rotation.y   += 0.00035; octa.rotation.z += 0.00025;
-      ico2.rotation.y   += 0.00045; ico2.rotation.z   += 0.00030;
-      torus2.rotation.y += 0.00038; torus2.rotation.x += 0.00042;
-
-      meshes.forEach((mesh, i) => {
-        mesh.position.x += (baseX[i] + mouseNX * pxStr[i] - mesh.position.x) * 0.020;
-        mesh.position.y += (baseY[i] + mouseNY * pyStr[i] - mesh.position.y) * 0.020;
-      });
-
-      allMats.forEach((mat, i) => {
-        const dist = Math.abs(camY - baseY[i]);
-        const range = VIRTUAL_H * 0.15;
-        mat.opacity = baseOpa[i] + Math.max(0, 1 - dist / range) * 0.048;
-      });
+      pGeo.attributes['position'].needsUpdate = true;
+      pGeo.attributes['color'].needsUpdate    = true;
 
       renderer.render(scene, camera);
     };
@@ -374,23 +458,30 @@ export class AppComponent implements OnInit, OnDestroy {
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
-
-    const onVisibilityChange = () => { if (!document.hidden && this.animId === 0) animate(); };
+    const onVisChg = () => { if (!document.hidden && this.animId === 0) animate(); };
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('resize', onResize);
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener('visibilitychange', onVisChg);
     animate();
 
     this.threeCleanup = () => {
       cancelAnimationFrame(this.animId);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', onResize);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener('visibilitychange', onVisChg);
       renderer.dispose();
-      particleGeo.dispose(); particleMat.dispose();
-      [ico1e, tor1e, octae, ico2e, tor2e].forEach(e => e.dispose());
-      [ico1m, tor1m, octam, ico2m, tor2m].forEach(m => m.dispose());
+      pGeo.dispose(); pMat.dispose();
+      spGeo.dispose(); spMat.dispose();
+      sp2Geo.dispose(); sp2Mat.dispose();
+      allWfMeshes.forEach(m => {
+        m.geometry.dispose();
+        (m.material as THREE.LineBasicMaterial).dispose();
+      });
+      portalMeshes.forEach(m => {
+        m.geometry.dispose();
+        (m.material as THREE.LineBasicMaterial).dispose();
+      });
     };
   }
 
@@ -400,74 +491,58 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!window.matchMedia('(hover: hover)').matches) return;
 
     const ring = document.getElementById('cursor-ring')!;
-    const dot = document.getElementById('cursor-dot')!;
+    const dot  = document.getElementById('cursor-dot')!;
     if (!ring || !dot) return;
 
     gsap.set(ring, { xPercent: -50, yPercent: -50 });
-    gsap.set(dot, { xPercent: -50, yPercent: -50 });
+    gsap.set(dot,  { xPercent: -50, yPercent: -50 });
 
     let appeared = false;
     let spotElements: HTMLElement[] = [];
     let cachedRects: DOMRect[] = [];
-
     const SPOT_SEL = '.skill-item,.project-info,.project-img-wrap,.about-icon,.social-icon-link,form,button';
 
-    const refreshRects = () => {
-      cachedRects = spotElements.map(el => el.getBoundingClientRect());
-    };
-
-    setTimeout(() => {
-      spotElements = Array.from(document.querySelectorAll(SPOT_SEL)) as HTMLElement[];
-      refreshRects();
-    }, 900);
+    const refreshRects = () => { cachedRects = spotElements.map(el => el.getBoundingClientRect()); };
+    setTimeout(() => { spotElements = Array.from(document.querySelectorAll(SPOT_SEL)) as HTMLElement[]; refreshRects(); }, 900);
 
     const onMove = (e: MouseEvent) => {
-      if (!appeared) {
-        gsap.to([ring, dot], { opacity: 1, duration: 0.4 });
-        appeared = true;
-      }
-      gsap.to(dot, { x: e.clientX, y: e.clientY, duration: 0 });
+      if (!appeared) { gsap.to([ring, dot], { opacity: 1, duration: 0.4 }); appeared = true; }
+      gsap.to(dot,  { x: e.clientX, y: e.clientY, duration: 0 });
       gsap.to(ring, { x: e.clientX, y: e.clientY, duration: 0.18, ease: 'power2.out' });
-
       for (let i = 0; i < spotElements.length; i++) {
-        const r = cachedRects[i];
-        if (!r) continue;
+        const r = cachedRects[i]; if (!r) continue;
         spotElements[i].style.setProperty('--mx', `${e.clientX - r.left}px`);
         spotElements[i].style.setProperty('--my', `${e.clientY - r.top}px`);
       }
     };
 
     const onOver = (e: MouseEvent) => {
-      if ((e.target as Element).closest('a, button, input, textarea')) {
+      if ((e.target as Element).closest('a, button, input, textarea'))
         gsap.to(ring, { scale: 1.7, borderColor: 'rgba(255,255,255,0.75)', duration: 0.22 });
-      }
     };
-
     const onOut = (e: MouseEvent) => {
-      if ((e.target as Element).closest('a, button, input, textarea')) {
+      if ((e.target as Element).closest('a, button, input, textarea'))
         gsap.to(ring, { scale: 1, borderColor: 'rgba(255,255,255,0.40)', duration: 0.22 });
-      }
     };
+    const onLeave  = () => gsap.to([ring, dot], { opacity: 0, duration: 0.3 });
+    const onEnter  = () => { if (appeared) gsap.to([ring, dot], { opacity: 1, duration: 0.3 }); };
 
-    const onLeaveWindow = () => gsap.to([ring, dot], { opacity: 0, duration: 0.3 });
-    const onEnterWindow = () => { if (appeared) gsap.to([ring, dot], { opacity: 1, duration: 0.3 }); };
-
-    window.addEventListener('mousemove', onMove, { passive: true });
-    window.addEventListener('scroll', refreshRects, { passive: true });
-    window.addEventListener('resize', refreshRects, { passive: true });
-    document.addEventListener('mouseover', onOver);
-    document.addEventListener('mouseout', onOut);
-    document.addEventListener('mouseleave', onLeaveWindow);
-    document.addEventListener('mouseenter', onEnterWindow);
+    window.addEventListener('mousemove', onMove,  { passive: true });
+    window.addEventListener('scroll',    refreshRects, { passive: true });
+    window.addEventListener('resize',    refreshRects, { passive: true });
+    document.addEventListener('mouseover',  onOver);
+    document.addEventListener('mouseout',   onOut);
+    document.addEventListener('mouseleave', onLeave);
+    document.addEventListener('mouseenter', onEnter);
 
     this.cursorCleanup = () => {
       window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('scroll', refreshRects);
-      window.removeEventListener('resize', refreshRects);
-      document.removeEventListener('mouseover', onOver);
-      document.removeEventListener('mouseout', onOut);
-      document.removeEventListener('mouseleave', onLeaveWindow);
-      document.removeEventListener('mouseenter', onEnterWindow);
+      window.removeEventListener('scroll',    refreshRects);
+      window.removeEventListener('resize',    refreshRects);
+      document.removeEventListener('mouseover',  onOver);
+      document.removeEventListener('mouseout',   onOut);
+      document.removeEventListener('mouseleave', onLeave);
+      document.removeEventListener('mouseenter', onEnter);
     };
   }
 
