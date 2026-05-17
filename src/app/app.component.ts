@@ -436,6 +436,14 @@ export class AppComponent implements OnInit, OnDestroy {
     const pathMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.006 });
     scene.add(new THREE.Line(pathGeo, pathMat));
 
+    // ── Per-particle mouse repulsion constants ─────────────────────────────
+    // REPULSE_R: world-unit radius around mouse cursor — particles inside are pushed away
+    // REPULSE_STR: peak push distance (world units) when particle is directly at cursor
+    // tanHFov: precomputed tan(FOV/2) for unprojecting mouse NDC → world X/Y at particle depth
+    const REPULSE_R   = 200;
+    const REPULSE_STR = 130;
+    const tanHFov     = Math.tan(29 * Math.PI / 180); // camera FOV=58 → half=29°
+
     let mNX = 0, mNY = 0, smX = 0, smY = 0;
     const onMouseMove = (e: MouseEvent) => {
       mNX = (e.clientX / w - 0.5) * 2;
@@ -468,11 +476,36 @@ export class AppComponent implements OnInit, OnDestroy {
       camera.lookAt(sLk);
 
       const p = geo.attributes['position'].array as Float32Array;
+      const aspect = w / h;
       for (let i = 0; i < PC; i++) {
         const ix = i*3, iy = ix+1, iz = ix+2;
-        p[ix] = bX[i] + Math.sin(time * fX[i] + pX[i]) * 24 + smX * 20;
-        p[iy] = bY[i] + Math.sin(time * fY[i] + pY[i]) * 16 + smY * 11;
+
+        // Organic drift — no global mouse field (removed smX*20 / smY*11)
+        p[ix] = bX[i] + Math.sin(time * fX[i] + pX[i]) * 24;
+        p[iy] = bY[i] + Math.sin(time * fY[i] + pY[i]) * 16;
         p[iz] = bZ[i] + Math.sin(time * fZ[i] + pZ[i]) * 10;
+
+        // ── Per-particle mouse repulsion ──────────────────────────────────
+        // Unproject smooth mouse NDC (smX,smY) to world space at this particle's depth.
+        // dz = depth from camera to particle along Z axis.
+        const dz = sCam.z - p[iz];
+        if (dz > 0) {
+          const mwx = sCam.x + smX * dz * tanHFov * aspect;
+          const mwy = sCam.y + smY * dz * tanHFov;
+          const dx  = p[ix] - mwx;
+          const dy2 = p[iy] - mwy;
+          const dist2 = dx*dx + dy2*dy2;
+          if (dist2 < REPULSE_R * REPULSE_R) {
+            const dist = Math.sqrt(dist2);
+            if (dist > 0.5) {
+              const force = (1 - dist / REPULSE_R) * REPULSE_STR;
+              p[ix] += (dx  / dist) * force;
+              p[iy] += (dy2 / dist) * force;
+            }
+          }
+        }
+
+        // Y wrap — keeps particle field centred on camera as we travel down
         const dy = p[iy] - sCam.y;
         if (dy >  totalY * 0.52) p[iy] -= totalY;
         if (dy < -totalY * 0.52) p[iy] += totalY;

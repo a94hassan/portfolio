@@ -109,7 +109,7 @@ section {
   margin-bottom: 30px;
   // Strong fade: solid near-white → fully transparent
   // Creates the "written in smoke" high-fashion editorial look
-  background: linear-gradient(160deg, var(--fg) 15%, rgba(237, 233, 227, 0.55) 60%, transparent 100%);
+  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

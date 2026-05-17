@@ -96,7 +96,7 @@ section {
 .contact-heading h1 {
   font-size: clamp(56px, 7.5vw, 112px);
   line-height: 0.88;
-  background: linear-gradient(160deg, var(--fg) 15%, rgba(237, 233, 227, 0.55) 60%, transparent 100%);
+  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

@@ -49,7 +49,7 @@ section {
   font-size: clamp(60px, 7vw, 112px);
   line-height: 0.88;
   margin-bottom: 28px;
-  background: linear-gradient(160deg, var(--fg) 15%, rgba(237, 233, 227, 0.55) 60%, transparent 100%);
+  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -94,17 +94,21 @@ section {
 
 .about-photo-wrap {
   flex-shrink: 0;
-  width: clamp(280px, 36%, 460px);
+  width: clamp(260px, 32%, 420px);
+  aspect-ratio: 1 / 1;    // forces square — combined with border-radius:50% = circle
+  border-radius: 50%;
+  overflow: hidden;        // clips the image to the circle
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 0 0 1px var(--fg-03),
+    0 32px 80px rgba(0, 0, 0, 0.48);
 
   img {
     width: 100%;
-    height: auto;          // auto — natural aspect ratio, no height collapse
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;  // show face / upper body, not feet
     display: block;
-    border-radius: 24px;
-    border: 1px solid var(--glass-border);
-    box-shadow:
-      0 0 0 1px var(--fg-03),
-      0 32px 80px rgba(0, 0, 0, 0.48);
   }
 }
 
@@ -112,7 +116,7 @@ section {
 
 @media (max-width: 1100px) {
   .about-section { gap: 44px; }
-  .about-photo-wrap { width: clamp(240px, 32%, 380px); }
+  .about-photo-wrap { width: clamp(220px, 28%, 360px); }
 }
 
 @media (max-width: 900px) {
@@ -124,8 +128,7 @@ section {
   }
   .about-content { max-width: 100%; }
   .about-photo-wrap {
-    width: min(320px, 80%);
-    img { border-radius: 18px; }
+    width: min(260px, 72%);
   }
   .about-heading { font-size: clamp(48px, 11vw, 88px); }
 }
