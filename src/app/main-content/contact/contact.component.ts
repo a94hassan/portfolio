@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, AfterViewInit, ElementRef, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { TranslationService } from './../../shared/services/translation.service';
 import { TranslateModule } from '@ngx-translate/core';
-import gsap from 'gsap';
 
 @Component({
   selector: 'app-contact',
@@ -13,11 +12,9 @@ import gsap from 'gsap';
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss'
 })
-export class ContactComponent implements AfterViewInit, OnDestroy {
+export class ContactComponent {
   translate = inject(TranslationService);
   http = inject(HttpClient);
-  private el = inject(ElementRef);
-  private ctx?: gsap.Context;
 
   mailTest = false;
 
@@ -28,46 +25,6 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
     body: (payload: any) => JSON.stringify(payload),
     options: { headers: { 'Content-Type': 'text/plain', responseType: 'text' } },
   };
-
-  ngAfterViewInit() {
-    this.ctx = gsap.context(() => {
-      // Heading sweeps in from below
-      gsap.from('.contact-heading h1', {
-        opacity: 0,
-        y: 80,
-        duration: 1.1,
-        ease: 'power4.out',
-        scrollTrigger: { trigger: '.contact-heading', start: 'top 85%', toggleActions: 'play none none none' }
-      });
-
-      gsap.from('.contact-heading > div', {
-        scaleX: 0,
-        transformOrigin: 'left center',
-        duration: 0.8,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: '.contact-heading', start: 'top 85%', toggleActions: 'play none none none' }
-      });
-
-      // Info block drifts up
-      gsap.from('.contact-info', {
-        opacity: 0,
-        y: 50,
-        duration: 0.9,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: '.contact-info', start: 'top 85%', toggleActions: 'play none none none' }
-      });
-
-      // Form slides from right with slight delay
-      gsap.from('.contact-form', {
-        opacity: 0,
-        x: 70,
-        duration: 1.0,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: '.contact-form', start: 'top 85%', toggleActions: 'play none none none' },
-        delay: 0.1
-      });
-    }, this.el.nativeElement);
-  }
 
   onSubmit(ngForm: NgForm) {
     if (ngForm.submitted && ngForm.form.valid && !this.mailTest) {
@@ -91,7 +48,4 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.ctx?.revert();
-  }
 }

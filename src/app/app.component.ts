@@ -60,18 +60,29 @@ export class AppComponent implements OnInit, OnDestroy {
     if (el.querySelector('[data-char]')) {
       return Array.from(el.querySelectorAll('[data-char]')) as HTMLElement[];
     }
-    const text = el.textContent ?? '';
-    el.innerHTML = '';
     const frag = document.createDocumentFragment();
     const spans: HTMLElement[] = [];
-    for (const ch of text) {
-      const s = document.createElement('span');
-      s.setAttribute('data-char', '1');
-      s.style.display = 'inline-block';
-      s.textContent = ch === ' ' ? ' ' : ch;
-      frag.appendChild(s);
-      spans.push(s);
-    }
+
+    // Walk child nodes so <br> elements are preserved as real line breaks.
+    // textContent alone collapses <br> into \n which doesn't render in inline-block spans.
+    const walk = (node: ChildNode) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        for (const ch of node.textContent ?? '') {
+          if (ch === '\n') continue; // <br> already handled via BR branch
+          const s = document.createElement('span');
+          s.setAttribute('data-char', '1');
+          s.style.display = 'inline-block';
+          s.textContent = ch === ' ' ? ' ' : ch;
+          frag.appendChild(s);
+          spans.push(s);
+        }
+      } else if ((node as Element).tagName === 'BR') {
+        frag.appendChild(document.createElement('br'));
+      }
+    };
+
+    Array.from(el.childNodes).forEach(walk);
+    el.innerHTML = '';
     el.appendChild(frag);
     return spans;
   }
