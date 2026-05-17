@@ -1,5 +1,7 @@
 @import './../../../../styles.scss';
 
+// ─── Host — ultra-transparent liquid glass ────────────────────────────────────
+
 :host {
   width: 100%;
   max-width: 100vw;
@@ -8,69 +10,87 @@
   top: 0;
   left: 0;
   right: 0;
-  background-color: rgba(7, 6, 8, 0.30);
-  backdrop-filter: blur(40px) saturate(1.8);
-  -webkit-backdrop-filter: blur(40px) saturate(1.8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: rgba(7, 6, 8, 0.22);
+  backdrop-filter: blur(48px) saturate(2.0);
+  -webkit-backdrop-filter: blur(48px) saturate(2.0);
+  // Hairline glow instead of hard border — more glassmorphic
+  border-bottom: 1px solid transparent;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.055), 0 4px 32px rgba(0, 0, 0, 0.10);
   @include flexBox();
 }
 
 :host-context(html.light) {
-  background-color: rgba(246, 244, 241, 0.45);
-  border-bottom-color: rgba(28, 26, 24, 0.06);
-  backdrop-filter: blur(40px) saturate(1.6);
-  -webkit-backdrop-filter: blur(40px) saturate(1.6);
+  background-color: rgba(246, 244, 241, 0.38);
+  box-shadow: 0 1px 0 rgba(28, 26, 24, 0.07), 0 4px 24px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(48px) saturate(1.8);
+  -webkit-backdrop-filter: blur(48px) saturate(1.8);
 }
 
 header {
   @include contentWidth();
   @include flexBox($jc: space-between);
-  padding: 20px $paddingLR;
+  padding: 18px $paddingLR;
 }
 
+// ─── Logo ─────────────────────────────────────────────────────────────────────
+
 .header-logo {
-  @include flexBox($gap: 10px);
+  @include flexBox($gap: 12px);
   text-decoration: none;
 
   .logo-mark {
-    color: var(--fg-55);
+    color: var(--fg-40);
     flex-shrink: 0;
     transition: color 0.25s ease;
   }
 
-  &:hover .logo-mark { color: var(--fg); }
-  &:hover .logo-fn { color: var(--fg); }
-  &:hover .logo-ln { color: var(--fg-40); }
+  &:hover .logo-mark     { color: var(--fg-55); }
+  &:hover .logo-fn       { opacity: 0.80; }
+  &:hover .logo-ln       { color: var(--fg-48); }
 }
 
+// Editorial logo wordmark: Instrument Serif name stacked above tracked sans surname
+
 .logo-wordmark {
-  @include flexBox($ai: baseline);
-  gap: 7px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .logo-fn {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  color: var(--fg);
+  // Instrument Serif italic — the display font as the logo itself
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 21px;
+  letter-spacing: -0.01em;
   line-height: 1;
-  transition: color 0.25s ease;
+  color: var(--fg);
+  transition: opacity 0.25s ease;
 }
 
 .logo-ln {
-  font-size: 17px;
-  font-weight: 300;
-  letter-spacing: 0.04em;
+  // Ultra-tracked uppercase Poppins — editorial contrast to the serif above
+  font-family: 'Poppins', sans-serif;
+  font-style: normal;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
   color: var(--fg-35);
   line-height: 1;
+  padding-left: 2px; // optical correction for italic serif's left overhang
   transition: color 0.25s ease;
 }
 
+// ─── Responsive ───────────────────────────────────────────────────────────────
+
 @media (max-width: 1000px) {
-  header { padding: 18px $paddingLR1000; }
+  header { padding: 16px $paddingLR1000; }
 }
 
 @media (max-width: 500px) {
-  header { padding: 16px $paddingLR500; }
+  header { padding: 14px $paddingLR500; }
   .logo-wordmark { display: none; }
 }
