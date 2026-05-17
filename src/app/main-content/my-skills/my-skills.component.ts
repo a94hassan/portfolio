@@ -1,4 +1,4 @@
-import { Component, inject, AfterViewInit, ElementRef, OnDestroy } from '@angular/core';
+import { Component, inject, AfterViewInit, OnDestroy, ElementRef } from '@angular/core';
 import { SkillsService } from '../../shared/services/skills.service';
 import { TranslationService } from './../../shared/services/translation.service';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,9 +14,8 @@ import gsap from 'gsap';
 })
 export class MySkillsComponent implements AfterViewInit, OnDestroy {
   skillsService = inject(SkillsService);
-  translate = inject(TranslationService);
-  private el = inject(ElementRef);
-  private ctx?: gsap.Context;
+  translate     = inject(TranslationService);
+  private el    = inject(ElementRef);
   private tiltCleanups: (() => void)[] = [];
 
   get isGerman(): boolean {
@@ -24,66 +23,14 @@ export class MySkillsComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.ctx = gsap.context(() => {
-      gsap.from('.skill-item', {
-        opacity: 0,
-        y: 36,
-        scale: 0.70,
-        duration: 0.55,
-        stagger: { each: 0.045, from: 'random' },
-        ease: 'back.out(1.8)',
-        scrollTrigger: {
-          trigger: '.skills-grid',
-          start: 'top 82%',
-          toggleActions: 'play none none none'
-        }
-      });
-
-      gsap.from('.skills-text h1', {
-        opacity: 0,
-        y: 70,
-        duration: 1.0,
-        ease: 'power4.out',
-        scrollTrigger: {
-          trigger: '.skills-text',
-          start: 'top 82%',
-          toggleActions: 'play none none none'
-        }
-      });
-
-      gsap.from('.skills-text p', {
-        opacity: 0,
-        y: 30,
-        duration: 0.8,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.skills-text',
-          start: 'top 82%',
-          toggleActions: 'play none none none'
-        },
-        delay: 0.15
-      });
-
-      gsap.from('.skills-text button', {
-        opacity: 0,
-        scale: 0.9,
-        y: 20,
-        duration: 0.6,
-        ease: 'back.out(1.8)',
-        scrollTrigger: {
-          trigger: '.skills-text',
-          start: 'top 80%',
-          toggleActions: 'play none none none'
-        },
-        delay: 0.3
-      });
-    }, this.el.nativeElement);
-
+    // Scroll-based entrance animations are owned by app.component.ts (skillsTl).
+    // ScrollTrigger never fires inside a GSAP-pinned stage — removed to avoid conflict.
+    // Tilt is purely mouse-driven → safe to keep here.
+    if (!window.matchMedia('(hover: hover)').matches) return;
     this.initSkillTilt();
   }
 
   private initSkillTilt() {
-    if (window.innerWidth <= 768) return;
 
     const items = this.el.nativeElement.querySelectorAll('.skill-item') as NodeListOf<HTMLElement>;
     items.forEach((item) => {
@@ -118,7 +65,6 @@ export class MySkillsComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ctx?.revert();
     this.tiltCleanups.forEach(fn => fn());
   }
 }

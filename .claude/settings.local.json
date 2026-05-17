@@ -11,7 +11,18 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(xargs grep -l \"atf_span1\\\\|atf_h2\\\\|atf_button\")"
+      "Bash(xargs grep -l \"atf_span1\\\\|atf_h2\\\\|atf_button\")",
+      "Bash(ls /mnt/c/Dev/projects/developer_akademie/modul15/)",
+      "Read(//mnt/**)",
+      "Read(//c//**)",
+      "Read(//cygdrive/**)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(x.get\\('domainName','?'\\), '-', x.get\\('status','?'\\)\\) for x in d.get\\('domains',[]\\)] or print\\('No domains configured yet'\\)\")",
+      "Bash(curl -sI https://hassan-ammar.com)",
+      "Bash(curl -sI https://www.hassan-ammar.com)",
+      "Bash(curl -sIL https://hassan-ammar.com)",
+      "Bash(python3 -c ' *)",
+      "Bash(git -C /c/Dev/projects/developer_akademie/modul15/portfolio branch --show-current)",
+      "Bash(git checkout *)"
     ]
   }
 }

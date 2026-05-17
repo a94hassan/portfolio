@@ -3,72 +3,53 @@
 :host {
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-section {
-  height: 100%;
-  display: flex;
-  align-items: center;
+  @include flexBox($fd: column);
   position: relative;
-  z-index: 1;
 
-  // ── Layered pearlescent atmosphere ──────────────────────────────────────
+  // ── Uniform atmosphere — same as all other sections ─────────────────────
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      // Main: wide glow centred on photo (right column)
-      radial-gradient(ellipse 80% 90% at 82% 50%, var(--fg-05) 0%, transparent 70%),
-      // Left: diffuse ambient wrap
-      radial-gradient(ellipse 60% 80% at 10% 46%, var(--fg-03) 0%, transparent 65%),
-      // Bottom edge warmth
-      radial-gradient(ellipse 90% 18% at 50% 100%, var(--fg-03) 0%, transparent 52%),
-      // Pearl layer 1 — pale cyan tint on photo
-      radial-gradient(ellipse 62% 58% at 80% 44%, rgba(220, 238, 248, 0.020) 0%, transparent 62%),
-      // Pearl layer 2 — pale gold offset
-      radial-gradient(ellipse 50% 45% at 70% 60%, rgba(248, 242, 220, 0.014) 0%, transparent 58%);
+    background: radial-gradient(ellipse 90% 70% at 50% 50%, var(--fg-04) 0%, transparent 68%);
     pointer-events: none;
     z-index: 0;
   }
 }
 
-.about-section {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 72px;
-  width: 100%;
-  max-width: $contentWidth;
-  margin: 0 auto;
-  padding: 100px $paddingLR;
+section {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  height: 100%;
+  padding: 80px 0;
+  @include contentWidth();
+  @include flexBox($ai: stretch);
 }
 
-// ─── Text ─────────────────────────────────────────────────────────────────────
+.about-section {
+  width: 100%;
+  height: 100%;
+  @include flexBox($jc: space-between, $ai: center);
+  gap: 64px;
+  padding: 0 $paddingLR;
+}
+
+// ─── Text column ──────────────────────────────────────────────────────────────
 
 .about-content {
+  flex: 1;
+  max-width: 520px;
   display: flex;
   flex-direction: column;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 28px;
-  padding: 44px 48px;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 24px 64px rgba(0, 0, 0, 0.18);
+  gap: 0;
 }
 
 .about-heading {
-  font-size: clamp(38px, 4.8vw, 72px);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 0.95;
-  margin-bottom: 24px;
-  background: linear-gradient(145deg, var(--fg) 25%, var(--fg-48) 100%);
+  // Display font — Instrument Serif italic 400 (self-hosted)
+  font-size: clamp(60px, 7vw, 112px);
+  line-height: 0.88;
+  margin-bottom: 28px;
+  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -76,119 +57,108 @@ section {
 
 .about-body {
   font-size: 15px;
-  line-height: 1.75;
+  line-height: 1.72;
   color: var(--fg-48);
-  margin-bottom: 36px;
-  max-width: 440px;
+  margin-bottom: 32px;
+  font-weight: 400;
 }
 
 .about-trait {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 16px;
-
-  &:last-of-type { margin-bottom: 0; }
+  gap: 16px;
+  margin-bottom: 18px;
 
   p {
     font-size: 14px;
     line-height: 1.65;
     color: var(--fg-40);
-    padding-top: 4px;
+    padding-top: 2px;
+    font-weight: 400;
   }
 }
 
 .about-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: var(--glass-bg);
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--glass-bg-hi);
   border: 1px solid var(--glass-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-shadow: 0 1px 0 var(--glass-border-hi) inset;
+  @include flexBox();
   flex-shrink: 0;
   color: var(--fg-40);
 }
 
-// ─── Round photo ──────────────────────────────────────────────────────────────
+// ─── Photo column ─────────────────────────────────────────────────────────────
 
 .about-photo-wrap {
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  overflow: hidden;
   flex-shrink: 0;
-  border: 2px solid var(--glass-border);
+  width: clamp(260px, 32%, 420px);
+  aspect-ratio: 1 / 1;    // forces square — combined with border-radius:50% = circle
+  border-radius: 50%;
+  overflow: hidden;        // clips the image to the circle
+  border: 1px solid var(--glass-border);
   box-shadow:
-    0 0 0 6px var(--glass-bg),
-    0 0 0 7px var(--glass-border),
-    0 0 60px var(--fg-07),
-    0 24px 70px rgba(0, 0, 0, 0.50);
+    0 0 0 1px var(--fg-03),
+    0 32px 80px rgba(0, 0, 0, 0.48);
   position: relative;
-
-  // ── B&W circular vignette ───────────────────────────────────────────────
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 1;
-    background: radial-gradient(
-      circle at 50% 50%,
-      transparent 32%,
-      rgba(4, 4, 6, 0.38) 100%
-    );
-    :host-context(html.light) & {
-      background: radial-gradient(
-        circle at 50% 50%,
-        transparent 36%,
-        rgba(200, 198, 194, 0.32) 100%
-      );
-    }
-  }
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: top center;
+    object-position: center top;  // show face / upper body, not feet
     display: block;
-    // Original colour preserved
-    filter: brightness(1.01) contrast(1.03);
+    filter: brightness(1.02) contrast(1.04);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse 82% 82% at 50% 50%,
+      transparent 40%,
+      rgba(4, 4, 6, 0.38) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+    :host-context(html.light) & {
+      background: radial-gradient(
+        ellipse 82% 82% at 50% 50%,
+        transparent 44%,
+        rgba(200, 198, 194, 0.32) 100%
+      );
+    }
   }
 }
 
 // ─── Responsive ───────────────────────────────────────────────────────────────
 
-@media (max-width: 1440px) {
-  .about-section { padding: 100px $paddingLR; gap: 52px; }
-  .about-photo-wrap { width: 210px; height: 210px; }
-}
-
 @media (max-width: 1100px) {
-  .about-photo-wrap { width: 190px; height: 190px; }
-  .about-content { padding: 36px 40px; }
+  .about-section { gap: 44px; }
+  .about-photo-wrap { width: clamp(220px, 28%, 360px); }
 }
 
 @media (max-width: 900px) {
   .about-section {
-    grid-template-columns: 1fr;
-    padding: 80px $paddingLR1000;
-    gap: 40px;
+    flex-direction: column-reverse;
+    padding: 0 $paddingLR1000;
+    gap: 32px;
+    align-items: center;
   }
+  .about-content { max-width: 100%; }
   .about-photo-wrap {
-    width: 180px;
-    height: 180px;
-    margin: 0 auto;
+    width: min(260px, 72%);
   }
-  .about-body { max-width: 100%; }
+  .about-heading { font-size: clamp(48px, 11vw, 88px); }
 }
 
-@media (max-width: 500px) {
-  .about-section  { padding: 64px $paddingLR500; gap: 32px; }
-  .about-content  { padding: 28px 28px; border-radius: 20px; }
-  .about-heading  { font-size: clamp(34px, 9vw, 52px); }
-  .about-photo-wrap { width: 150px; height: 150px; }
+@media (max-width: 600px) {
+  section { padding: 60px 0; }
+  .about-section { padding: 0 $paddingLR500; gap: 24px; }
+  .about-heading { font-size: clamp(42px, 12vw, 68px); }
+  .about-body { font-size: 14px; }
 }

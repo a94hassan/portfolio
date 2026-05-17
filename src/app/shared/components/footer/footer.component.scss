@@ -1,124 +1,172 @@
 @import '../../../../styles.scss';
 
+// ─── Host — fills the stage completely ────────────────────────────────────────
+
 :host {
   width: 100%;
-  max-width: 100vw;
+  height: 100%;
   position: relative;
-  z-index: 4;
-  border-top: 1px solid var(--fg-07);
-  @include flexBox();
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // Atmosphere identical to all other stages
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, var(--fg-04) 0%, transparent 68%);
+    pointer-events: none;
+    z-index: 0;
+  }
 }
+
+// ─── Footer layout — editorial "outro" page ───────────────────────────────────
 
 footer {
-  @include contentWidth();
-  @include flexBox($jc: space-between, $ai: center);
-  padding: 64px $paddingLR;
-  gap: 40px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 640px;
+  padding: 0 $paddingLR500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
 
-// ─── Logo ─────────────────────────────────────────────────────────────────────
+// ── Atmosphere hairline ────────────────────────────────────────────────────────
 
-.footer-logo {
-  @include flexBox($gap: 10px);
-  text-decoration: none;
-  flex-shrink: 0;
-
-  .logo-mark { color: var(--fg-55); flex-shrink: 0; transition: color 0.25s ease; }
-
-  &:hover .logo-mark { color: var(--fg); }
-  &:hover .logo-fn   { color: var(--fg); }
-  &:hover .logo-ln   { color: var(--fg-55); }
+.footer-rule {
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(to bottom, transparent, var(--fg-28), transparent);
+  margin-bottom: 40px;
 }
 
-.logo-wordmark {
-  @include flexBox($ai: baseline);
-  gap: 7px;
-}
+// ── Editorial name block ──────────────────────────────────────────────────────
 
-.logo-fn {
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  color: var(--fg);
-  line-height: 1;
-  transition: color 0.25s ease;
-}
-
-.logo-ln {
-  font-size: 17px;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: var(--fg-35);
-  line-height: 1;
-  transition: color 0.25s ease;
-}
-
-// ─── Center ───────────────────────────────────────────────────────────────────
-
-.footer-center {
-  @include flexBox($fd: column, $ai: center);
+.footer-name-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 10px;
-  text-align: center;
+  margin-bottom: 36px;
 }
 
-.footer-copy {
-  font-size: 13px;
-  color: var(--fg-28);
-  letter-spacing: 0.04em;
+.footer-name-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0.88;
+  // The name IS the design — Instrument Serif at large scale
+  transition: opacity 0.25s ease;
+
+  &:hover { opacity: 0.72; }
 }
 
-.footer-links {
-  @include flexBox($gap: 12px);
-
-  a {
-    font-size: 13px;
-    text-decoration: none;
-    color: var(--fg-40);
-    letter-spacing: 0.02em;
-    &:hover { color: var(--fg); }
-  }
-
-  > span { color: var(--fg-18); font-size: 12px; }
+.footer-name-first {
+  // Instrument Serif italic — the whole display typography system
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(48px, 8vw, 88px);
+  letter-spacing: -0.01em;
+  // Gradient identical to other headings — coherent design language
+  background: linear-gradient(160deg, var(--fg) 20%, var(--fg-35) 70%, transparent 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
 }
 
-// ─── Social icons ─────────────────────────────────────────────────────────────
+.footer-name-last {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(48px, 8vw, 88px);
+  letter-spacing: -0.01em;
+  background: linear-gradient(160deg, var(--fg-55) 0%, var(--fg-28) 60%, transparent 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+}
+
+.footer-role {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-35);
+}
+
+// ── Social icons — small, refined ─────────────────────────────────────────────
 
 .footer-social {
-  @include flexBox($gap: 6px);
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
 }
 
 .social-icon-link {
-  @include flexBox();
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  border: 1px solid var(--fg-09);
-  background: linear-gradient(145deg, var(--surface-md) 0%, var(--surface) 100%);
-  box-shadow: 0 1px 0 var(--fg-07) inset, 0 3px 10px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--fg-40);
-  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, color 0.25s ease;
+  transition: color 0.22s ease, border-color 0.22s ease, background 0.22s ease, transform 0.22s ease;
 
   &:hover {
     color: var(--fg);
-    background: linear-gradient(145deg, var(--surface-hi) 0%, var(--surface-md) 100%);
-    border-color: var(--fg-18);
-    box-shadow: 0 1px 0 var(--fg-12) inset, 0 6px 20px rgba(0, 0, 0, 0.20);
+    border-color: var(--glass-border-hi);
+    background: var(--glass-bg-hi);
     transform: translateY(-2px);
   }
 }
 
+// ── Legal row ─────────────────────────────────────────────────────────────────
+
+.footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  a {
+    font-size: 11px;
+    text-decoration: none;
+    color: var(--fg-28);
+    letter-spacing: 0.04em;
+    transition: color 0.22s ease;
+    &:hover { color: var(--fg-55); }
+  }
+}
+
+.footer-dot {
+  color: var(--fg-18);
+  font-size: 10px;
+}
+
+.footer-copy {
+  font-size: 11px;
+  color: var(--fg-18);
+  letter-spacing: 0.04em;
+}
+
 // ─── Responsive ───────────────────────────────────────────────────────────────
 
-@media (max-width: 1000px) {
-  footer { padding: 56px $paddingLR1000; gap: 32px; }
-}
-
-@media (max-width: 720px) {
-  footer { flex-direction: column; padding: 48px $paddingLR1000; gap: 32px; text-align: center; }
-  .footer-logo { justify-content: center; }
-}
-
 @media (max-width: 500px) {
-  footer { padding: 40px $paddingLR500; }
+  .footer-name-first,
+  .footer-name-last { font-size: clamp(40px, 11vw, 64px); }
+  .footer-rule      { height: 32px; margin-bottom: 28px; }
+  .footer-name-block { margin-bottom: 24px; }
+  .footer-social    { margin-bottom: 24px; }
 }

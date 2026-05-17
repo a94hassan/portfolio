@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, NgZone, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
-import { FooterComponent } from './shared/components/footer/footer.component';
 import { ThemeService } from './shared/services/theme.service';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -11,7 +10,7 @@ import * as THREE from 'three';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent],
+  imports: [RouterOutlet, HeaderComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -28,656 +27,512 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
     this.themeService.init();
 
-    // ── Header entrance — pre-hide to prevent FOUC, then drop in ────────────
     gsap.set('app-header', { y: -72, opacity: 0 });
-    gsap.to('app-header', { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.15 });
+    gsap.to('app-header',  { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.2 });
 
     this.zone.runOutsideAngular(() => {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!reducedMotion) this.initGlobalThreeJS();
+      if (!reducedMotion && !this.isMobile) this.initGlobalThreeJS();
       this.initCustomCursor();
     });
 
-    // Wait for Angular router to render main-content
-    setTimeout(() => {
-      this.initJourney();
-    }, 500);
+    setTimeout(() => this.initJourney(), 500);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // JOURNEY — 7-beat pinned scroll experience
+  // MOBILE DETECTION
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private get isMobile(): boolean {
+    return window.innerWidth <= 900 || !window.matchMedia('(hover: hover)').matches;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // TEXT — character-by-character 3D write-in animation
+  // Each character flips up from rotateX:-80° (face-down) to 0° (upright),
+  // staggered left-to-right. Combined with Instrument Serif italic 400,
+  // this creates the "being written" handwriting effect.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private splitChars(el: Element): HTMLElement[] {
+    // Guard: already split — return existing spans (no double-wrapping on revisit)
+    if (el.querySelector('[data-char]')) {
+      return Array.from(el.querySelectorAll('[data-char]')) as HTMLElement[];
+    }
+    const frag = document.createDocumentFragment();
+    const spans: HTMLElement[] = [];
+
+    // Walk child nodes so <br> elements are preserved as real line breaks.
+    // textContent alone collapses <br> into \n which doesn't render in inline-block spans.
+    const walk = (node: ChildNode) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        for (const ch of node.textContent ?? '') {
+          if (ch === '\n') continue; // <br> already handled via BR branch
+          const s = document.createElement('span');
+          s.setAttribute('data-char', '1');
+          s.style.display = 'inline-block';
+          s.textContent = ch === ' ' ? ' ' : ch;
+          frag.appendChild(s);
+          spans.push(s);
+        }
+      } else if ((node as Element).tagName === 'BR') {
+        frag.appendChild(document.createElement('br'));
+      }
+    };
+
+    Array.from(el.childNodes).forEach(walk);
+    el.innerHTML = '';
+    el.appendChild(frag);
+    return spans;
+  }
+
+  private writeIn(selector: string, delay = 0): gsap.core.Timeline {
+    const el = document.querySelector(selector);
+    if (!el) return gsap.timeline();
+    gsap.set(el, { perspective: 900, transformStyle: 'preserve-3d' });
+    const chars = this.splitChars(el);
+    return gsap.timeline().fromTo(chars,
+      { opacity: 0, rotateX: -80, y: 18, transformOrigin: '50% 100%' },
+      { opacity: 1, rotateX:   0, y:  0,
+        duration: 0.52, ease: 'back.out(1.4)',
+        stagger: 0.026, delay }
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // JOURNEY — 6-beat pinned scroll, single unified depth transition
   // ════════════════════════════════════════════════════════════════════════════
 
   private initJourney() {
     const stages = gsap.utils.toArray<HTMLElement>('.stage');
-    if (stages.length < 5) return;
+    if (stages.length < 6) return;
 
-    // ── Stage initial positions ──────────────────────────────────────────────
-    // Beat 0→1 (Hero→About): cinematic vertical crossfade — no aggressive Z-dive
-    gsap.set(stages[1], { y: '5%', opacity: 0, scale: 1.01 });
-    // Beat 1→2 (About→Skills): diagonal swing
-    gsap.set(stages[2], { x: '110%', y: '50%', rotateZ: 8, opacity: 0 });
-    // Beat 2→3 (Skills→Portfolio): card-flip
-    gsap.set(stages[3], { rotateY: 90, opacity: 0, z: -300 });
-    // Beat 5→6 (Portfolio→Contact): ascend from below
-    gsap.set(stages[4], { y: '-70%', z: -900, scale: 0.6, opacity: 0, rotateX: 15 });
+    if (this.isMobile) { this.initMobileScroll(); return; }
 
-    // ── Content initial state — hidden, zero y-shift ─────────────────────────
-    // NOTE: Using gsap.to() (not fromTo) in entrance TLs means GSAP captures
-    // the current state as "from". Setting opacity:0 here ensures first-visit
-    // entrance works. Return visits keep opacity:1 → to() is a no-op → no flash.
-    gsap.set(['.hero-text', '.hero-photo-wrapper',
-              '.about-content', '.about-photo-wrap',
-              '.skills-text', '.skills-grid',
-              '.contact-heading', '.contact-columns'], { opacity: 0, y: 12 });
+    // ── Unified "forward through space" transition DNA ───────────────────────
+    // Identical parameters for EVERY beat: outgoing recedes, incoming emerges.
+    // Z_OFF / SC_OFF are intentionally subtle — the depth shift is felt, not seen.
 
-    // ── MASTER TIMELINE — 6 beats ───────────────────────────────────────────
-    const tl = gsap.timeline();
+    const Z_OFF  = -200;  // reduced: was -350 (too aggressive, caused flash)
+    const SC_OFF = 0.93;  // near-1: barely visible scale — depth cue, not distortion
 
-    // ── Beat 0→1: Hero → About (CINEMATIC CROSSFADE — elegant, not Z-tunnel) ──
-    tl.to(stages[0], { y: '-5%', opacity: 0, scale: 0.97,
-                        duration: 1, ease: 'power2.inOut' }, 0)
-      .to(stages[1], { y: 0, opacity: 1, scale: 1,
-                        duration: 1, ease: 'power2.out' }, 0.15)
+    // All non-hero stages start behind the viewer (far in the distance)
+    gsap.set(stages[1], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    gsap.set(stages[2], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    gsap.set(stages[3], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    gsap.set(stages[4], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    gsap.set(stages[5], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
 
-    // ── Beat 1→2: About → Skills (DIAGONAL SWING) ─────────────────────────
-      .to(stages[1], { x: '-110%', y: '-50%', rotateZ: -8, opacity: 0,
-                        duration: 1, ease: 'sine.in' }, 1)
-      .to(stages[2], { x: 0, y: 0, rotateZ: 0, opacity: 1,
-                        duration: 1, ease: 'sine.out' }, 1.16)
+    // Pre-hide content elements for entrance animations
+    gsap.set([
+      '.hero-name', '.hero-status', '.hero-role-wrap',
+      '.hero-tagline', '.hero-actions', '.hero-email', '.hero-photo-wrapper',
+    ], { opacity: 0, y: 10 });
 
-    // ── Beat 2→3: Skills → Portfolio (CARD FLIP rotateY) ──────────────────
-      .to(stages[2], { rotateY: -90, opacity: 0, z: -300,
-                        duration: 1, ease: 'sine.in' }, 2)
-      .to(stages[3], { rotateY: 0, opacity: 1, z: 0,
-                        duration: 1, ease: 'sine.out' }, 2.14)
+    gsap.set([
+      '.about-heading', '.about-body', '.about-trait', '.about-photo-wrap',
+    ], { opacity: 0, y: 10 });
 
-    // ── Beat 3→4: Portfolio project 1 → 2 (HORIZONTAL TRACK SLIDE) ────────
-      .to('.projects-track', { xPercent: -33.333, duration: 1, ease: 'sine.inOut' }, 3)
+    gsap.set([
+      '.skills-text h1', '.skills-text > p', '.skills-text > div:last-of-type',
+    ], { opacity: 0, y: 10 });
 
-    // ── Beat 4→5: Portfolio project 2 → 3 ────────────────────────────────
-      .to('.projects-track', { xPercent: -66.667, duration: 1, ease: 'sine.inOut' }, 4)
+    gsap.set('.skill-item', { opacity: 0, scale: 0.68, y: 10 });
 
-    // ── Beat 5→6: Portfolio → Contact (ASCEND) ────────────────────────────
-      .to(stages[3], { y: '70%', z: -900, scale: 0.6, opacity: 0, rotateX: -15,
-                        duration: 1, ease: 'sine.in' }, 5)
-      .to(stages[4], { y: 0, z: 0, scale: 1, opacity: 1, rotateX: 0,
-                        duration: 1, ease: 'sine.out' }, 5.14);
+    gsap.set([
+      '.contact-heading h1', '.contact-columns',
+    ], { opacity: 0, y: 10 });
 
-    // ── ScrollTrigger — scrub + snap ─────────────────────────────────────────
+    gsap.set(['.footer-rule', '.footer-name-block', '.footer-social', '.footer-legal'], { opacity: 0, y: 14 });
+
+    // ── Master timeline: OUT/IN share identical parameters ───────────────────
+    const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, duration: 1, ease: 'power2.inOut' } as const;
+    const IN  = { z: 0,     scale: 1,      opacity: 1, duration: 1, ease: 'power2.out'  } as const;
+
+    const tl = gsap.timeline()
+      // Beat 0→1: Hero → About
+      .to(stages[0], { ...OUT }, 0)
+      .to(stages[1], { ...IN  }, 0.06)
+      // Beat 1→2: About → Skills
+      .to(stages[1], { ...OUT }, 1)
+      .to(stages[2], { ...IN  }, 1.06)
+      // Beat 2→3: Skills → Portfolio
+      .to(stages[2], { ...OUT }, 2)
+      .to(stages[3], { ...IN  }, 2.06)
+      // Beat 3→4: Portfolio card 1 → 2
+      .to('.projects-track', { xPercent: -33.333, duration: 1, ease: 'power2.inOut' }, 3)
+      // Beat 4→5: Portfolio card 2 → 3
+      .to('.projects-track', { xPercent: -66.667, duration: 1, ease: 'power2.inOut' }, 4)
+      // Beat 5→6: Portfolio → Contact
+      .to(stages[3], { ...OUT }, 5)
+      .to(stages[4], { ...IN  }, 5.06)
+      // Beat 6→7: Contact → Footer
+      .to(stages[4], { ...OUT }, 6)
+      .to(stages[5], { ...IN  }, 6.06);
+
+    // ── ScrollTrigger: responsive scrub + eager entrance reveal ──────────────
+    // scrub: 0.22 → minimal lag, standard-feeling scroll with light smoothness.
+    // snap.delay: 0.38 → snaps quickly after user stops (not sluggish).
+    // fireEntrance fires on EVERY beat change via onUpdate — content reveals
+    // as soon as the user scrolls halfway to the next section, no waiting for
+    // onSnapComplete. This fixes about/skills/contact staying invisible.
     let rawF = 0;
-    const journeyST = ScrollTrigger.create({
+    let lastBeat = -1;
+
+    const fireBeat = (beat: number, seek = false) => {
+      if (beat === lastBeat) return;
+      lastBeat = beat;
+      if (seek) tl.seek(beat / 7 * tl.duration());
+      setTimeout(() => this.fireEntrance(beat), 40);
+    };
+
+    const st = ScrollTrigger.create({
       trigger: '#journey',
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 1.2,
+      scrub: 0.22,
       animation: tl,
       snap: {
-        snapTo: 1 / 6,
-        duration: { min: 0.55, max: 0.90 },
-        delay: 0.12,
-        ease: 'expo.inOut'
+        snapTo:   1 / 7,
+        duration: { min: 0.28, max: 0.45 },
+        delay:    0.38,
+        ease:     'power2.inOut',
       },
-      onUpdate: (self) => { rawF = self.progress; },
-      onSnapComplete: (self) => {
-        const beat = Math.round(self.progress * 6);
-        this.fireStageAnimation(beat);
-      }
+      onUpdate:       (self) => { rawF = self.progress; fireBeat(Math.round(self.progress * 7)); },
+      onSnapComplete: (self) => { fireBeat(Math.round(self.progress * 7), true); },
     });
 
     // ── Section link navigation ──────────────────────────────────────────────
-    const BEAT_SCROLL: Record<string, number> = {
-      'above_the_fold_section': 0,
-      'about_me_section':       1,
-      'my_skills_section':      2,
-      'portfolio_section':      3,
-      'contact_section':        6
+    const BEAT: Record<string, number> = {
+      above_the_fold_section: 0,
+      about_me_section:       1,
+      my_skills_section:      2,
+      portfolio_section:      3,
+      contact_section:        6,
     };
+    const scrollMax = () => {
+      const j = document.querySelector('#journey') as HTMLElement;
+      return j ? j.scrollHeight - window.innerHeight : 0;
+    };
+    document.addEventListener('click', (e) => {
+      const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!a) return;
+      const id = a.getAttribute('href')!.slice(1);
+      if (id in BEAT) {
+        e.preventDefault();
+        gsap.to(window, { scrollTo: (BEAT[id] / 7) * scrollMax(), duration: 1.1, ease: 'power2.inOut' });
+      }
+    });
 
-    const getJourneyScrollMax = () => {
-      const journey = document.querySelector('#journey') as HTMLElement;
-      return journey ? journey.scrollHeight - window.innerHeight : 0;
-    };
+    (window as any).__journeyProgress = () => rawF;
+    this.scrollCleanup = () => st.kill();
+    setTimeout(() => { lastBeat = 0; this.fireEntrance(0); }, 120);
+  }
+
+  private fireEntrance(beat: number) {
+    const idx = beat <= 2 ? beat : beat <= 5 ? 3 : beat === 6 ? 4 : 5;
+    const builders = [
+      () => this.heroTl(),
+      () => this.aboutTl(),
+      () => this.skillsTl(),
+      () => this.portfolioTl(beat - 3),
+      () => this.contactTl(),
+      () => this.footerTl(),
+    ];
+    builders[idx]?.()?.restart();
+  }
+
+  // ─── Section entrance timelines ───────────────────────────────────────────
+
+  private heroTl() {
+    return gsap.timeline()
+      .add(this.writeIn('.hero-name', 0.08))
+      .to('.hero-status',        { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.20)
+      .to('.hero-role-wrap',     { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.30)
+      .to('.hero-tagline',       { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.40)
+      .to('.hero-actions',       { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.50)
+      .to('.hero-email',         { opacity: 1, y: 0, duration: 0.40, ease: 'power2.out' }, 0.58)
+      .to('.hero-photo-wrapper', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.12);
+  }
+
+  private aboutTl() {
+    return gsap.timeline()
+      .to('.about-photo-wrap', { opacity: 1, y: 0, duration: 0.60, ease: 'power2.out', delay: 0.10 })
+      .add(this.writeIn('.about-heading', 0.15))
+      .to('.about-body',  { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.55)
+      .to('.about-trait', { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', stagger: 0.10 }, 0.65);
+  }
+
+  private skillsTl() {
+    return gsap.timeline()
+      .add(this.writeIn('.skills-text h1', 0.08))
+      .to('.skills-text > p',               { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.45)
+      .to('.skills-text > div:last-of-type',{ opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.55)
+      .to('.skill-item', {
+        opacity: 1, scale: 1, y: 0,
+        duration: 0.40, ease: 'back.out(1.5)',
+        stagger: { amount: 0.60, from: 'start', ease: 'power2.in' },
+      }, 0.30);
+  }
+
+  private portfolioTl(cardIdx: number) {
+    const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
+    const panel  = panels[Math.max(0, cardIdx)] ?? panels[0];
+    return gsap.timeline()
+      .to(panel ?? '.project-panel', { opacity: 1, duration: 0.55, ease: 'power2.out', delay: 0.08 });
+  }
+
+  private contactTl() {
+    return gsap.timeline()
+      .add(this.writeIn('.contact-heading h1', 0.08))
+      .to('.contact-columns', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.50);
+  }
+
+  private footerTl() {
+    return gsap.timeline()
+      .to('.footer-rule',       { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out', delay: 0.05 })
+      .to('.footer-name-block', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.18)
+      .to('.footer-social',     { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.42)
+      .to('.footer-legal',      { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.56);
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // MOBILE SCROLL
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private initMobileScroll() {
+    gsap.from(['.hero-name', '.hero-text'], {
+      opacity: 0, y: 24, duration: 0.65, stagger: 0.12,
+      ease: 'power2.out', delay: 0.3, clearProps: 'opacity,transform',
+    });
+
+    const groups: Array<[string, string[]]> = [
+      ['.about-content',   ['.about-photo-wrap', '.about-content']],
+      ['.skills-grid',     ['.skills-grid', '.skills-text']],
+      ['.contact-heading', ['.contact-heading', '.contact-columns']],
+    ];
+
+    groups.forEach(([trigger, targets]) => {
+      const t = document.querySelector(trigger);
+      if (!t) return;
+      targets.forEach((sel, i) => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        gsap.from(el, {
+          scrollTrigger: { trigger: t, start: 'top 88%', once: true },
+          opacity: 0, y: 22, duration: 0.62, ease: 'power2.out',
+          delay: i * 0.11, clearProps: 'opacity,transform',
+        });
+      });
+    });
+
+    gsap.utils.toArray<HTMLElement>('.project-panel').forEach(panel => {
+      gsap.from(panel, {
+        scrollTrigger: { trigger: panel, start: 'top 90%', once: true },
+        opacity: 0, y: 28, duration: 0.68, ease: 'power2.out',
+        clearProps: 'opacity,transform',
+      });
+    });
 
     document.addEventListener('click', (e) => {
       const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
       if (!a) return;
       const id = a.getAttribute('href')!.slice(1);
-      if (id in BEAT_SCROLL) {
-        e.preventDefault();
-        const targetY = (BEAT_SCROLL[id] / 6) * getJourneyScrollMax();
-        gsap.to(window, { scrollTo: targetY, duration: 1.2, ease: 'power3.inOut' });
-      }
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      e.preventDefault();
     });
 
-    // Three.js reads rawF from closure via this global
-    (window as any).__journeyProgress = () => rawF;
-
-    this.scrollCleanup = () => { journeyST.kill(); };
-
-    // Fire hero entrance on load
-    setTimeout(() => this.fireStageAnimation(0), 200);
-  }
-
-  private fireStageAnimation(beat: number) {
-    const stageIdx = beat <= 2 ? beat : beat <= 5 ? 3 : 4;
-    const tl = this.buildStageTl(stageIdx, beat);
-    tl?.restart();
-  }
-
-  private buildStageTl(stageIdx: number, beat: number): gsap.core.Timeline | null {
-    switch (stageIdx) {
-      case 0: return this.heroTl();
-      case 1: return this.aboutTl();
-      case 2: return this.skillsTl();
-      case 3: return this.portfolioTl(beat - 3);
-      case 4: return this.contactTl();
-      default: return null;
-    }
-  }
-
-  // ── Entrance animations — flash-free ─────────────────────────────────────
-  //
-  // KEY: We use gsap.to() exclusively (never fromTo or set+to).
-  // gsap.to() captures the CURRENT element state as the "from" state at the
-  // moment the tween is created (each call to buildStageTl creates a fresh tl).
-  //
-  // ✓ First visit: elements are at opacity:0, y:12 (from initJourney gsap.set)
-  //   → gsap.to({opacity:1, y:0}) animates 0→1 cleanly.
-  //
-  // ✓ Return visit: elements already at opacity:1, y:0 (previous entrance)
-  //   → gsap.to({opacity:1, y:0}) is a no-op tween — zero visible change.
-  //   → No flash, no jump, no re-animation needed.
-
-  private heroTl() {
-    return gsap.timeline()
-      .to('.hero-text',
-          { opacity: 1, y: 0, duration: 0.72, ease: 'power2.out', delay: 0.12 })
-      .to('.hero-photo-wrapper',
-          { opacity: 1, y: 0, duration: 0.68, ease: 'power2.out' }, '-=0.44');
-  }
-
-  private aboutTl() {
-    return gsap.timeline()
-      .to('.about-content',
-          { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.12 })
-      .to('.about-photo-wrap',
-          { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, '-=0.42');
-  }
-
-  private skillsTl() {
-    return gsap.timeline()
-      .to('.skills-text',
-          { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.12 })
-      .to('.skills-grid',
-          { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, '-=0.40');
-  }
-
-  private portfolioTl(cardIdx: number) {
-    const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
-    const panel  = panels[cardIdx];
-    if (!panel) return gsap.timeline();
-    return gsap.timeline()
-      .to(panel, { opacity: 1, duration: 0.55, ease: 'power2.out', delay: 0.08 });
-  }
-
-  private contactTl() {
-    return gsap.timeline()
-      .to('.contact-heading',
-          { opacity: 1, y: 0, duration: 0.70, ease: 'power2.out', delay: 0.12 })
-      .to('.contact-columns',
-          { opacity: 1, y: 0, duration: 0.68, ease: 'power2.out' }, '-=0.40');
+    (window as any).__journeyProgress = () => 0;
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // THREE.JS — camera progress fed by __journeyProgress
+  // THREE.JS — fish school + camera journey
   // ════════════════════════════════════════════════════════════════════════════
 
   private initGlobalThreeJS() {
     const canvas = document.querySelector('#global-canvas') as HTMLCanvasElement;
     if (!canvas) return;
 
-    let w = window.innerWidth;
-    let h = window.innerHeight;
-    const mob = w <= 768;
+    let w = window.innerWidth, h = window.innerHeight;
 
     const scene    = new THREE.Scene();
-    const camera   = new THREE.PerspectiveCamera(58, w / h, 0.1, 12000);
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: !mob });
+    const camera   = new THREE.PerspectiveCamera(58, w / h, 0.1, 8000);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
     renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
-    const PHI = (1 + Math.sqrt(5)) / 2;
-    const GA  = Math.PI * (3 - Math.sqrt(5));
-    const SY  = [0, -h * 1.15, -h * 2.55, -h * 4.05, -h * 5.35];
-
-    // ── 22-point camera spline ───────────────────────────────────────────────
-    const _c = (x: number, fy: number, z: number) =>
+    const SY = [0, -h * 1.15, -h * 2.55, -h * 4.05, -h * 5.35];
+    const _c  = (x: number, fy: number, z: number) =>
       new THREE.Vector3(x, fy !== 0 ? h * fy : 0, z);
 
-    const camPts = [
-      _c(   0,    0,     560),  //  0 Hero
-      _c( 280, -0.08,   430),  //  1 Hero — drift right
-      _c( -80, -0.26,   710),  //  2 Pre-portal 0 — pull back
-      _c( 130, -0.50,   270),  //★ 3 Through portal 0
-      _c(-220, -0.72,   620),  //  4 Emerge left
-      _c(-200, -1.10,   500),  //  5 About — arrive left
-      _c( 180, -1.35,   455),  //  6 About — scan right
-      _c( 370, -1.55,   720),  //  7 Pre-portal 1 — far right
-      _c(   0, -1.82,   255),  //★ 8 Through portal 1
-      _c(-260, -2.02,   610),  //  9 Emerge left
-      _c( 240, -2.40,   485),  // 10 Skills — arrive right
-      _c(-130, -2.70,   515),  // 11 Skills — scan left
-      _c(-175, -3.00,   730),  // 12 Pre-portal 2 — far back
-      _c(  85, -3.22,   248),  //★13 Through portal 2
-      _c( 225, -3.50,   595),  // 14 Emerge right
-      _c(-185, -3.90,   530),  // 15 Portfolio — arrive left
-      _c( 220, -4.20,   465),  // 16 Portfolio — scan right
-      _c(  85, -4.50,   715),  // 17 Pre-portal 3 — far back
-      _c(-165, -4.75,   262),  //★18 Through portal 3
-      _c(  55, -5.00,   585),  // 19 Emerge
-      _c(  25, -5.22,   565),  // 20 Contact — settle
-      _c(   0, -5.50,   600),  // 21 Contact — arrive
-    ];
+    const camCurve = new THREE.CatmullRomCurve3([
+      _c(   0,    0,   560), _c( 280, -0.08, 430), _c( -80, -0.26, 710),
+      _c( 130, -0.50, 270),  _c(-220, -0.72, 620), _c(-200, -1.10, 500),
+      _c( 180, -1.35, 455),  _c( 370, -1.55, 720), _c(   0, -1.82, 255),
+      _c(-260, -2.02, 610),  _c( 240, -2.40, 485), _c(-130, -2.70, 515),
+      _c(-175, -3.00, 730),  _c(  85, -3.22, 248), _c( 225, -3.50, 595),
+      _c(-185, -3.90, 530),  _c( 220, -4.20, 465), _c(  85, -4.50, 715),
+      _c(-165, -4.75, 262),  _c(  55, -5.00, 585), _c(  25, -5.22, 565),
+      _c(   0, -5.50, 600),
+    ], false, 'catmullrom', 0.4);
 
-    const lkPts = [
-      _c(   0,    0,     0),
-      _c(-180, -0.08,   0),
-      _c( 200, -0.28,   0),
-      _c( -80, -0.52,  -65),
-      _c( 160, -0.72,   0),
-      _c( 165, -1.10,   0),
-      _c(-185, -1.35,   0),
-      _c(-200, -1.60,   0),
-      _c(   0, -1.85, -110),
-      _c( 185, -2.05,   0),
-      _c(-185, -2.40,   0),
-      _c( 155, -2.70,   0),
-      _c( 215, -3.02,   0),
-      _c(-100, -3.25,  -80),
-      _c(-185, -3.52,   0),
-      _c( 205, -3.90,   0),
-      _c(-165, -4.20,   0),
-      _c(-115, -4.52,   0),
-      _c( 105, -4.78,  -90),
-      _c(   0, -5.02,   0),
-      _c( -65, -5.22,   0),
-      _c(   0, -5.50,   0),
-    ];
+    const lkCurve = new THREE.CatmullRomCurve3([
+      _c(   0,    0,    0), _c(-180, -0.08,  0), _c( 200, -0.28,  0),
+      _c( -80, -0.52, -65), _c( 160, -0.72,  0), _c( 165, -1.10,  0),
+      _c(-185, -1.35,  0),  _c(-200, -1.60,  0), _c(   0, -1.85,-110),
+      _c( 185, -2.05,  0),  _c(-185, -2.40,  0), _c( 155, -2.70,  0),
+      _c( 215, -3.02,  0),  _c(-100, -3.25, -80),_c(-185, -3.52,  0),
+      _c( 205, -3.90,  0),  _c(-165, -4.20,  0), _c(-115, -4.52,  0),
+      _c( 105, -4.78, -90), _c(   0, -5.02,  0), _c( -65, -5.22,  0),
+      _c(   0, -5.50,  0),
+    ], false, 'catmullrom', 0.4);
 
-    const camCurve = new THREE.CatmullRomCurve3(camPts, false, 'catmullrom', 0.4);
-    const lkCurve  = new THREE.CatmullRomCurve3(lkPts,  false, 'catmullrom', 0.4);
+    // ── PARTICLE FIELD — ring distribution, true 3D depth, uniform screen size ─
+    //
+    // Distribution design:
+    //  • Ring (not sphere): inner void 200px, outer edge 800px → particles spread
+    //    from screen edges, not center — center stays clear for content
+    //  • True 3D depth: Z from -350 to -1100 → real layered depth in 3D space
+    //  • sizeAttenuation: false → all particles identical screen size regardless
+    //    of Z depth — creates a flat, minimal, consistent field, not a fog effect
+    //  • Organic drift: individual sinusoidal oscillation per particle (fish school)
 
-    // ════════════════════════════════════════════════════════════════════════
-    // DEPTH PARTICLE SYSTEM — three Z-layers create spatial depth
-    // Far particles: transparent, small → sense of deep space
-    // Mid particles: semi-transparent → middle distance atmosphere
-    // Near particles: main interactive layer with mouse repulsion + shimmer
-    // ════════════════════════════════════════════════════════════════════════
+    const PC     = 340;
+    const GA     = Math.PI * (3 - Math.sqrt(5));   // golden angle
+    const R_IN   = 200;   // inner void radius — center kept clear
+    const R_OUT  = 820;   // outer ring edge
+    const totalY = Math.abs(SY[4]) * 1.12;
 
-    const PC        = mob ?  110 :  220;  // near particles (main)
-    const MPC       = mob ?   80 :  160;  // mid-distance particles
-    const FPC       = mob ?   55 :  110;  // far particles
-    const SC        = mob ?   45 :   90;  // background stars
-    const totalSpan = Math.abs(SY[4]) * 1.08;
-    const secCount  = 5;
-    const perSec    = Math.ceil(PC / secCount);
-
-    const _tc = new THREE.Color();
-
-    // Section-specific XZ pattern helper
-    const sectionXZ = (si: number, li: number, ln: number): [number, number] => {
-      const t = li / Math.max(ln - 1, 1);
-      switch (si) {
-        case 0: {
-          const ang = GA * li;
-          const r   = 160 + t * 240;
-          return [Math.cos(ang) * r, Math.sin(ang) * r * 0.34 - 160];
-        }
-        case 1: {
-          const ang = GA * li * PHI;
-          const r   = 80 + Math.sqrt(t) * 310;
-          return [Math.cos(ang) * r, Math.sin(ang) * r * 0.38 - 120];
-        }
-        case 2: {
-          const cols = Math.ceil(Math.sqrt(ln * 1.6));
-          const row  = Math.floor(li / cols);
-          const col  = li % cols;
-          return [(col - cols / 2) * 72 + (Math.random() - 0.5) * 28,
-                  (row - cols / 2) * 50 + (Math.random() - 0.5) * 20 - 120];
-        }
-        case 3: {
-          const ang = t * Math.PI * 6;
-          const r   = 48 * Math.pow(PHI, t * 1.6);
-          return [Math.cos(ang) * r * 1.1, Math.sin(ang) * r * 0.36 - 130];
-        }
-        case 4: {
-          const ang = GA * li;
-          const r   = 280 * (1 - t * 0.55) + 60;
-          return [Math.cos(ang) * r * 0.9, Math.sin(ang) * r * 0.30 - 100];
-        }
-        default: return [0, -120];
-      }
-    };
-
-    // ── NEAR particles (main layer, mouse-reactive + shimmer) ─────────────
-    const pPos  = new Float32Array(PC * 3);
-    const pCol  = new Float32Array(PC * 3);
-    const pVel  = new Float32Array(PC * 2);
-    const pBase = new Float32Array(PC * 3);
+    const bX = new Float32Array(PC), bY = new Float32Array(PC), bZ = new Float32Array(PC);
+    const fX = new Float32Array(PC), fY = new Float32Array(PC), fZ = new Float32Array(PC);
+    const pX = new Float32Array(PC), pY = new Float32Array(PC), pZ = new Float32Array(PC);
+    const pos = new Float32Array(PC * 3);
 
     for (let i = 0; i < PC; i++) {
-      const si  = Math.min(Math.floor(i / perSec), secCount - 1);
-      const li  = i - si * perSec;
-      const ln  = Math.min(perSec, PC - si * perSec);
-      const [xO, zO] = sectionXZ(si, li, ln);
+      const t   = i / PC;
+      const ang = GA * i;
 
-      pPos[i*3]   = xO + (Math.random() - 0.5) * 14;
-      pPos[i*3+1] = SY[si] + (Math.random() - 0.5) * h * 0.55;
-      pPos[i*3+2] = zO - 80 + (Math.random() - 0.5) * 60;
+      // Annular (ring) distribution: sqrt-bias pushes density toward outer edge
+      const r = R_IN + Math.sqrt(Math.random()) * (R_OUT - R_IN);
+      bX[i] = Math.cos(ang) * r;
 
-      const sv = 0.72 + Math.random() * 0.20;
-      _tc.setHSL(0, 0, sv);
-      pCol[i*3] = _tc.r; pCol[i*3+1] = _tc.g; pCol[i*3+2] = _tc.b;
-      pBase[i*3] = _tc.r; pBase[i*3+1] = _tc.g; pBase[i*3+2] = _tc.b;
+      // Full journey Y span, slightly randomised within each section band
+      bY[i] = t * SY[4] + (Math.random() - 0.5) * h * 0.55;
 
-      pVel[i*2]   = (Math.random() - 0.5) * 0.016;
-      pVel[i*2+1] = (Math.random() - 0.5) * 0.012;
+      // True 3D depth: -350 to -1100 (more distant than before, real 3D spread)
+      bZ[i] = -350 - Math.random() * 750;
+
+      // Unique oscillation frequencies — organic, no two particles in sync
+      fX[i] = 0.10 + Math.random() * 0.18;
+      fY[i] = 0.07 + Math.random() * 0.12;
+      fZ[i] = 0.04 + Math.random() * 0.08;
+
+      pX[i] = Math.random() * Math.PI * 2;
+      pY[i] = Math.random() * Math.PI * 2;
+      pZ[i] = Math.random() * Math.PI * 2;
+
+      pos[i*3] = bX[i]; pos[i*3+1] = bY[i]; pos[i*3+2] = bZ[i];
     }
 
-    const pGeo = new THREE.BufferGeometry();
-    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-    pGeo.setAttribute('color',    new THREE.BufferAttribute(pCol, 3));
-    const pMat = new THREE.PointsMaterial({
-      vertexColors: true, size: 1.8, transparent: true,
-      opacity: 0.30, sizeAttenuation: false
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({
+      color:           0xe8e4de,       // warm ivory — matches --fg: #ede9e3
+      size:            2.0,
+      transparent:     true,
+      opacity:         0.22,           // more subtle — less screensaver, more editorial
+      sizeAttenuation: false,
+      depthWrite:      false,
     });
-    scene.add(new THREE.Points(pGeo, pMat));
+    scene.add(new THREE.Points(geo, mat));
 
-    // ── MID particles (z: -250 to -550, depth layer 2) ────────────────────
-    const mpPos = new Float32Array(MPC * 3);
-    const mpCol = new Float32Array(MPC * 3);
+    const pathGeo = new THREE.BufferGeometry().setFromPoints(camCurve.getPoints(240));
+    const pathMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.006 });
+    scene.add(new THREE.Line(pathGeo, pathMat));
 
-    for (let i = 0; i < MPC; i++) {
-      const t   = i / MPC;
-      const ang = GA * i * PHI * 1.3;
-      const r   = 140 + Math.random() * 380;
-      mpPos[i*3]   = Math.cos(ang) * r * 1.1;
-      mpPos[i*3+1] = t * SY[4] * 1.12 + (Math.random() - 0.5) * h * 0.50;
-      mpPos[i*3+2] = -260 - Math.random() * 290;  // z: -260 to -550
+    // ── Per-particle mouse repulsion constants ─────────────────────────────
+    // REPULSE_R: world-unit radius around mouse cursor — particles inside are pushed away
+    // REPULSE_STR: peak push distance (world units) when particle is directly at cursor
+    // tanHFov: precomputed tan(FOV/2) for unprojecting mouse NDC → world X/Y at particle depth
+    const REPULSE_R   = 200;
+    const REPULSE_STR = 130;
+    const tanHFov     = Math.tan(29 * Math.PI / 180); // camera FOV=58 → half=29°
 
-      const sv = 0.76 + Math.random() * 0.18;
-      _tc.setHSL(0, 0, sv);
-      mpCol[i*3] = _tc.r; mpCol[i*3+1] = _tc.g; mpCol[i*3+2] = _tc.b;
-    }
-
-    const mpGeo = new THREE.BufferGeometry();
-    mpGeo.setAttribute('position', new THREE.BufferAttribute(mpPos, 3));
-    mpGeo.setAttribute('color',    new THREE.BufferAttribute(mpCol, 3));
-    const mpMat = new THREE.PointsMaterial({
-      vertexColors: true, size: 2.4, transparent: true,
-      opacity: 0.10, sizeAttenuation: true   // perspective scaling for depth
-    });
-    scene.add(new THREE.Points(mpGeo, mpMat));
-
-    // ── FAR particles (z: -700 to -1400, depth layer 3 — deepest space) ───
-    const fpPos = new Float32Array(FPC * 3);
-    const fpCol = new Float32Array(FPC * 3);
-
-    for (let i = 0; i < FPC; i++) {
-      const t   = i / FPC;
-      const ang = GA * i * 2.414;
-      const r   = 250 + Math.random() * 650;
-      fpPos[i*3]   = Math.cos(ang) * r * 1.4;
-      fpPos[i*3+1] = t * SY[4] * 1.18 + (Math.random() - 0.5) * h * 0.65;
-      fpPos[i*3+2] = -720 - Math.random() * 680;  // z: -720 to -1400
-
-      const sv = 0.80 + Math.random() * 0.16;
-      _tc.setHSL(0, 0, sv);
-      fpCol[i*3] = _tc.r; fpCol[i*3+1] = _tc.g; fpCol[i*3+2] = _tc.b;
-    }
-
-    const fpGeo = new THREE.BufferGeometry();
-    fpGeo.setAttribute('position', new THREE.BufferAttribute(fpPos, 3));
-    fpGeo.setAttribute('color',    new THREE.BufferAttribute(fpCol, 3));
-    const fpMat = new THREE.PointsMaterial({
-      vertexColors: true, size: 3.2, transparent: true,
-      opacity: 0.045, sizeAttenuation: true  // very faint distant stars
-    });
-    scene.add(new THREE.Points(fpGeo, fpMat));
-
-    // ── Background stars (silver, far Z) ──────────────────────────────────
-    const sPos = new Float32Array(SC * 3);
-    const sCol = new Float32Array(SC * 3);
-
-    for (let i = 0; i < SC; i++) {
-      const t   = i / SC;
-      const ang = GA * i * PHI;
-      const r   = 380 + Math.random() * 520;
-      sPos[i*3]   =  Math.cos(ang) * r;
-      sPos[i*3+1] =  t * SY[4] * 1.10 + (Math.random() - 0.5) * h * 0.40;
-      sPos[i*3+2] = -500 + Math.sin(ang) * r * 0.26 + (Math.random() - 0.5) * 110;
-      _tc.setHSL(0, 0, 0.78 + Math.random() * 0.22);
-      sCol[i*3] = _tc.r; sCol[i*3+1] = _tc.g; sCol[i*3+2] = _tc.b;
-    }
-
-    const sGeo = new THREE.BufferGeometry();
-    sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
-    sGeo.setAttribute('color',    new THREE.BufferAttribute(sCol, 3));
-    const sMat = new THREE.PointsMaterial({
-      vertexColors: true, size: 1.2, transparent: true,
-      opacity: 0.13, sizeAttenuation: false
-    });
-    scene.add(new THREE.Points(sGeo, sMat));
-
-    // ── Wireframe helper ─────────────────────────────────────────────────────
-    const wMeshes: THREE.LineSegments[] = [];
-    const wMats:   THREE.LineBasicMaterial[] = [];
-    const wBase:   number[] = [];
-    const wSecY:   number[] = [];
-
-    const mkWf = (
-      geo: THREE.BufferGeometry, opa: number,
-      px: number, py: number, pz: number, sIdx: number,
-      rx = 0, ry = 0, rz = 0
-    ) => {
-      const edges = new THREE.EdgesGeometry(geo);
-      const mat   = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: opa });
-      const mesh  = new THREE.LineSegments(edges, mat);
-      mesh.position.set(px, py, pz);
-      mesh.rotation.set(rx, ry, rz);
-      geo.dispose();
-      scene.add(mesh);
-      wMeshes.push(mesh); wMats.push(mat); wBase.push(opa); wSecY.push(SY[sIdx] ?? 0);
-      return mesh;
-    };
-
-    const dim = Math.min(w, h);
-    const S   = dim * 0.25;
-
-    mkWf(new THREE.IcosahedronGeometry(S,              1), 0.034,  dim*0.28,  SY[0],           -300, 0);
-    mkWf(new THREE.IcosahedronGeometry(S * 0.35,       0), 0.020, -dim*0.16,  SY[0] - h*0.18,  -180, 0);
-    mkWf(new THREE.DodecahedronGeometry(S / PHI,       0), 0.030, -dim*0.26,  SY[1],           -240, 1, 0.2, 0.4, 0);
-    mkWf(new THREE.DodecahedronGeometry(S / PHI / PHI, 0), 0.018,  dim*0.13,  SY[1] + h*0.18,  -155, 1);
-    mkWf(new THREE.OctahedronGeometry(S * PHI / 2,    0), 0.032,  dim*0.30,  SY[2],           -215, 2, 0.3, 0.1, 0.2);
-    mkWf(new THREE.OctahedronGeometry(S * 0.28,       0), 0.018, -dim*0.11,  SY[2] - h*0.18,  -170, 2);
-    mkWf(new THREE.TorusKnotGeometry(S*0.42, S*0.09, 80, 7), 0.022, -dim*0.24, SY[3], -260, 3, 0.1, 0, 0.15);
-    mkWf(new THREE.IcosahedronGeometry(S * 0.88,       2), 0.028,  dim*0.22,  SY[4],           -205, 4, 0.2, 0.3, 0);
-
-    // ── Portal rings ─────────────────────────────────────────────────────────
-    const portalY   = SY.slice(0, 4).map((y, i) => (y + SY[i + 1]) * 0.5);
-    const portalXZ  = [[-40, -80], [70, -90], [-35, -80], [20, -90]] as const;
-    const pMeshes:  THREE.LineSegments[] = [];
-    const pMatsArr: THREE.LineBasicMaterial[] = [];
-
-    portalY.forEach((py, i) => {
-      const outerR = dim * 0.27;
-      const tubeR  = outerR / (PHI * PHI);
-      const geo    = new THREE.TorusGeometry(outerR, tubeR, 5, 48);
-      const mat    = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.012 });
-      const edges  = new THREE.EdgesGeometry(geo);
-      geo.dispose();
-      const mesh   = new THREE.LineSegments(edges, mat);
-      mesh.position.set(portalXZ[i][0], py, portalXZ[i][1]);
-      mesh.rotation.x = 0.08 + i * 0.035;
-      scene.add(mesh); pMeshes.push(mesh); pMatsArr.push(mat);
-    });
-
-    // ── Golden logarithmic spirals — "red thread" connecting all sections ────
-    // These faint spirals run the entire Y height, visually linking all sections
-    const mkSpiral = (phase: number, bFactor: number, xScale: number, zOff: number, opa: number) => {
-      const pts: THREE.Vector3[] = [];
-      for (let i = 0; i < 340; i++) {
-        const t   = i / 340;
-        const ang = t * Math.PI * 12 + phase;
-        const r   = 52 * Math.pow(PHI, t * bFactor);
-        pts.push(new THREE.Vector3(Math.cos(ang) * r * xScale, t * SY[4] * 1.04, Math.sin(ang) * r * 0.32 + zOff));
-      }
-      const g = new THREE.BufferGeometry().setFromPoints(pts);
-      const m = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: opa });
-      scene.add(new THREE.Line(g, m));
-      return { g, m };
-    };
-
-    const sp1 = mkSpiral(0,       2.2, 0.50, -450, 0.018);
-    const sp2 = mkSpiral(Math.PI, 2.0, 0.38, -480, 0.012);
-
-    // ── Camera path guide line — the visual "red thread" through all sections
-    // A very faint line tracing the camera's exact journey path in 3D space,
-    // giving spatial continuity and depth across all sections.
-    const pathPts = camCurve.getPoints(280);
-    const pathGeo = new THREE.BufferGeometry().setFromPoints(pathPts);
-    const pathMat = new THREE.LineBasicMaterial({
-      color: 0xffffff, transparent: true, opacity: 0.008
-    });
-    const pathLine = new THREE.Line(pathGeo, pathMat);
-    scene.add(pathLine);
-
-    // ── Mouse parallax ────────────────────────────────────────────────────────
-    let mNX = 0, mNY = 0;
-    let smX = 0, smY = 0;
+    let mNX = 0, mNY = 0, smX = 0, smY = 0;
     const onMouseMove = (e: MouseEvent) => {
       mNX = (e.clientX / w - 0.5) * 2;
       mNY = -((e.clientY / h) - 0.5) * 2;
     };
 
-    // ── Camera state ─────────────────────────────────────────────────────────
-    const sCam  = new THREE.Vector3(0, 0, 600);
-    const sLk   = new THREE.Vector3(0, 0, 0);
-    const tCam  = new THREE.Vector3();
-    const tLk   = new THREE.Vector3();
-    const upVec = new THREE.Vector3(0, 1, 0);
-    const tCol  = new THREE.Color();
-    let   sFrac = 0;
+    const sCam = new THREE.Vector3(0, 0, 600);
+    const sLk  = new THREE.Vector3(0, 0, 0);
+    const tCam = new THREE.Vector3(), tLk = new THREE.Vector3();
+    const upV  = new THREE.Vector3(0, 1, 0);
+    let sFrac = 0, time = 0;
 
-    const rotR = [
-      [ 0.00036,  0.00050,  0      ],
-      [ 0,        0.00030, -0.00040],
-      [ 0.00018,  0.00044,  0.00028],
-      [-0.00025,  0,        0.00032],
-      [ 0.00042,  0,        0.00036],
-      [ 0,       -0.00028,  0.00044],
-      [ 0.00022,  0.00038,  0.00016],
-      [-0.00020,  0.00040,  0.00028],
-    ];
-
-    // ── Render loop ──────────────────────────────────────────────────────────
     const animate = () => {
       if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
-
+      time += 0.007;
       smX += (mNX - smX) * 0.055;
       smY += (mNY - smY) * 0.055;
 
       const rawF = (window as any).__journeyProgress?.() ?? 0;
-      sFrac += (rawF - sFrac) * 0.038;
+      // Camera fraction: full path by beat 6 (6/7 progress), hold at footer (beat 7)
+      const camFrac = Math.min(rawF * 7 / 6, 1.0);
+      sFrac += (camFrac - sFrac) * 0.038;
 
       camCurve.getPoint(Math.min(sFrac, 0.9999), tCam);
-      lkCurve.getPoint(Math.min(sFrac, 0.9999),  tLk);
-      tCam.x += smX * 16;
-      tCam.y += smY * 7;
-      sCam.lerp(tCam, 0.040);
-      sLk.lerp(tLk,  0.040);
+      lkCurve.getPoint( Math.min(sFrac, 0.9999), tLk);
+      tCam.x += smX * 16; tCam.y += smY * 7;
+      sCam.lerp(tCam, 0.04); sLk.lerp(tLk, 0.04);
       camera.position.copy(sCam);
-
-      const roll = Math.sin(sFrac * Math.PI * 7) * 0.028;
-      upVec.set(-roll, 1, 0).normalize();
-      camera.up.lerp(upVec, 0.028);
+      upV.set(-Math.sin(sFrac * Math.PI * 7) * 0.028, 1, 0).normalize();
+      camera.up.lerp(upV, 0.028);
       camera.lookAt(sLk);
 
-      // Room markers — fade in/out by camera proximity
-      wMeshes.forEach((m, i) => {
-        const r = rotR[i] ?? [0, 0.0003, 0];
-        m.rotation.x += r[0]; m.rotation.y += r[1]; m.rotation.z += r[2];
-        const d = Math.abs(sCam.y - wSecY[i]);
-        wMats[i].opacity = wBase[i] + Math.max(0, 1 - d / (h * 0.9)) * 0.052;
-      });
-
-      // Portals — swell as camera passes through
-      pMeshes.forEach((p, i) => {
-        p.rotation.z += 0.00015 * (i % 2 === 0 ? 1 : -1);
-        const t = Math.max(0, 1 - Math.abs(sCam.y - portalY[i]) / (h * 0.78));
-        pMatsArr[i].opacity = 0.010 + t * 0.058;
-        const sc = 1.0 + t * 0.28;
-        p.scale.set(sc, sc, 1.0 + t * 0.12);
-      });
-
-      // ── NEAR particles — mouse repulsion + pearlescent proximity shimmer ──
-      const mWX     = sCam.x + smX * 240;
-      const mWY     = sCam.y + smY * 130;
-      const REPEL_R = 155;
-      const REPEL_F = 0.0046;
-
-      const pos = pGeo.attributes['position'].array as Float32Array;
-      const col = pGeo.attributes['color'].array as Float32Array;
-
+      const p = geo.attributes['position'].array as Float32Array;
+      const aspect = w / h;
       for (let i = 0; i < PC; i++) {
-        pos[i*3]   += pVel[i*2];
-        pos[i*3+1] += pVel[i*2+1];
+        const ix = i*3, iy = ix+1, iz = ix+2;
 
-        pVel[i*2]   += (Math.random() - 0.5) * 0.00060;
-        pVel[i*2+1] += (Math.random() - 0.5) * 0.00060;
-        pVel[i*2]   *= 0.978;
-        pVel[i*2+1] *= 0.978;
+        // Organic drift — no global mouse field (removed smX*20 / smY*11)
+        p[ix] = bX[i] + Math.sin(time * fX[i] + pX[i]) * 24;
+        p[iy] = bY[i] + Math.sin(time * fY[i] + pY[i]) * 16;
+        p[iz] = bZ[i] + Math.sin(time * fZ[i] + pZ[i]) * 10;
 
-        const rDX = pos[i*3]   - mWX;
-        const rDY = pos[i*3+1] - mWY;
-        const rD  = Math.sqrt(rDX * rDX + rDY * rDY);
-        if (rD < REPEL_R && rD > 0.1) {
-          const f = REPEL_F * (1 - rD / REPEL_R);
-          pVel[i*2]   += (rDX / rD) * f;
-          pVel[i*2+1] += (rDY / rD) * f;
+        // ── Per-particle mouse repulsion ──────────────────────────────────
+        // Unproject smooth mouse NDC (smX,smY) to world space at this particle's depth.
+        // dz = depth from camera to particle along Z axis.
+        const dz = sCam.z - p[iz];
+        if (dz > 0) {
+          const mwx = sCam.x + smX * dz * tanHFov * aspect;
+          const mwy = sCam.y + smY * dz * tanHFov;
+          const dx  = p[ix] - mwx;
+          const dy2 = p[iy] - mwy;
+          const dist2 = dx*dx + dy2*dy2;
+          if (dist2 < REPULSE_R * REPULSE_R) {
+            const dist = Math.sqrt(dist2);
+            if (dist > 0.5) {
+              const force = (1 - dist / REPULSE_R) * REPULSE_STR;
+              p[ix] += (dx  / dist) * force;
+              p[iy] += (dy2 / dist) * force;
+            }
+          }
         }
 
-        if (pos[i*3+1] - sCam.y >  totalSpan * 0.5) pos[i*3+1] -= totalSpan;
-        if (pos[i*3+1] - sCam.y < -totalSpan * 0.5) pos[i*3+1] += totalSpan;
-
-        // Proximity shimmer — pearlescent nacre iridescence near camera
-        const dx = pos[i*3] - sCam.x, dy = pos[i*3+1] - sCam.y, dz = pos[i*3+2] - sCam.z;
-        const d3 = Math.sqrt(dx*dx + dy*dy + dz*dz);
-        if (d3 < 260) {
-          const fr   = (1 - d3 / 260) * 0.55;
-          const pHue = ((Date.now() * 0.000055) + i * 0.062) % 1;
-          tCol.setHSL(pHue, 0.16, 0.90);
-          col[i*3]   += (tCol.r - col[i*3])   * fr;
-          col[i*3+1] += (tCol.g - col[i*3+1]) * fr;
-          col[i*3+2] += (tCol.b - col[i*3+2]) * fr;
-        } else {
-          col[i*3]   += (pBase[i*3]   - col[i*3])   * 0.006;
-          col[i*3+1] += (pBase[i*3+1] - col[i*3+1]) * 0.006;
-          col[i*3+2] += (pBase[i*3+2] - col[i*3+2]) * 0.006;
-        }
+        // Y wrap — keeps particle field centred on camera as we travel down
+        const dy = p[iy] - sCam.y;
+        if (dy >  totalY * 0.52) p[iy] -= totalY;
+        if (dy < -totalY * 0.52) p[iy] += totalY;
       }
-      pGeo.attributes['position'].needsUpdate = true;
-      pGeo.attributes['color'].needsUpdate    = true;
-
+      geo.attributes['position'].needsUpdate = true;
       renderer.render(scene, camera);
     };
 
     const onResize = () => {
       w = window.innerWidth; h = window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      camera.aspect = w / h; camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
     const onVis = () => { if (!document.hidden && this.animId === 0) animate(); };
@@ -692,71 +547,57 @@ export class AppComponent implements OnInit, OnDestroy {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize',   onResize);
       document.removeEventListener('visibilitychange', onVis);
-      renderer.dispose();
-      pGeo.dispose();  pMat.dispose();
-      mpGeo.dispose(); mpMat.dispose();
-      fpGeo.dispose(); fpMat.dispose();
-      sGeo.dispose();  sMat.dispose();
-      sp1.g.dispose(); sp1.m.dispose();
-      sp2.g.dispose(); sp2.m.dispose();
+      renderer.dispose(); geo.dispose(); mat.dispose();
       pathGeo.dispose(); pathMat.dispose();
-      wMeshes.forEach(m  => { m.geometry.dispose(); (m.material as THREE.LineBasicMaterial).dispose(); });
-      pMeshes.forEach(pm => { pm.geometry.dispose(); (pm.material as THREE.LineBasicMaterial).dispose(); });
     };
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // CUSTOM CURSOR — theme-adaptive ring + dot
+  // CUSTOM CURSOR
   // ════════════════════════════════════════════════════════════════════════════
 
   private initCustomCursor() {
     if (!window.matchMedia('(hover: hover)').matches) return;
-
-    const ring = document.getElementById('cursor-ring')!;
-    const dot  = document.getElementById('cursor-dot')!;
+    const ring = document.getElementById('cursor-ring');
+    const dot  = document.getElementById('cursor-dot');
     if (!ring || !dot) return;
 
     gsap.set(ring, { xPercent: -50, yPercent: -50 });
     gsap.set(dot,  { xPercent: -50, yPercent: -50 });
 
-    // Theme-adaptive colors — reads live from document class
-    const isLight       = () => document.documentElement.classList.contains('light');
-    const ringBase      = () => isLight() ? 'rgba(17,17,17,0.32)' : 'rgba(255,255,255,0.40)';
-    const ringHover     = () => isLight() ? 'rgba(17,17,17,0.72)' : 'rgba(255,255,255,0.75)';
+    const isLight   = () => document.documentElement.classList.contains('light');
+    const ringBase  = () => isLight() ? 'rgba(17,17,17,0.32)'  : 'rgba(255,255,255,0.40)';
+    const ringHover = () => isLight() ? 'rgba(17,17,17,0.72)'  : 'rgba(255,255,255,0.75)';
 
-    let appeared  = false;
-    let spotEls:  HTMLElement[] = [];
-    let rects:    DOMRect[]     = [];
-    const SEL = '.skill-item,.project-info,.project-img-wrap,.about-icon,.social-icon-link,form,button';
-
+    let appeared = false;
+    const SEL = '.skill-item,button,a,input,textarea';
+    let spotEls: HTMLElement[] = [], rects: DOMRect[] = [];
     const refresh = () => { rects = spotEls.map(el => el.getBoundingClientRect()); };
-    setTimeout(() => { spotEls = Array.from(document.querySelectorAll(SEL)) as HTMLElement[]; refresh(); }, 900);
+    setTimeout(() => { spotEls = Array.from(document.querySelectorAll(SEL)); refresh(); }, 900);
 
     const onMove = (e: MouseEvent) => {
       if (!appeared) { gsap.to([ring, dot], { opacity: 1, duration: 0.4 }); appeared = true; }
       gsap.to(dot,  { x: e.clientX, y: e.clientY, duration: 0 });
       gsap.to(ring, { x: e.clientX, y: e.clientY, duration: 0.18, ease: 'power2.out' });
-      for (let i = 0; i < spotEls.length; i++) {
-        const r = rects[i]; if (!r) continue;
-        spotEls[i].style.setProperty('--mx', `${e.clientX - r.left}px`);
-        spotEls[i].style.setProperty('--my', `${e.clientY - r.top}px`);
-      }
+      rects.forEach((r, i) => {
+        spotEls[i]?.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        spotEls[i]?.style.setProperty('--my', `${e.clientY - r.top}px`);
+      });
     };
-
-    const onOver = (e: MouseEvent) => {
+    const onOver  = (e: MouseEvent) => {
       if ((e.target as Element).closest('a,button,input,textarea'))
         gsap.to(ring, { scale: 1.7, borderColor: ringHover(), duration: 0.22 });
     };
-    const onOut  = (e: MouseEvent) => {
+    const onOut   = (e: MouseEvent) => {
       if ((e.target as Element).closest('a,button,input,textarea'))
         gsap.to(ring, { scale: 1, borderColor: ringBase(), duration: 0.22 });
     };
     const onLeave = () => gsap.to([ring, dot], { opacity: 0, duration: 0.3 });
     const onEnter = () => { if (appeared) gsap.to([ring, dot], { opacity: 1, duration: 0.3 }); };
 
-    window.addEventListener('mousemove', onMove,   { passive: true });
-    window.addEventListener('scroll',    refresh,  { passive: true });
-    window.addEventListener('resize',    refresh,  { passive: true });
+    window.addEventListener('mousemove',   onMove,  { passive: true });
+    window.addEventListener('scroll',      refresh, { passive: true });
+    window.addEventListener('resize',      refresh, { passive: true });
     document.addEventListener('mouseover',  onOver);
     document.addEventListener('mouseout',   onOut);
     document.addEventListener('mouseleave', onLeave);

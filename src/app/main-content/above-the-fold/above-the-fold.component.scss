@@ -15,17 +15,12 @@ section {
   z-index: 1;
   overflow: hidden;
 
-  // ── Layered pearlescent atmosphere ────────────────────────────────────────
+  // ── Uniform atmosphere — same across all sections (no lighting shift) ────
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(ellipse 85% 95% at 78% 42%, var(--fg-05) 0%, transparent 72%),
-      radial-gradient(ellipse 65% 75% at 12% 60%, var(--fg-03) 0%, transparent 68%),
-      radial-gradient(ellipse 100% 22% at 50% 0%,  var(--fg-03) 0%, transparent 55%),
-      radial-gradient(ellipse 70% 65% at 72% 38%, rgba(220, 226, 248, 0.022) 0%, transparent 65%),
-      radial-gradient(ellipse 55% 50% at 84% 55%, rgba(248, 224, 232, 0.016) 0%, transparent 60%);
+    background: radial-gradient(ellipse 90% 70% at 50% 50%, var(--fg-04) 0%, transparent 68%);
     pointer-events: none;
     z-index: 0;
   }
@@ -103,12 +98,18 @@ section {
 // ── Name ─────────────────────────────────────────────────────────────────────
 
 .hero-name {
-  font-size: clamp(54px, 7vw, 112px);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 0.88;
-  margin-bottom: 24px;
-  background: linear-gradient(155deg, var(--fg) 30%, var(--fg-55) 100%);
+  // Instrument Serif italic 400 — sharp editorial serif, Claude/Vercel design system
+  // Self-hosted, zero FOUT. Oversized + gradient fade = airy, cinematic.
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(80px, 11vw, 160px);
+  letter-spacing: 0.015em;
+  line-height: 0.84;
+  margin-bottom: 30px;
+  // Strong fade: solid near-white → fully transparent
+  // Creates the "written in smoke" high-fashion editorial look
+  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -295,7 +296,7 @@ section {
     border-radius: 18px;
   }
   .hero-photo    { object-position: center 18%; }
-  .hero-name     { font-size: clamp(46px, 10vw, 82px); }
+  .hero-name     { font-size: clamp(58px, 13vw, 108px); }
   .hero-tagline  { max-width: 100%; }
 }
 
@@ -307,8 +308,12 @@ section {
   .hero-tagline     { font-size: 13px; margin-bottom: 28px; }
 }
 
+@media (max-width: 600px) {
+  .hero-name { font-size: clamp(52px, 14vw, 88px); }
+}
+
 @media (max-width: 400px) {
-  .hero-name          { font-size: clamp(40px, 11.5vw, 58px); }
+  .hero-name          { font-size: clamp(44px, 14vw, 72px); }
   .hero-photo-wrapper { aspect-ratio: 4 / 3; }
   .hero-actions       { gap: 12px; }
 }

@@ -1,152 +1,157 @@
 @import './../../../../../styles.scss';
 
-// ─── Desktop nav links ────────────────────────────────────────────────────────
-
 nav {
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.04em;
-  @include flexBox($gap: 32px);
+  @include flexBox($gap: 36px);
 
-  > a {
+  >a {
     position: relative;
     text-decoration: none;
-    color: var(--fg-55);
+    color: rgba(255, 255, 255, 0.65);
     padding-bottom: 3px;
     transition: color 0.25s ease;
 
     &::after {
       content: '';
       position: absolute;
-      bottom: 0; left: 0;
+      bottom: 0;
+      left: 0;
       width: 100%;
       height: 1px;
-      background: var(--fg);
+      background: rgba(255, 255, 255, 0.75);
       transform: scaleX(0);
       transform-origin: right;
       transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &:hover {
-      color: var(--fg);
-      &::after { transform: scaleX(1); transform-origin: left; }
+      color: white;
+
+      &::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
     }
   }
 }
 
-// ─── Language selector ────────────────────────────────────────────────────────
-
-.lang-selector {
+.language_selector {
   position: relative;
   width: max-content;
 
-  > div {
-    @include flexBox($gap: 7px);
-    padding: 7px 13px;
+  >div {
+    @include flexBox($gap: 8px);
+    padding: 8px 16px;
     border-radius: 8px;
+    position: relative;
+    z-index: 8;
     border: 1px solid transparent;
-    font-size: 13px;
-    color: var(--fg-55);
-    transition: border-color 0.22s ease, background 0.22s ease, color 0.22s ease;
-    cursor: pointer;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.55);
+    transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
 
-    &:hover, &.active {
-      border-color: var(--fg-18);
-      background: var(--surface);
-      color: var(--fg);
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      cursor: pointer;
+    }
+
+    &.active {
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      background: rgba(255, 255, 255, 0.06) !important;
+    }
+
+    >img {
+      width: 18px;
+      height: 18px;
+      opacity: 0.8;
     }
   }
 
-  > ul {
+  >ul {
     position: absolute;
     top: calc(100% + 4px);
     left: 0;
-    z-index: 10;
-    min-width: 72px;
-    padding: 5px;
+    z-index: 7;
+    width: 100%;
+    padding: 6px;
     margin: 0;
     list-style: none;
-    border: 1px solid var(--fg-12);
+    border: 1px solid rgba(255, 255, 255, 0.10);
     border-radius: 10px;
-    background: var(--bg-nav);
+    background: rgba(14, 14, 14, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
 
-    > li {
-      padding: 8px 14px;
+    >li {
+      @include flexBox($gap: 8px);
+      padding: 8px 12px;
       border-radius: 7px;
       cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--fg-55);
-      transition: background 0.18s ease, color 0.18s ease;
-      text-align: center;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.65);
+      transition: background 0.2s ease, color 0.2s ease;
 
-      &.selected { background: var(--surface-hi); color: var(--fg); }
-      &:hover    { background: var(--surface-md); color: var(--fg); }
+      &.selected {
+        background: rgba(255, 255, 255, 0.10);
+        color: white;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: white;
+      }
+
+      >img {
+        width: 18px;
+        height: 18px;
+      }
     }
   }
 }
 
-// ─── Theme toggle ─────────────────────────────────────────────────────────────
+:host {
+  >div {
+    height: 100vh;
+    height: 100svh;
+    position: absolute;
+    z-index: 9;
+    top: 0;
+    left: 100%;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(8, 8, 8, 0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    @include flexBox();
+    display: none;
+    animation: slide 150ms forwards;
 
-.theme-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  border-radius: 10px;
-  border: 1px solid var(--fg-12);
-  background: var(--surface);
-  color: var(--fg-55);
-  cursor: pointer;
-  flex-shrink: 0;
+    >div {
+      @include flexBox($fd: column, $gap: 36px);
 
-  &:hover {
-    color: var(--fg);
-    border-color: var(--fg-18);
-    background: var(--surface-hi);
-    transform: none;
-  }
+      >a {
+        text-decoration: none;
+        font-size: 22px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.75);
+        letter-spacing: 0.02em;
+        transition: color 0.25s ease;
 
-  &::before { display: none; }
-}
+        &:hover {
+          color: white;
+        }
+      }
+    }
 
-// ─── Mobile dialog ────────────────────────────────────────────────────────────
-
-:host > div {
-  height: 100vh;
-  height: 100svh;
-  position: absolute;
-  z-index: 9;
-  top: 0; left: 100%; right: 0; bottom: 0;
-  background-color: var(--bg-nav);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  @include flexBox();
-  display: none;
-  animation: slide 150ms forwards;
-
-  > div {
-    @include flexBox($fd: column, $gap: 36px);
-
-    > a {
-      text-decoration: none;
-      font-size: 22px;
-      font-weight: 500;
-      color: var(--fg-48);
-      letter-spacing: 0.02em;
-      transition: color 0.25s ease;
-      &:hover { color: var(--fg); }
+    &.visible {
+      display: flex;
     }
   }
-
-  &.visible { display: flex; }
 }
-
-// ─── Burger ───────────────────────────────────────────────────────────────────
 
 .burger_menu {
   width: 32px;
@@ -154,37 +159,73 @@ nav {
   position: relative;
   cursor: pointer;
   display: none;
-
-  span {
-    background-color: var(--fg-55);
-    position: absolute;
-    border-radius: 2px;
-    transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
-    width: 100%;
-    height: 1.5px;
-  }
-
-  span:nth-child(1) { top: 0; }
-  span:nth-child(2) { top: 11px; width: 70%; }
-  span:nth-child(3) { bottom: 0; }
-
-  &:not(.open):hover span              { background-color: var(--fg); }
-  &:not(.open):hover span:nth-child(2) { width: 100%; }
-
-  &.open span:nth-child(1) { transform: rotate(45deg);  top: 11px; background-color: var(--fg); }
-  &.open span:nth-child(2) { opacity: 0; transform: translateX(-8px); }
-  &.open span:nth-child(3) { transform: rotate(-45deg); top: 11px; background-color: var(--fg); }
 }
 
-@keyframes slide { to { left: 0; } }
+.burger_menu span {
+  background-color: rgba(255, 255, 255, 0.75);
+  position: absolute;
+  border-radius: 2px;
+  transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  height: 1.5px;
+}
 
-// ─── Responsive ───────────────────────────────────────────────────────────────
+.burger_menu span:nth-child(1) {
+  top: 0;
+}
+
+.burger_menu span:nth-child(2) {
+  top: 11px;
+  width: 70%;
+}
+
+.burger_menu span:nth-child(3) {
+  bottom: 0;
+}
+
+.burger_menu:not(.open):hover span {
+  background-color: white;
+}
+
+.burger_menu:not(.open):hover span:nth-child(2) {
+  width: 100%;
+}
+
+.burger_menu.open span:nth-child(1) {
+  transform: rotate(45deg);
+  top: 11px;
+  background-color: white;
+}
+
+.burger_menu.open span:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-8px);
+}
+
+.burger_menu.open span:nth-child(3) {
+  transform: rotate(-45deg);
+  top: 11px;
+  background-color: white;
+}
+
+@keyframes slide {
+  to { left: 0; }
+}
 
 @media (max-width: 720px) {
-  nav > a    { display: none; }
-  .burger_menu { display: block; }
+  nav > a {
+    display: none;
+  }
+
+  .burger_menu {
+    display: block;
+  }
 }
 
 @media (max-width: 500px) {
-  .lang-selector > div { padding: 6px 10px; }
+  .language_selector {
+    >div {
+      padding: 6px 12px;
+    }
+  }
 }

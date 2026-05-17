@@ -10,7 +10,7 @@
 
   --bg:         #070608;  // deep space — near-black, slight violet warmth
   --bg-nav:     rgba(7, 6, 8, 0.86);
-  --fg:         #e2e8f0;
+  --fg:         #ede9e3;
   --fg-55:      rgba(226, 232, 240, 0.55);
   --fg-48:      rgba(226, 232, 240, 0.48);
   --fg-40:      rgba(226, 232, 240, 0.40);
@@ -51,6 +51,7 @@
   --btn-solid-color:  #0a0a0a;
   --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.85) inset, 0 4px 20px rgba(0,0,0,0.35);
   --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.90) inset, 0 10px 32px rgba(0,0,0,0.45);
+  --font-display: 'Instrument Serif', Georgia, serif;
 }
 
 html.light {
@@ -180,6 +181,15 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
               border-color 150ms ease-in-out,
               box-shadow 150ms ease-in-out;
 
+  // ── Font-smoothing — CRITICAL for preventing font flicker ─────────────────
+  // When GSAP promotes/demotes GPU compositor layers (e.g. during opacity:0→1
+  // animations), Chrome/Safari switches between subpixel and non-subpixel
+  // antialiasing. This appears as fonts "jumping" or briefly blurring.
+  // Forcing non-subpixel antialiasing globally keeps rendering consistent
+  // regardless of compositor layer state.
+  -webkit-font-smoothing: antialiased;   /* correct value — was typo 'antialiasing' */
+  -moz-osx-font-smoothing: grayscale;
+
   &::-webkit-scrollbar { width: 8px; }
   &::-webkit-scrollbar-track { background: var(--sb-track); }
   &::-webkit-scrollbar-thumb {
@@ -190,8 +200,11 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   }
 }
 
-// GSAP-controlled elements: disable CSS transitions on transform/opacity
-// to prevent the CSS layer fighting the GSAP animation layer → no flicker
+// ── GSAP-controlled elements: no CSS transitions, stable GPU layer ────────────
+// transition:none prevents CSS fighting GSAP.
+// translateZ(0) forces a persistent GPU compositor layer — prevents the
+// "blit artifact" that appears when GSAP opacity animations end and the
+// browser demotes the temporary GPU layer back to the main surface.
 .stage,
 .hero-text,
 .hero-photo-wrapper,
@@ -202,6 +215,18 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 .contact-heading,
 .contact-columns {
   transition: none !important;
+  transform: translateZ(0);     // persistent GPU layer — no blit on animation end
+  backface-visibility: hidden;  // disables subpixel AA on this layer (matches font fix)
+}
+
+// ── Images: stable GPU layer — translateZ(0) only ────────────────────────────
+// backface-visibility:hidden is deliberately REMOVED from img.
+// When the parent stage does z-axis 3D transforms, backface-visibility on a
+// child image causes the browser to re-evaluate face orientation on every frame,
+// triggering repaints → flicker. translateZ(0) alone is sufficient to keep the
+// image on a dedicated compositor layer without the repaint penalty.
+img {
+  transform: translateZ(0);
 }
 
 html {
@@ -337,10 +362,26 @@ html.light {
   #global-canvas { display: none; }
 }
 
-// ─── Poppins — only the three weights in use ──────────────────────────────────
+// ─── Poppins — weights 200 (display italic), 400, 500, 700 ──────────────────────
 
 @font-face {
-  font-display: swap;
+  font-display: block;
+  font-family: 'Poppins';
+  font-style: italic;
+  font-weight: 200;
+  src: url('./assets/font/poppins-v20-latin-200italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: block;
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 200;
+  src: url('./assets/font/poppins-v20-latin-200.woff2') format('woff2');
+}
+
+@font-face {
+  font-display: block;
   font-family: 'Poppins';
   font-style: normal;
   font-weight: 400;
@@ -348,7 +389,7 @@ html.light {
 }
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Poppins';
   font-style: normal;
   font-weight: 500;
@@ -356,17 +397,29 @@ html.light {
 }
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Poppins';
   font-style: normal;
   font-weight: 700;
   src: url('./assets/font/poppins-v20-latin-700.woff2') format('woff2');
 }
 
+// ─── Display typography — two-font system ────────────────────────────────────
+// h1/h2: Instrument Serif italic 400 — loaded via Google Fonts CDN (index.html)
+// Body/UI: Poppins 400/500 — neutral geometric sans
+// The high stroke-contrast italic vs. optically-even Poppins = editorial tension.
+
+h1, h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
 // ─── Journey / Stage ──────────────────────────────────────────────────────────
 
 #journey {
-  height: 700vh;
+  height: 800vh;
   position: relative;
 }
 
@@ -388,14 +441,45 @@ html.light {
   position: absolute;
   inset: 0;
   will-change: transform, opacity;
-  // Note: backface-visibility:hidden + transform-style:preserve-3d removed —
-  // they caused GPU compositing flicker during 3D scroll transitions.
-  // will-change:transform alone is sufficient for compositor promotion.
+  // preserve-3d required: stages use z-axis 3D transforms (z: -350 → 0).
+  // Without this, child elements don't participate in the 3D context and the
+  // z value is ignored, making all transitions flat (no depth).
+  transform-style: preserve-3d;
 
   // Angular host component fills the stage
   > * {
     width: 100% !important;
     height: 100% !important;
     max-width: none !important;
+  }
+}
+
+// ─── Mobile: disable pinned journey → native scroll ───────────────────────────
+// On touch/small screens the 700vh pinned scroll causes jank. Switch to
+// natural document flow: stages stack vertically, native scroll handles momentum.
+
+@media (max-width: 900px), (hover: none) {
+  #journey {
+    height: auto !important;
+  }
+
+  #stages {
+    position: relative !important;
+    height: auto !important;
+    overflow: visible !important;
+    perspective: none !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+  }
+
+  .stage {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100svh;
+    transform: none !important;
+    opacity: 1 !important;
+    will-change: auto !important;
   }
 }
