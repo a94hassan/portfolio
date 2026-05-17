@@ -143,7 +143,7 @@ export class AppComponent implements OnInit, OnDestroy {
       '.contact-heading h1', '.contact-columns',
     ], { opacity: 0, y: 10 });
 
-    gsap.set(['.footer-logo', '.footer-center', '.footer-social'], { opacity: 0, y: 10 });
+    gsap.set(['.footer-rule', '.footer-name-block', '.footer-social', '.footer-legal'], { opacity: 0, y: 14 });
 
     // ── Master timeline: OUT/IN share identical parameters ───────────────────
     const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, duration: 1, ease: 'power2.inOut' } as const;
@@ -290,9 +290,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private footerTl() {
     return gsap.timeline()
-      .to('.footer-logo',   { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out', delay: 0.08 })
-      .to('.footer-center', { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }, 0.22)
-      .to('.footer-social', { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }, 0.36);
+      .to('.footer-rule',       { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out', delay: 0.05 })
+      .to('.footer-name-block', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.18)
+      .to('.footer-social',     { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.42)
+      .to('.footer-legal',      { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.56);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -436,11 +437,11 @@ export class AppComponent implements OnInit, OnDestroy {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const mat = new THREE.PointsMaterial({
-      color:           0xd0d4dc,
-      size:            2.2,            // fixed screen size — all particles equal
+      color:           0xe8e4de,       // warm ivory — matches --fg: #ede9e3
+      size:            2.0,
       transparent:     true,
-      opacity:         0.28,
-      sizeAttenuation: false,          // NO perspective scaling — uniform field
+      opacity:         0.22,           // more subtle — less screensaver, more editorial
+      sizeAttenuation: false,
       depthWrite:      false,
     });
     scene.add(new THREE.Points(geo, mat));
