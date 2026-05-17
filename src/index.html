@@ -22,7 +22,13 @@
   <meta name="twitter:image" content="https://hassan-ammar.com/assets/img/1_above_the_fold_section/photo_atf.png">
 
   <link rel="canonical" href="https://hassan-ammar.com/">
-  <!-- Cormorant Garamond is now self-hosted via @font-face in styles.scss -->
+  <!-- Instrument Serif italic — preload both subsets before first paint -->
+  <!-- This is the definitive font-loading fix: browser fetches font file            -->
+  <!-- immediately alongside HTML, not after CSS is parsed — eliminates FOUT.        -->
+  <link rel="preload" href="/assets/font/instrument-serif-italic-latin.woff2"
+        as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="/assets/font/instrument-serif-italic-latin-ext.woff2"
+        as="font" type="font/woff2" crossorigin="anonymous">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 
   <script type="application/ld+json">

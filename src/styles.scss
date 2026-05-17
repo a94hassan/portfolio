@@ -365,7 +365,7 @@ html.light {
 // ─── Poppins — weights 200 (display italic), 400, 500, 700 ──────────────────────
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Poppins';
   font-style: italic;
   font-weight: 200;
@@ -373,7 +373,7 @@ html.light {
 }
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Poppins';
   font-style: normal;
   font-weight: 200;
@@ -381,7 +381,7 @@ html.light {
 }
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Poppins';
   font-style: normal;
   font-weight: 400;
@@ -389,7 +389,7 @@ html.light {
 }
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Poppins';
   font-style: normal;
   font-weight: 500;
@@ -397,7 +397,7 @@ html.light {
 }
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Poppins';
   font-style: normal;
   font-weight: 700;
@@ -410,7 +410,7 @@ html.light {
 // Latin-ext first (fallback for accented chars), then precise latin subset.
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Instrument Serif';
   font-style: italic;
   font-weight: 400;
@@ -421,7 +421,7 @@ html.light {
 }
 
 @font-face {
-  font-display: swap;
+  font-display: block;
   font-family: 'Instrument Serif';
   font-style: italic;
   font-weight: 400;
