@@ -165,29 +165,36 @@ export class AppComponent implements OnInit, OnDestroy {
       .to(stages[3], { ...OUT }, 5)
       .to(stages[4], { ...IN  }, 5.06);
 
-    // ── ScrollTrigger: smooth scrub, fire entrance on snap ──────────────────
-    // scrub: 0.8 → 0.8s of gentle lag — feels like smooth inertia, not rubber-band.
-    // snap delay: 1.5s → snap only fires when user is genuinely done scrolling.
-    // This eliminates the "catapult" effect while keeping sections aligned.
+    // ── ScrollTrigger: responsive scrub + eager entrance reveal ──────────────
+    // scrub: 0.22 → minimal lag, standard-feeling scroll with light smoothness.
+    // snap.delay: 0.38 → snaps quickly after user stops (not sluggish).
+    // fireEntrance fires on EVERY beat change via onUpdate — content reveals
+    // as soon as the user scrolls halfway to the next section, no waiting for
+    // onSnapComplete. This fixes about/skills/contact staying invisible.
     let rawF = 0;
+    let lastBeat = -1;
+
+    const fireBeat = (beat: number, seek = false) => {
+      if (beat === lastBeat) return;
+      lastBeat = beat;
+      if (seek) tl.seek(beat / 6 * tl.duration());
+      setTimeout(() => this.fireEntrance(beat), 40);
+    };
+
     const st = ScrollTrigger.create({
       trigger: '#journey',
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 0.8,
+      scrub: 0.22,
       animation: tl,
       snap: {
         snapTo:   1 / 6,
-        duration: { min: 0.6, max: 0.9 },
-        delay:    1.5,           // long pause required before snap activates
-        ease:     'power1.inOut', // very gentle pull — no catapult
+        duration: { min: 0.28, max: 0.45 },
+        delay:    0.38,
+        ease:     'power2.inOut',
       },
-      onUpdate:       (self) => { rawF = self.progress; },
-      onSnapComplete: (self) => {
-        const beat = Math.round(self.progress * 6);
-        tl.seek(beat / 6 * tl.duration());
-        setTimeout(() => this.fireEntrance(beat), 32);
-      },
+      onUpdate:       (self) => { rawF = self.progress; fireBeat(Math.round(self.progress * 6)); },
+      onSnapComplete: (self) => { fireBeat(Math.round(self.progress * 6), true); },
     });
 
     // ── Section link navigation ──────────────────────────────────────────────
@@ -214,7 +221,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     (window as any).__journeyProgress = () => rawF;
     this.scrollCleanup = () => st.kill();
-    setTimeout(() => this.fireEntrance(0), 200);
+    setTimeout(() => { lastBeat = 0; this.fireEntrance(0); }, 120);
   }
 
   private fireEntrance(beat: number) {
