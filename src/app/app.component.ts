@@ -106,7 +106,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private initJourney() {
     const stages = gsap.utils.toArray<HTMLElement>('.stage');
-    if (stages.length < 5) return;
+    if (stages.length < 6) return;
 
     if (this.isMobile) { this.initMobileScroll(); return; }
 
@@ -122,6 +122,7 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.set(stages[2], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
     gsap.set(stages[3], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
     gsap.set(stages[4], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    gsap.set(stages[5], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
 
     // Pre-hide content elements for entrance animations
     gsap.set([
@@ -143,6 +144,8 @@ export class AppComponent implements OnInit, OnDestroy {
       '.contact-heading h1', '.contact-columns',
     ], { opacity: 0, y: 10 });
 
+    gsap.set(['.footer-logo', '.footer-center', '.footer-social'], { opacity: 0, y: 10 });
+
     // ── Master timeline: OUT/IN share identical parameters ───────────────────
     const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, duration: 1, ease: 'power2.inOut' } as const;
     const IN  = { z: 0,     scale: 1,      opacity: 1, duration: 1, ease: 'power2.out'  } as const;
@@ -163,7 +166,10 @@ export class AppComponent implements OnInit, OnDestroy {
       .to('.projects-track', { xPercent: -66.667, duration: 1, ease: 'power2.inOut' }, 4)
       // Beat 5→6: Portfolio → Contact
       .to(stages[3], { ...OUT }, 5)
-      .to(stages[4], { ...IN  }, 5.06);
+      .to(stages[4], { ...IN  }, 5.06)
+      // Beat 6→7: Contact → Footer
+      .to(stages[4], { ...OUT }, 6)
+      .to(stages[5], { ...IN  }, 6.06);
 
     // ── ScrollTrigger: responsive scrub + eager entrance reveal ──────────────
     // scrub: 0.22 → minimal lag, standard-feeling scroll with light smoothness.
@@ -177,7 +183,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const fireBeat = (beat: number, seek = false) => {
       if (beat === lastBeat) return;
       lastBeat = beat;
-      if (seek) tl.seek(beat / 6 * tl.duration());
+      if (seek) tl.seek(beat / 7 * tl.duration());
       setTimeout(() => this.fireEntrance(beat), 40);
     };
 
@@ -188,13 +194,13 @@ export class AppComponent implements OnInit, OnDestroy {
       scrub: 0.22,
       animation: tl,
       snap: {
-        snapTo:   1 / 6,
+        snapTo:   1 / 7,
         duration: { min: 0.28, max: 0.45 },
         delay:    0.38,
         ease:     'power2.inOut',
       },
-      onUpdate:       (self) => { rawF = self.progress; fireBeat(Math.round(self.progress * 6)); },
-      onSnapComplete: (self) => { fireBeat(Math.round(self.progress * 6), true); },
+      onUpdate:       (self) => { rawF = self.progress; fireBeat(Math.round(self.progress * 7)); },
+      onSnapComplete: (self) => { fireBeat(Math.round(self.progress * 7), true); },
     });
 
     // ── Section link navigation ──────────────────────────────────────────────
@@ -215,7 +221,7 @@ export class AppComponent implements OnInit, OnDestroy {
       const id = a.getAttribute('href')!.slice(1);
       if (id in BEAT) {
         e.preventDefault();
-        gsap.to(window, { scrollTo: (BEAT[id] / 6) * scrollMax(), duration: 1.1, ease: 'power2.inOut' });
+        gsap.to(window, { scrollTo: (BEAT[id] / 7) * scrollMax(), duration: 1.1, ease: 'power2.inOut' });
       }
     });
 
@@ -225,13 +231,14 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private fireEntrance(beat: number) {
-    const idx = beat <= 2 ? beat : beat <= 5 ? 3 : 4;
+    const idx = beat <= 2 ? beat : beat <= 5 ? 3 : beat === 6 ? 4 : 5;
     const builders = [
       () => this.heroTl(),
       () => this.aboutTl(),
       () => this.skillsTl(),
       () => this.portfolioTl(beat - 3),
       () => this.contactTl(),
+      () => this.footerTl(),
     ];
     builders[idx]?.()?.restart();
   }
@@ -280,6 +287,13 @@ export class AppComponent implements OnInit, OnDestroy {
     return gsap.timeline()
       .add(this.writeIn('.contact-heading h1', 0.08))
       .to('.contact-columns', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.50);
+  }
+
+  private footerTl() {
+    return gsap.timeline()
+      .to('.footer-logo',   { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out', delay: 0.08 })
+      .to('.footer-center', { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }, 0.22)
+      .to('.footer-social', { opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }, 0.36);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -464,7 +478,9 @@ export class AppComponent implements OnInit, OnDestroy {
       smY += (mNY - smY) * 0.055;
 
       const rawF = (window as any).__journeyProgress?.() ?? 0;
-      sFrac += (rawF - sFrac) * 0.038;
+      // Camera fraction: full path by beat 6 (6/7 progress), hold at footer (beat 7)
+      const camFrac = Math.min(rawF * 7 / 6, 1.0);
+      sFrac += (camFrac - sFrac) * 0.038;
 
       camCurve.getPoint(Math.min(sFrac, 0.9999), tCam);
       lkCurve.getPoint( Math.min(sFrac, 0.9999), tLk);

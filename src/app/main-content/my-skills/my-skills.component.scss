@@ -62,8 +62,9 @@ section {
     width: 38px;
     height: 38px;
     object-fit: contain;
-    filter: brightness(0.80) saturate(0.88);
-    transition: filter 0.28s ease;
+    filter: brightness(0) invert(1);
+    opacity: 0.72;
+    transition: filter 0.28s ease, opacity 0.28s ease;
   }
 
   span {
@@ -75,14 +76,13 @@ section {
   }
 
   &:hover {
-    background: linear-gradient(160deg, rgba(100, 80, 255, 0.10) 0%, var(--glass-bg-hi) 100%);
+    background: linear-gradient(160deg, var(--surface-hi) 0%, var(--glass-bg-hi) 100%);
     border-color: var(--glass-border-hi);
     box-shadow:
-      0 0 0 1px rgba(100, 80, 255, 0.20),
+      0 0 0 1px var(--fg-09),
       0 1px 0 var(--glass-border-hi) inset,
       0 12px 36px rgba(0, 0, 0, 0.28);
-
-    img { filter: brightness(1.14) saturate(1.22); }
+    img { filter: brightness(0) invert(1); opacity: 1; }
   }
 }
 

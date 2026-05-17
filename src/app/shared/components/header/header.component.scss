@@ -8,11 +8,18 @@
   top: 0;
   left: 0;
   right: 0;
-  background-color: rgba(10, 10, 10, 0.80);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: rgba(7, 6, 8, 0.30);
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   @include flexBox();
+}
+
+:host-context(html.light) {
+  background-color: rgba(246, 244, 241, 0.45);
+  border-bottom-color: rgba(28, 26, 24, 0.06);
+  backdrop-filter: blur(40px) saturate(1.6);
+  -webkit-backdrop-filter: blur(40px) saturate(1.6);
 }
 
 header {
@@ -26,14 +33,14 @@ header {
   text-decoration: none;
 
   .logo-mark {
-    color: rgba(255, 255, 255, 0.70);
+    color: var(--fg-55);
     flex-shrink: 0;
     transition: color 0.25s ease;
   }
 
-  &:hover .logo-mark { color: white; }
-  &:hover .logo-fn { color: white; }
-  &:hover .logo-ln { color: rgba(255, 255, 255, 0.65); }
+  &:hover .logo-mark { color: var(--fg); }
+  &:hover .logo-fn { color: var(--fg); }
+  &:hover .logo-ln { color: var(--fg-40); }
 }
 
 .logo-wordmark {
@@ -45,7 +52,7 @@ header {
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.025em;
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--fg);
   line-height: 1;
   transition: color 0.25s ease;
 }
@@ -54,7 +61,7 @@ header {
   font-size: 17px;
   font-weight: 300;
   letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.40);
+  color: var(--fg-35);
   line-height: 1;
   transition: color 0.25s ease;
 }
