@@ -50,7 +50,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // ════════════════════════════════════════════════════════════════════════════
   // TEXT — character-by-character 3D write-in animation
   // Each character flips up from rotateX:-80° (face-down) to 0° (upright),
-  // staggered left-to-right. Combined with Cormorant Garamond italic 300,
+  // staggered left-to-right. Combined with Playfair Display italic 400,
   // this creates the "being written" handwriting effect.
   // ════════════════════════════════════════════════════════════════════════════
 

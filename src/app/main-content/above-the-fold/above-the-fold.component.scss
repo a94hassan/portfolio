@@ -98,11 +98,11 @@ section {
 // ── Name ─────────────────────────────────────────────────────────────────────
 
 .hero-name {
-  // Cormorant Garamond italic 300 — luxury editorial, "Schreibschrift"
+  // Playfair Display italic 400 — high-contrast editorial serif
   // Self-hosted, zero FOUT. Oversized + gradient fade = airy, cinematic.
   font-family: var(--font-display);
   font-style: italic;
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(80px, 11vw, 160px);
   letter-spacing: 0.015em;
   line-height: 0.84;

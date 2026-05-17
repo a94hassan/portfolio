@@ -101,7 +101,7 @@ section {
     justify-content: flex-end;
 
     h1 {
-      // Display font — Cormorant Garamond italic 300 (self-hosted)
+      // Display font — Playfair Display italic 400 (self-hosted)
       font-size: clamp(64px, 7.5vw, 116px);
       line-height: 0.86;
       background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
@@ -140,6 +140,15 @@ section {
 }
 
 .german { font-size: clamp(50px, 6vw, 88px) !important; }
+
+// ─── Light mode: dark icons instead of white (white invisible on ivory bg) ───
+:host-context(html.light) {
+  .skill-item img {
+    filter: brightness(0);   // pure black — --fg-40 opacity makes it dark gray
+    opacity: 0.52;
+  }
+  .skill-item:hover img { opacity: 0.80; }
+}
 
 .skills-mobile-btn {
   display: none;
