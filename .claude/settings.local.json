@@ -22,7 +22,10 @@
       "Bash(curl -sIL https://hassan-ammar.com)",
       "Bash(python3 -c ' *)",
       "Bash(git -C /c/Dev/projects/developer_akademie/modul15/portfolio branch --show-current)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(git -C /c/Dev/projects/developer_akademie/modul15/portfolio add src/index.html src/styles.scss src/app/main-content/above-the-fold/above-the-fold.component.scss src/app/shared/components/footer/footer.component.scss src/app/shared/components/header/header.component.scss)",
+      "Bash(git -C /c/Dev/projects/developer_akademie/modul15/portfolio commit -m ' *)",
+      "Bash(git -C /c/Dev/projects/developer_akademie/modul15/portfolio push origin main)"
     ]
   }
 }
