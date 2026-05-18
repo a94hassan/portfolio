@@ -62,16 +62,18 @@ section {
     width: 38px;
     height: 38px;
     object-fit: contain;
-    filter: brightness(0) invert(1);
-    opacity: 0.72;
-    transition: filter 0.28s ease, opacity 0.28s ease;
+    // Original brand colors, gently desaturated for dark editorial cohesion.
+    // Preserves icon detail (Angular A, TS lettering, etc.) — no silhouettes.
+    filter: saturate(0.70) brightness(0.90);
+    opacity: 0.80;
+    transition: filter 0.30s ease, opacity 0.30s ease;
   }
 
   span {
     font-size: 10px;
     font-weight: 500;
-    letter-spacing: 0.03em;
-    color: var(--fg-55);
+    letter-spacing: 0.04em;
+    color: var(--fg-48);
     line-height: 1.2;
   }
 
@@ -82,7 +84,8 @@ section {
       0 0 0 1px var(--fg-09),
       0 1px 0 var(--glass-border-hi) inset,
       0 12px 36px rgba(0, 0, 0, 0.28);
-    img { filter: brightness(0) invert(1); opacity: 1; }
+    // Full vivid on hover — satisfying color reveal
+    img { filter: saturate(1.0) brightness(1.06); opacity: 1; }
   }
 }
 
@@ -141,13 +144,16 @@ section {
 
 .german { font-size: clamp(50px, 6vw, 88px) !important; }
 
-// ─── Light mode: dark icons instead of white (white invisible on ivory bg) ───
+// ─── Light mode: slightly darker + more saturated to pop on ivory background ──
 :host-context(html.light) {
   .skill-item img {
-    filter: brightness(0);   // pure black — --fg-40 opacity makes it dark gray
-    opacity: 0.52;
+    filter: saturate(0.85) brightness(0.82);
+    opacity: 0.85;
   }
-  .skill-item:hover img { opacity: 0.80; }
+  .skill-item:hover img {
+    filter: saturate(1.0) brightness(0.95);
+    opacity: 1;
+  }
 }
 
 .skills-mobile-btn {

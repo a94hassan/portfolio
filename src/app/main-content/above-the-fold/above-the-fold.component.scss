@@ -100,8 +100,9 @@ section {
 .hero-name {
   // Instrument Serif italic 400 — sharp editorial serif, Claude/Vercel design system
   // Self-hosted, zero FOUT. Oversized + gradient fade = airy, cinematic.
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-style: italic;
+  font-optical-sizing: auto;
   font-weight: 400;
   font-size: clamp(80px, 11vw, 160px);
   letter-spacing: 0.015em;
