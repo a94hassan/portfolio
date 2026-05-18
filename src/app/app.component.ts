@@ -397,7 +397,7 @@ export class AppComponent implements OnInit, OnDestroy {
     //    of Z depth — creates a flat, minimal, consistent field, not a fog effect
     //  • Organic drift: individual sinusoidal oscillation per particle (fish school)
 
-    const PC     = 340;
+    const PC     = 260;
     const GA     = Math.PI * (3 - Math.sqrt(5));   // golden angle
     const R_IN   = 200;   // inner void radius — center kept clear
     const R_OUT  = 820;   // outer ring edge
@@ -440,7 +440,7 @@ export class AppComponent implements OnInit, OnDestroy {
       color:           0xe8e4de,       // warm ivory — matches --fg: #ede9e3
       size:            2.0,
       transparent:     true,
-      opacity:         0.22,           // more subtle — less screensaver, more editorial
+      opacity:         0.15,           // very subtle — barely there, editorial starfield
       sizeAttenuation: false,
       depthWrite:      false,
     });
@@ -450,18 +450,32 @@ export class AppComponent implements OnInit, OnDestroy {
     const pathMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.006 });
     scene.add(new THREE.Line(pathGeo, pathMat));
 
-    // ── Per-particle mouse repulsion constants ─────────────────────────────
-    // REPULSE_R: world-unit radius around mouse cursor — particles inside are pushed away
-    // REPULSE_STR: peak push distance (world units) when particle is directly at cursor
+    // ── Per-particle velocity-physics repulsion ────────────────────────────
+    // Velocity model: each particle accumulates an impulse when the mouse enters
+    // its radius. Impulse is proportional to proximity × mouse speed.
+    // Exponential DRAG per frame causes the velocity to decay naturally —
+    // particles spring away, decelerate, and drift back to their sinusoidal path.
+    //
+    // REPULSE_R:  much smaller influence radius (world units) — only nearby particles react
+    // REPULSE_F:  base impulse factor per frame inside radius
+    // DRAG:       velocity multiplier per frame (0.89 → ~50% speed in 6 frames)
     // tanHFov: precomputed tan(FOV/2) for unprojecting mouse NDC → world X/Y at particle depth
-    const REPULSE_R   = 200;
-    const REPULSE_STR = 130;
-    const tanHFov     = Math.tan(29 * Math.PI / 180); // camera FOV=58 → half=29°
+    const REPULSE_R = 80;
+    const REPULSE_F = 1.6;
+    const DRAG      = 0.89;
+    const tanHFov   = Math.tan(29 * Math.PI / 180); // camera FOV=58 → half=29°
+
+    const vX = new Float32Array(PC); // per-particle X velocity
+    const vY = new Float32Array(PC); // per-particle Y velocity
 
     let mNX = 0, mNY = 0, smX = 0, smY = 0;
+    let prevMX = 0, prevMY = 0, mSpeed = 0;
     const onMouseMove = (e: MouseEvent) => {
-      mNX = (e.clientX / w - 0.5) * 2;
-      mNY = -((e.clientY / h) - 0.5) * 2;
+      const nx = (e.clientX / w - 0.5) * 2;
+      const ny = -((e.clientY / h) - 0.5) * 2;
+      mSpeed = Math.sqrt((nx - prevMX) ** 2 + (ny - prevMY) ** 2);
+      prevMX = mNX; prevMY = mNY;
+      mNX = nx; mNY = ny;
     };
 
     const sCam = new THREE.Vector3(0, 0, 600);
@@ -474,8 +488,8 @@ export class AppComponent implements OnInit, OnDestroy {
       if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
       time += 0.007;
-      smX += (mNX - smX) * 0.055;
-      smY += (mNY - smY) * 0.055;
+      smX += (mNX - smX) * 0.036;
+      smY += (mNY - smY) * 0.036;
 
       const rawF = (window as any).__journeyProgress?.() ?? 0;
       // Camera fraction: full path by beat 6 (6/7 progress), hold at footer (beat 7)
@@ -484,8 +498,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
       camCurve.getPoint(Math.min(sFrac, 0.9999), tCam);
       lkCurve.getPoint( Math.min(sFrac, 0.9999), tLk);
-      tCam.x += smX * 16; tCam.y += smY * 7;
-      sCam.lerp(tCam, 0.04); sLk.lerp(tLk, 0.04);
+      tCam.x += smX * 7; tCam.y += smY * 3.5;
+      sCam.lerp(tCam, 0.032); sLk.lerp(tLk, 0.032);
       camera.position.copy(sCam);
       upV.set(-Math.sin(sFrac * Math.PI * 7) * 0.028, 1, 0).normalize();
       camera.up.lerp(upV, 0.028);
@@ -496,35 +510,43 @@ export class AppComponent implements OnInit, OnDestroy {
       for (let i = 0; i < PC; i++) {
         const ix = i*3, iy = ix+1, iz = ix+2;
 
-        // Organic drift — no global mouse field (removed smX*20 / smY*11)
-        p[ix] = bX[i] + Math.sin(time * fX[i] + pX[i]) * 24;
-        p[iy] = bY[i] + Math.sin(time * fY[i] + pY[i]) * 16;
-        p[iz] = bZ[i] + Math.sin(time * fZ[i] + pZ[i]) * 10;
+        // Natural sinusoidal drift position (base path)
+        const natX = bX[i] + Math.sin(time * fX[i] + pX[i]) * 20;
+        const natY = bY[i] + Math.sin(time * fY[i] + pY[i]) * 13;
+        const natZ = bZ[i] + Math.sin(time * fZ[i] + pZ[i]) * 10;
 
-        // ── Per-particle mouse repulsion ──────────────────────────────────
-        // Unproject smooth mouse NDC (smX,smY) to world space at this particle's depth.
-        // dz = depth from camera to particle along Z axis.
-        const dz = sCam.z - p[iz];
+        // ── Velocity-physics repulsion ─────────────────────────────────────
+        // Unproject mouse NDC → world coords at this particle's depth plane.
+        // Apply an impulse when inside REPULSE_R. Impulse scales with
+        // proximity AND current mouse speed → fast swipes = big bounce,
+        // slow hover = gentle nudge.  DRAG decays velocity each frame so
+        // particles decelerate naturally and drift back to their path.
+        const dz = sCam.z - natZ;
         if (dz > 0) {
           const mwx = sCam.x + smX * dz * tanHFov * aspect;
           const mwy = sCam.y + smY * dz * tanHFov;
-          const dx  = p[ix] - mwx;
-          const dy2 = p[iy] - mwy;
+          const dx  = natX - mwx;
+          const dy2 = natY - mwy;
           const dist2 = dx*dx + dy2*dy2;
-          if (dist2 < REPULSE_R * REPULSE_R) {
-            const dist = Math.sqrt(dist2);
-            if (dist > 0.5) {
-              const force = (1 - dist / REPULSE_R) * REPULSE_STR;
-              p[ix] += (dx  / dist) * force;
-              p[iy] += (dy2 / dist) * force;
-            }
+          if (dist2 < REPULSE_R * REPULSE_R && dist2 > 0.25) {
+            const dist    = Math.sqrt(dist2);
+            const impulse = (1 - dist / REPULSE_R) * REPULSE_F * (1 + mSpeed * 9);
+            vX[i] += (dx  / dist) * impulse;
+            vY[i] += (dy2 / dist) * impulse;
           }
         }
+        // Exponential drag — space-like deceleration, returns to natural path
+        vX[i] *= DRAG;
+        vY[i] *= DRAG;
+
+        p[ix] = natX + vX[i];
+        p[iy] = natY + vY[i];
+        p[iz] = natZ;
 
         // Y wrap — keeps particle field centred on camera as we travel down
         const dy = p[iy] - sCam.y;
-        if (dy >  totalY * 0.52) p[iy] -= totalY;
-        if (dy < -totalY * 0.52) p[iy] += totalY;
+        if (dy >  totalY * 0.52) { p[iy] -= totalY; bY[i] -= totalY; }
+        if (dy < -totalY * 0.52) { p[iy] += totalY; bY[i] += totalY; }
       }
       geo.attributes['position'].needsUpdate = true;
       renderer.render(scene, camera);

@@ -51,7 +51,7 @@
   --btn-solid-color:  #0a0a0a;
   --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.85) inset, 0 4px 20px rgba(0,0,0,0.35);
   --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.90) inset, 0 10px 32px rgba(0,0,0,0.45);
-  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-display: 'Fraunces', Georgia, serif;
 }
 
 html.light {
@@ -172,7 +172,7 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 * {
   margin: 0;
   box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   color: var(--fg);
   // Explicit property list — NOT 'all' or shorthand, to avoid fighting GSAP
   // transform / opacity are deliberately excluded: GSAP owns those on .stage
@@ -367,16 +367,18 @@ html.light {
 // frontier apps (Linear, Vercel, Raycast, Claude.ai). Critters will inline the
 // @font-face declarations at build time → zero extra network round-trip.
 
-// ─── Display typography — two-font system ────────────────────────────────────
-// h1/h2: Instrument Serif italic 400 — loaded via Google Fonts CDN (index.html)
-// Body/UI: Poppins 400/500 — neutral geometric sans
-// The high stroke-contrast italic vs. optically-even Poppins = editorial tension.
+// ─── Display typography — Fraunces + Space Grotesk ───────────────────────────
+// h1/h2: Fraunces italic 300 — optical-size variable serif, stunning at display scale
+//        Ultra-high stroke contrast + optical size axis = genuine 3D depth feeling
+// Body:  Space Grotesk 300/400/500 — geometric with personality, 2026 tech-editorial
+// The tension: Fraunces' extreme contrast vs. Space Grotesk's clean geometry.
 
 h1, h2 {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-style: italic;
-  font-weight: 400;
-  letter-spacing: 0.01em;
+  font-weight: 300;
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
 }
 
 // ─── Journey / Stage ──────────────────────────────────────────────────────────
