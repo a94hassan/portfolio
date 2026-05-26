@@ -60,14 +60,12 @@ header {
 // Editorial logo wordmark
 
 .logo-wordmark {
-  display: none;
+  // Always visible — even on small phones.
+  // The logo IS the brand identity.
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-
-  @media (min-width: 480px) {
-    display: flex;
-  }
 }
 
 .logo-fn {
