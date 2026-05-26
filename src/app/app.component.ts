@@ -134,7 +134,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private initJourney() {
     const stages = gsap.utils.toArray<HTMLElement>('.stage');
-    if (stages.length < 6) return;
+    if (stages.length < 6) { this.scheduleLoaderHide(0); return; }
 
     if (this.isMobile) { this.initMobileScroll(); return; }
 
@@ -264,6 +264,29 @@ export class AppComponent implements OnInit, OnDestroy {
     (window as any).__journeyProgress = () => rawF;
     this.scrollCleanup = () => st.kill();
     setTimeout(() => { lastBeat = 0; this.fireEntrance(0); }, 120);
+    // Hide loader once first beat is animating in + fonts are ready
+    this.scheduleLoaderHide(180);
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // LOADER — fades out once page is ready + fonts loaded
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private scheduleLoaderHide(extraDelay = 0) {
+    const fire = () => setTimeout(() => this.hideLoader(), extraDelay);
+    if ('fonts' in document && (document as any).fonts?.ready) {
+      (document as any).fonts.ready.then(fire).catch(fire);
+    } else {
+      setTimeout(fire, 400); // legacy browsers
+    }
+  }
+
+  private hideLoader() {
+    const loader = document.getElementById('app-loader');
+    if (!loader) return;
+    loader.classList.add('hidden');
+    // Remove fully after the CSS transition completes (matches 800ms duration)
+    setTimeout(() => loader.remove(), 900);
   }
 
   private fireEntrance(beat: number) {
@@ -380,6 +403,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     (window as any).__journeyProgress = () => 0;
+    this.scheduleLoaderHide(120);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
