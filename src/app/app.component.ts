@@ -219,6 +219,8 @@ export class AppComponent implements OnInit, OnDestroy {
       lastBeat = beat;
       if (seek) tl.seek(beat / 7 * tl.duration());
       setTimeout(() => this.fireEntrance(beat), 40);
+      // Notify Three.js: section transition → emit a pulse wave through the vortex
+      (window as any).__beatPulse?.();
     };
 
     const st = ScrollTrigger.create({
@@ -680,6 +682,16 @@ export class AppComponent implements OnInit, OnDestroy {
     const upV  = new THREE.Vector3(0, 1, 0);
     let sFrac = 0, time = 0;
 
+    // ── Beat-pulse system — UI section change emits a glow wave ────────────────
+    // Triggered from initJourney's fireBeat. A pulse lasts ~0.7s, with strength
+    // attenuated by distance from the camera's current Y. Stars near the camera
+    // light up brightest; far ones get a softer touch. Visually: a shimmer
+    // ripples through the vortex right when a section enters.
+    const PULSE_DURATION = 0.7;
+    const PULSE_REACH    = 1.0;          // multiples of viewport h
+    let pulseStart       = -10;          // last beat-change time
+    (window as any).__beatPulse = () => { pulseStart = time; };
+
     // 30fps cap — heavy math 30Hz, RAF 60Hz for scheduling smoothness
     let lastRender = 0;
     const FRAME_MS = 1000 / 30;
@@ -709,6 +721,14 @@ export class AppComponent implements OnInit, OnDestroy {
       camera.lookAt(sLk);
 
       const aspect = w / h;
+
+      // Active pulse intensity for this frame (0 if no recent beat change)
+      const pulseElapsed = time - pulseStart;
+      const pulseActive  = pulseElapsed < PULSE_DURATION;
+      const pulseStrength = pulseActive
+        ? Math.pow(1 - pulseElapsed / PULSE_DURATION, 1.6)  // ease-out cubic-ish
+        : 0;
+      const pulseReachW  = h * PULSE_REACH;
 
       // ── HELIX STARS: drift + billiard physics + glow per particle ─────────
       const sp = starGeo.attributes['position'].array as Float32Array;
@@ -753,6 +773,17 @@ export class AppComponent implements OnInit, OnDestroy {
         sp[ix] = natX + svX[i];
         sp[iy] = natY + svY[i];
         sp[iz] = natZ + svZ[i];
+
+        // Beat pulse: particles near camera Y get a soft glow lift,
+        // creating the harmony between section change and the vortex
+        if (pulseActive) {
+          const dYcam = Math.abs(natY - sCam.y);
+          if (dYcam < pulseReachW) {
+            const dProx = 1 - dYcam / pulseReachW;
+            sg[i] = Math.min(1.0, sg[i] + pulseStrength * dProx * 0.22);
+            glowDirty = true;
+          }
+        }
 
         // Glow decay — particles return to non-glowing over ~30 frames
         if (sg[i] > 0.002) {
@@ -804,6 +835,7 @@ export class AppComponent implements OnInit, OnDestroy {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize',   onResize);
       document.removeEventListener('visibilitychange', onVis);
+      delete (window as any).__beatPulse;
       renderer.dispose();
       dustGeo.dispose();  dustMat.dispose();
       starGeo.dispose();  starMat.dispose();
