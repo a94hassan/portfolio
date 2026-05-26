@@ -6,10 +6,12 @@ nav {
   letter-spacing: 0.04em;
   @include flexBox($gap: 36px);
 
-  >a {
+  > a {
+    // Mobile: hidden — burger menu takes over
+    display: none;
     position: relative;
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--fg-40);
     padding-bottom: 3px;
     transition: color 0.25s ease;
 
@@ -20,19 +22,24 @@ nav {
       left: 0;
       width: 100%;
       height: 1px;
-      background: rgba(255, 255, 255, 0.75);
+      background: var(--fg-55);
       transform: scaleX(0);
       transform-origin: right;
       transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &:hover {
-      color: white;
+      color: var(--fg);
 
       &::after {
         transform: scaleX(1);
         transform-origin: left;
       }
+    }
+
+    // Tablet+: show nav links
+    @media (min-width: 768px) {
+      display: block;
     }
   }
 }
@@ -41,27 +48,31 @@ nav {
   position: relative;
   width: max-content;
 
-  >div {
+  > div {
     @include flexBox($gap: 8px);
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 8px;
     position: relative;
     z-index: 8;
     border: 1px solid transparent;
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--fg-35);
     transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
 
+    @media (min-width: 768px) {
+      padding: 8px 16px;
+    }
+
     &:hover {
-      border-color: rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.05);
-      color: white;
+      border-color: var(--glass-border);
+      background: var(--glass-bg);
+      color: var(--fg);
       cursor: pointer;
     }
 
     &.active {
-      border-color: rgba(255, 255, 255, 0.15) !important;
-      background: rgba(255, 255, 255, 0.06) !important;
+      border-color: var(--glass-border) !important;
+      background: var(--glass-bg-hi) !important;
     }
 
     >img {
@@ -80,9 +91,9 @@ nav {
     padding: 6px;
     margin: 0;
     list-style: none;
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid var(--glass-border);
     border-radius: 10px;
-    background: rgba(14, 14, 14, 0.92);
+    background: var(--bg-nav);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
 
@@ -92,17 +103,17 @@ nav {
       border-radius: 7px;
       cursor: pointer;
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.65);
+      color: var(--fg-48);
       transition: background 0.2s ease, color 0.2s ease;
 
       &.selected {
-        background: rgba(255, 255, 255, 0.10);
-        color: white;
+        background: var(--glass-bg-hi);
+        color: var(--fg);
       }
 
       &:hover {
-        background: rgba(255, 255, 255, 0.07);
-        color: white;
+        background: var(--glass-bg);
+        color: var(--fg);
       }
 
       >img {
@@ -123,7 +134,7 @@ nav {
     left: 100%;
     right: 0;
     bottom: 0;
-    background-color: rgba(8, 8, 8, 0.96);
+    background-color: var(--bg-nav);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     @include flexBox();
@@ -137,12 +148,12 @@ nav {
         text-decoration: none;
         font-size: 22px;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.75);
+        color: var(--fg-48);
         letter-spacing: 0.02em;
         transition: color 0.25s ease;
 
         &:hover {
-          color: white;
+          color: var(--fg);
         }
       }
     }
@@ -158,11 +169,16 @@ nav {
   height: 24px;
   position: relative;
   cursor: pointer;
-  display: none;
+  // Mobile-first: visible by default
+  display: block;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
 }
 
 .burger_menu span {
-  background-color: rgba(255, 255, 255, 0.75);
+  background-color: var(--fg-55);
   position: absolute;
   border-radius: 2px;
   transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -184,7 +200,7 @@ nav {
 }
 
 .burger_menu:not(.open):hover span {
-  background-color: white;
+  background-color: var(--fg);
 }
 
 .burger_menu:not(.open):hover span:nth-child(2) {
@@ -194,7 +210,7 @@ nav {
 .burger_menu.open span:nth-child(1) {
   transform: rotate(45deg);
   top: 11px;
-  background-color: white;
+  background-color: var(--fg);
 }
 
 .burger_menu.open span:nth-child(2) {
@@ -205,27 +221,10 @@ nav {
 .burger_menu.open span:nth-child(3) {
   transform: rotate(-45deg);
   top: 11px;
-  background-color: white;
+  background-color: var(--fg);
 }
 
 @keyframes slide {
   to { left: 0; }
 }
 
-@media (max-width: 720px) {
-  nav > a {
-    display: none;
-  }
-
-  .burger_menu {
-    display: block;
-  }
-}
-
-@media (max-width: 500px) {
-  .language_selector {
-    >div {
-      padding: 6px 12px;
-    }
-  }
-}

@@ -359,7 +359,9 @@ export class AppComponent implements OnInit, OnDestroy {
     const camera   = new THREE.PerspectiveCamera(58, w / h, 0.1, 8000);
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
     renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    // Cap pixel ratio: 1.0 on low-end (≤4 CPU cores), 1.5 max on high-end
+    const dpr = navigator.hardwareConcurrency <= 4 ? 1.0 : Math.min(window.devicePixelRatio, 1.5);
+    renderer.setPixelRatio(dpr);
 
     const SY = [0, -h * 1.15, -h * 2.55, -h * 4.05, -h * 5.35];
     const _c  = (x: number, fy: number, z: number) =>
@@ -484,10 +486,18 @@ export class AppComponent implements OnInit, OnDestroy {
     const upV  = new THREE.Vector3(0, 1, 0);
     let sFrac = 0, time = 0;
 
-    const animate = () => {
-      if (document.hidden) { this.animId = 0; return; }
+    // ── 30fps cap — halves GPU cost vs native 60fps ─────────────────────────
+    // RAF still fires at 60fps for smooth scheduling, but we skip frames
+    // so the heavy math + buffer upload only runs at 30fps.
+    let lastRender = 0;
+    const FRAME_MS = 1000 / 30;
+
+    const animate = (now: number) => {
+      if (document.hidden) { this.animId = 0; return; }  // stop loop — saves battery
       this.animId = requestAnimationFrame(animate);
-      time += 0.007;
+      if (now - lastRender < FRAME_MS) return;            // skip frame — 30fps cap
+      lastRender = now;
+      time += 0.014; // doubled to keep same visual speed at 30fps vs 60fps
       smX += (mNX - smX) * 0.036;
       smY += (mNY - smY) * 0.036;
 
@@ -557,12 +567,12 @@ export class AppComponent implements OnInit, OnDestroy {
       camera.aspect = w / h; camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
-    const onVis = () => { if (!document.hidden && this.animId === 0) animate(); };
+    const onVis = () => { if (!document.hidden && this.animId === 0) animate(performance.now()); };
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('resize',   onResize);
     document.addEventListener('visibilitychange', onVis);
-    animate();
+    animate(performance.now());
 
     this.threeCleanup = () => {
       cancelAnimationFrame(this.animId);

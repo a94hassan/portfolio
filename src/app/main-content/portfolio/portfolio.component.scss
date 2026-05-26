@@ -49,15 +49,12 @@ section {
 .portfolio-rule--right { margin-left: 36px; }
 
 .portfolio-heading h1 {
-  font-size: clamp(36px, 5vw, 72px);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  background: linear-gradient(145deg, var(--fg) 30%, var(--fg-48) 100%);
+  font-size: clamp(40px, 5.5vw, 80px);
+  line-height: 0.90;
+  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  white-space: nowrap;
 }
 
 .portfolio-sub {
@@ -88,9 +85,9 @@ app-project {
 }
 
 @media (max-width: 500px) {
-  .portfolio-heading { padding: 60px $paddingLR500 12px; }
-  .portfolio-heading h1 { font-size: clamp(32px, 9vw, 52px); }
-  .portfolio-sub { padding: 0 $paddingLR500 10px; }
+  .portfolio-heading { padding: 56px $paddingLR500 10px; }
+  .portfolio-heading h1 { font-size: clamp(36px, 11vw, 56px); }
+  .portfolio-sub { padding: 0 $paddingLR500 8px; font-size: 12px; }
 }
 
 // Mobile: section height auto — panels stack naturally

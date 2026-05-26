@@ -14,8 +14,9 @@ section {
   position: relative;
   z-index: 1;
   overflow: hidden;
+  contain: layout paint;
 
-  // ── Uniform atmosphere — same across all sections (no lighting shift) ────
+  // ── Uniform atmosphere ────────────────────────────────────────────────────
   &::before {
     content: '';
     position: absolute;
@@ -31,15 +32,38 @@ section {
 .hero-content {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  gap: 48px;
+  // Mobile: single column
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 20px;
   width: 100%;
   max-width: $contentWidth;
   margin: 0 auto;
-  padding: 108px $paddingLR 44px;
+  padding: 76px $paddingLR500 20px;
   position: relative;
   z-index: 1;
+
+  @media (min-width: 480px) {
+    padding: 84px $paddingLR500 24px;
+    gap: 24px;
+  }
+
+  @media (min-width: 768px) {
+    // Two-column: text left, photo right
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 88px $paddingLR1000 28px;
+    gap: 28px;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 108px $paddingLR 44px;
+    gap: 48px;
+  }
+
+  @media (min-width: 1280px) {
+    gap: 56px;
+  }
 }
 
 // ─── Text column ──────────────────────────────────────────────────────────────
@@ -48,6 +72,9 @@ section {
   display: flex;
   flex-direction: column;
   position: relative;
+
+  // On mobile, photo comes first (order: -1 on photo), text naturally follows
+  // On desktop, text is left column — photo is right (default grid order)
 
   // Subtle glass glow behind text block
   &::before {
@@ -77,8 +104,12 @@ section {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--fg-48);
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   align-self: flex-start;
+
+  @media (min-width: 768px) {
+    margin-bottom: 28px;
+  }
 }
 
 .hero-status-dot {
@@ -98,22 +129,33 @@ section {
 // ── Name ─────────────────────────────────────────────────────────────────────
 
 .hero-name {
-  // Instrument Serif italic 400 — sharp editorial serif, Claude/Vercel design system
-  // Self-hosted, zero FOUT. Oversized + gradient fade = airy, cinematic.
   font-family: 'Fraunces', Georgia, serif;
   font-style: italic;
   font-optical-sizing: auto;
   font-weight: 400;
-  font-size: clamp(80px, 11vw, 160px);
+  // Mobile: smaller
+  font-size: clamp(52px, 14vw, 88px);
   letter-spacing: 0.015em;
   line-height: 0.84;
-  margin-bottom: 30px;
-  // Strong fade: solid near-white → fully transparent
-  // Creates the "written in smoke" high-fashion editorial look
+  margin-bottom: 22px;
   background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+
+  @media (min-width: 480px) {
+    font-size: clamp(58px, 13vw, 108px);
+  }
+
+  @media (min-width: 768px) {
+    font-size: clamp(64px, 10vw, 130px);
+    margin-bottom: 28px;
+  }
+
+  @media (min-width: 1024px) {
+    font-size: clamp(80px, 11vw, 160px);
+    margin-bottom: 30px;
+  }
 }
 
 // ── Role ─────────────────────────────────────────────────────────────────────
@@ -122,7 +164,11 @@ section {
   display: flex;
   align-items: center;
   gap: 13px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 20px;
+  }
 }
 
 .hero-role-rule {
@@ -146,12 +192,23 @@ section {
 // ── Tagline ───────────────────────────────────────────────────────────────────
 
 .hero-tagline {
-  font-size: clamp(13px, 1.1vw, 16px);
+  font-size: 13px;
   line-height: 1.68;
   color: var(--fg-35);
-  margin-bottom: 38px;
-  max-width: 340px;
+  margin-bottom: 28px;
+  max-width: 100%;
   font-weight: 400;
+
+  @media (min-width: 768px) {
+    font-size: clamp(13px, 1.1vw, 16px);
+    margin-bottom: 32px;
+    max-width: 300px;
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 340px;
+    margin-bottom: 38px;
+  }
 }
 
 // ── Actions row ───────────────────────────────────────────────────────────────
@@ -159,9 +216,17 @@ section {
 .hero-actions {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 14px;
   flex-wrap: wrap;
+
+  @media (min-width: 480px) {
+    gap: 18px;
+  }
+
+  @media (min-width: 768px) {
+    margin-bottom: 18px;
+  }
 }
 
 .hero-cta {
@@ -201,25 +266,52 @@ section {
 // ── Email ─────────────────────────────────────────────────────────────────────
 
 .hero-email {
+  display: none;
   font-size: 11px;
   color: var(--fg-28);
   letter-spacing: 0.03em;
+
+  @media (min-width: 768px) {
+    display: block;
+  }
 }
 
 // ─── Photo column ─────────────────────────────────────────────────────────────
 
 .hero-photo-wrapper {
   position: relative;
-  border-radius: 28px;
+  border-radius: 14px;
   overflow: hidden;
-  aspect-ratio: 3 / 4;
-  max-height: 48vh;
+  // Mobile: landscape crop so face is visible
+  aspect-ratio: 3 / 2;
+  max-height: 52vh;
   border: 1px solid var(--glass-border);
   box-shadow:
     0 0 0 1px var(--fg-03),
     0 0 80px var(--fg-07),
     0 48px 100px rgba(0, 0, 0, 0.60);
-  will-change: transform;
+  // Photo comes first on mobile
+  order: -1;
+
+  @media (min-width: 480px) {
+    border-radius: 18px;
+    max-height: 48vh;
+  }
+
+  @media (min-width: 768px) {
+    // Two-column: photo goes back to natural order (right column)
+    order: 0;
+    border-radius: 24px;
+    // Portrait on tablet+
+    aspect-ratio: 3 / 4;
+    max-height: 60vh;
+  }
+
+  @media (min-width: 1024px) {
+    border-radius: 28px;
+    // Taller portrait on desktop — "VIEL größer als vorher"
+    max-height: 70vh;
+  }
 
   &::after {
     content: '';
@@ -246,9 +338,15 @@ section {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center top;
+  // Mobile landscape: show face/upper body
+  object-position: center 18%;
   display: block;
   filter: brightness(1.02) contrast(1.04);
+
+  @media (min-width: 768px) {
+    // Portrait: top-align to show face
+    object-position: center top;
+  }
 }
 
 // ─── Scroll indicator ─────────────────────────────────────────────────────────
@@ -275,46 +373,4 @@ section {
 @keyframes nudge {
   0%, 65%, 100% { transform: translateY(0); }
   40%           { transform: translateY(7px); }
-}
-
-// ─── Responsive ───────────────────────────────────────────────────────────────
-
-@media (max-width: 1100px) {
-  .hero-content  { gap: 32px; }
-  .hero-tagline  { max-width: 300px; }
-}
-
-@media (max-width: 900px) {
-  .hero-content {
-    grid-template-columns: 1fr;
-    padding: 88px $paddingLR1000 28px;
-    gap: 28px;
-  }
-  .hero-photo-wrapper {
-    order: -1;
-    max-height: 36vh;
-    aspect-ratio: 16 / 9;
-    border-radius: 18px;
-  }
-  .hero-photo    { object-position: center 18%; }
-  .hero-name     { font-size: clamp(58px, 13vw, 108px); }
-  .hero-tagline  { max-width: 100%; }
-}
-
-@media (max-width: 600px) {
-  .hero-content     { padding: 76px $paddingLR500 20px; }
-  .hero-photo-wrapper { max-height: 30vh; border-radius: 14px; }
-  .hero-email       { display: none; }
-  .hero-status      { margin-bottom: 20px; }
-  .hero-tagline     { font-size: 13px; margin-bottom: 28px; }
-}
-
-@media (max-width: 600px) {
-  .hero-name { font-size: clamp(52px, 14vw, 88px); }
-}
-
-@media (max-width: 400px) {
-  .hero-name          { font-size: clamp(44px, 14vw, 72px); }
-  .hero-photo-wrapper { aspect-ratio: 4 / 3; }
-  .hero-actions       { gap: 12px; }
 }
