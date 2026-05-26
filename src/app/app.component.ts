@@ -143,15 +143,18 @@ export class AppComponent implements OnInit, OnDestroy {
     // Identical parameters for EVERY beat: outgoing recedes, incoming emerges.
     // Z_OFF / SC_OFF are intentionally subtle — the depth shift is felt, not seen.
 
-    const Z_OFF  = -200;  // reduced: was -350 (too aggressive, caused flash)
-    const SC_OFF = 0.93;  // near-1: barely visible scale — depth cue, not distortion
+    const Z_OFF   = -200;       // reduced: was -350 (too aggressive, caused flash)
+    const SC_OFF  = 0.93;       // near-1: barely visible scale — depth cue
+    const BLUR_OFF = 'blur(6px)';  // cinematic out-of-focus on departing section
 
-    // All non-hero stages start behind the viewer (far in the distance)
-    gsap.set(stages[1], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
-    gsap.set(stages[2], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
-    gsap.set(stages[3], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
-    gsap.set(stages[4], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
-    gsap.set(stages[5], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    // Hero (stage 0) starts in focus; others start behind, blurred, hidden
+    gsap.set(stages[0], { filter: 'blur(0px)' });
+    const initialOut = { z: Z_OFF, scale: SC_OFF, opacity: 0, filter: BLUR_OFF };
+    gsap.set(stages[1], initialOut);
+    gsap.set(stages[2], initialOut);
+    gsap.set(stages[3], initialOut);
+    gsap.set(stages[4], initialOut);
+    gsap.set(stages[5], initialOut);
 
     // Pre-hide content elements for entrance animations
     gsap.set([
@@ -176,8 +179,10 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.set(['.footer-rule', '.footer-name-block', '.footer-social', '.footer-legal'], { opacity: 0, y: 14 });
 
     // ── Master timeline: OUT/IN share identical parameters ───────────────────
-    const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, duration: 1, ease: 'power2.inOut' } as const;
-    const IN  = { z: 0,     scale: 1,      opacity: 1, duration: 1, ease: 'power2.out'  } as const;
+    // The filter blur creates a cinematic "out of focus → snap to focus" effect
+    // that harmonises with the camera's spiral descent through the particle vortex.
+    const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, filter: BLUR_OFF,    duration: 1, ease: 'power2.inOut' } as const;
+    const IN  = { z: 0,     scale: 1,      opacity: 1, filter: 'blur(0px)', duration: 1, ease: 'power2.out'  } as const;
 
     const tl = gsap.timeline()
       // Beat 0→1: Hero → About
