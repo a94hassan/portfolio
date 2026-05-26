@@ -39,6 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.initLenis();
       }
       this.initCustomCursor();
+      if (!this.isMobile && !reducedMotion) this.initElementTilt();
     });
 
     setTimeout(() => this.initJourney(), 500);
@@ -802,6 +803,53 @@ export class AppComponent implements OnInit, OnDestroy {
       dustGeo.dispose();  dustMat.dispose();
       starGeo.dispose();  starMat.dispose();
     };
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // 3D TILT — premium card behaviour on skill items + project cards
+  // Mouse position drives rotateX/rotateY around the card centre. Damped via
+  // GSAP power2.out for smooth follow; elastic ease-out on leave for "snap back"
+  // feel. Max ±9° tilt with 700px perspective = subtle but distinctly 3D.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private initElementTilt() {
+    const attachTilt = () => {
+      const targets = document.querySelectorAll<HTMLElement>('.skill-item, .project-info');
+      targets.forEach((el) => {
+        if (el.dataset['tiltBound']) return;          // idempotent — don't double-bind
+        el.dataset['tiltBound'] = '1';
+        let rect: DOMRect | null = null;
+
+        el.addEventListener('mouseenter', () => { rect = el.getBoundingClientRect(); });
+        el.addEventListener('mousemove', (e) => {
+          if (!rect) rect = el.getBoundingClientRect();
+          const px = ((e.clientX - rect.left) / rect.width  - 0.5) * 2;   // -1 .. 1
+          const py = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
+          gsap.to(el, {
+            rotateY: px *  9,
+            rotateX: py * -9,
+            transformPerspective: 700,
+            transformOrigin: '50% 50%',
+            duration: 0.35,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          });
+        });
+        el.addEventListener('mouseleave', () => {
+          rect = null;
+          gsap.to(el, {
+            rotateX: 0, rotateY: 0,
+            duration: 0.85,
+            ease: 'elastic.out(1, 0.55)',
+            overwrite: 'auto',
+          });
+        });
+      });
+    };
+
+    // Skill items render via @for from a service — wait for the DOM to settle.
+    // 950ms aligns with the custom cursor's spotlight-binding delay.
+    setTimeout(attachTilt, 950);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
