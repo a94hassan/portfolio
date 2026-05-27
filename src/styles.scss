@@ -140,8 +140,8 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 
 @mixin button($switchColors: false, $transparent: false, $mobile: false) {
   position: relative;
-  padding: if($mobile, 9px 20px, 11px 26px);
-  border-radius: 100px;   // pill — matches the navbar pill language
+  padding: if($mobile, 9px 18px, 11px 22px);
+  border-radius: var(--r-pill);   // pill — matches the navbar pill language
   font-size: if($mobile, 12px, 13px);
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -152,8 +152,23 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   align-items: center;
   justify-content: center;
   gap: 8px;
+  line-height: 1;
   transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease,
               border-color 0.22s ease, opacity 0.22s ease;
+
+  // Icon inside the button — sized via system scale, vertically aligned
+  > svg {
+    width: if($mobile, 14px, 15px);
+    height: if($mobile, 14px, 15px);
+    flex-shrink: 0;
+    display: block;
+  }
+
+  // Text span — keeps baseline aligned with icon
+  > span {
+    display: inline-block;
+    line-height: 1;
+  }
 
   @if $switchColors {
     // Solid primary — filled, high contrast
