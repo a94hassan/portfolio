@@ -106,12 +106,13 @@ html.light {
   --sb-thumb:   #c4c2be;
   --sb-thumb-h: #a6a4a0;
 
-  --btn-solid-from:   #252220;
-  --btn-solid-to:     #161412;
-  --btn-solid-border: rgba(0, 0, 0, 0.28);
+  // Solid button: muted warm grey instead of near-black — softer light-mode contrast
+  --btn-solid-from:   #7a736b;
+  --btn-solid-to:     #5e5751;
+  --btn-solid-border: rgba(0, 0, 0, 0.12);
   --btn-solid-color:  #f6f4f1;
-  --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.08) inset, 0 4px 20px rgba(0,0,0,0.18);
-  --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.08) inset, 0 10px 32px rgba(0,0,0,0.26);
+  --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.14) inset, 0 4px 16px rgba(60, 50, 40, 0.14);
+  --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.16) inset, 0 10px 26px rgba(60, 50, 40, 0.20);
 }
 
 // ─── Layout vars ──────────────────────────────────────────────────────────────
