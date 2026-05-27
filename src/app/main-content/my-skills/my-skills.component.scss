@@ -231,16 +231,18 @@ section {
   }
 }
 
-// ─── Light mode: dark monochrome icons on warm-ivory bg ──────────────────────
-// brightness(0) collapses all color to black — no invert needed in light mode.
-// Matches the obsidian design token aesthetic.
+// ─── Light mode: muted warm-grey monochrome icons on ivory bg ────────────────
+// Pure brightness(0)+0.62 was too dark/harsh against the warm bg.
+// brightness(0.45) keeps icons as a darker mid-grey, paired with lower opacity
+// for a softer "newsprint" feel that matches the muted button tone.
 
 :host-context(html.light) {
   .skill-item img {
-    filter: brightness(0);
-    opacity: 0.62;
+    filter: brightness(0.42) sepia(0.08);
+    opacity: 0.78;
   }
   .skill-item:hover img {
-    opacity: 0.88;
+    filter: brightness(0.28) sepia(0.06);
+    opacity: 0.92;
   }
 }
