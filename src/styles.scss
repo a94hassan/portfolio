@@ -52,6 +52,21 @@
   --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.85) inset, 0 4px 20px rgba(0,0,0,0.35);
   --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.90) inset, 0 10px 32px rgba(0,0,0,0.45);
   --font-display: 'Unbounded', sans-serif;
+
+  // ── Border-radius scale ─────────────────────────────────────────────────────
+  // Single source of truth — every rounded element references this scale.
+  --r-sm:     8px;     // small badges, checkboxes, mini chips
+  --r-md:     14px;    // form fields, social icons, about-icons
+  --r-lg:     20px;    // medium cards (skill-item, hero photo crop)
+  --r-xl:     28px;    // large cards (project-info, contact form)
+  --r-pill:   100px;   // buttons, status chips, tech badges, nav pill
+  --r-circle: 50%;     // theme toggle, photo rounds
+
+  // ── Icon-size scale ─────────────────────────────────────────────────────────
+  // 14 / 16 / 18 — three sizes, no more
+  --icon-xs:  14px;    // status dot, globe (in language selector)
+  --icon-sm:  16px;    // header nav UI, theme toggle, about-trait icons
+  --icon-md:  18px;    // social links, button icons, back-to-top
 }
 
 html.light {
@@ -414,6 +429,51 @@ h1, h2 {
   // Works on all children including [data-char] spans from writeIn animation.
   -webkit-mask-image: linear-gradient(to bottom, black 52%, rgba(0,0,0,0.38) 100%);
   mask-image:         linear-gradient(to bottom, black 52%, rgba(0,0,0,0.38) 100%);
+}
+
+// ─── Unified section heading sizes ────────────────────────────────────────────
+// Single clamp() definition shared by all section h1s (about, skills, contact,
+// portfolio). Hero h1 is intentionally larger — it's the brand mark, not a
+// section title.
+
+@mixin headingSize() {
+  font-size: clamp(28px, 5vw, 52px);
+
+  @media (min-width: 768px) {
+    font-size: clamp(32px, 4.6vw, 56px);
+  }
+
+  @media (min-width: 1024px) {
+    font-size: clamp(36px, 4.4vw, 60px);
+  }
+}
+
+// ─── Section heading mark (editorial left rule) ───────────────────────────────
+// Reusable component: short gradient rule + h1. Used by all section headings
+// (about, skills, contact, portfolio) for visual consistency.
+
+@mixin sectionHeading() {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  @media (min-width: 768px) { gap: 20px; }
+  @media (min-width: 1024px) { gap: 28px; }
+
+  &::before {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    height: 2px;
+    width: 18px;
+    background: linear-gradient(90deg, transparent, var(--fg-28));
+    border-radius: 2px;
+
+    @media (min-width: 768px)  { width: 28px; }
+    @media (min-width: 1024px) { width: 40px; }
+  }
+
+  h1 { @include headingSize(); }
 }
 
 // Critical fix: When writeIn() splits text into characters with data-char attributes,
