@@ -50,7 +50,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // ════════════════════════════════════════════════════════════════════════════
 
   private get isMobile(): boolean {
-    return window.innerWidth <= 900 || !window.matchMedia('(hover: hover)').matches;
+    return window.innerWidth <= 768; // simple, standard screen width check (bypasses touch false-positives)
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -119,12 +119,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private writeIn(selector: string, delay = 0): gsap.core.Timeline {
     const el = document.querySelector(selector);
     if (!el) return gsap.timeline();
-    gsap.set(el, { perspective: 900, transformStyle: 'preserve-3d' });
+    gsap.set(el, { opacity: 1, y: 0 });
     const chars = this.splitChars(el);
     return gsap.timeline().fromTo(chars,
-      { opacity: 0, rotateX: -80, y: 18, transformOrigin: '50% 100%' },
-      { opacity: 1, rotateX:   0, y:  0,
-        duration: 0.52, ease: 'back.out(1.4)',
+      { opacity: 0, y: 18 },
+      { opacity: 1, y:  0,
+        duration: 0.55, ease: 'power2.out',
         stagger: 0.026, delay }
     );
   }
@@ -135,7 +135,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private initJourney() {
     const stages = gsap.utils.toArray<HTMLElement>('.stage');
-    if (stages.length < 6) { this.scheduleLoaderHide(0); return; }
+    if (stages.length < 6) {
+      // Retry robustly in case Angular router has not settled/rendered the default route yet
+      setTimeout(() => this.initJourney(), 100);
+      return;
+    }
 
     if (this.isMobile) { this.initMobileScroll(); return; }
 
@@ -148,7 +152,8 @@ export class AppComponent implements OnInit, OnDestroy {
     const BLUR_OFF = 'blur(6px)';  // cinematic out-of-focus on departing section
 
     // Hero (stage 0) starts in focus; others start behind, blurred, hidden
-    gsap.set(stages[0], { filter: 'blur(0px)' });
+    // Note: no filter set on stage[0] — setting filter:blur(0px) creates a stacking context
+    // that breaks background-clip:text on descendant headings. Stage[0] is already in focus.
     const initialOut = { z: Z_OFF, scale: SC_OFF, opacity: 0, filter: BLUR_OFF };
     gsap.set(stages[1], initialOut);
     gsap.set(stages[2], initialOut);
@@ -171,6 +176,10 @@ export class AppComponent implements OnInit, OnDestroy {
     ], { opacity: 0, y: 10 });
 
     gsap.set('.skill-item', { opacity: 0, scale: 0.68, y: 10 });
+
+    gsap.set([
+      '.portfolio-heading h1', '.portfolio-sub',
+    ], { opacity: 0, y: 10 });
 
     gsap.set([
       '.contact-heading h1', '.contact-columns',
@@ -346,8 +355,13 @@ export class AppComponent implements OnInit, OnDestroy {
   private portfolioTl(cardIdx: number) {
     const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
     const panel  = panels[Math.max(0, cardIdx)] ?? panels[0];
-    return gsap.timeline()
-      .to(panel ?? '.project-panel', { opacity: 1, duration: 0.55, ease: 'power2.out', delay: 0.08 });
+    const tl = gsap.timeline();
+    // First beat of portfolio (cardIdx 0): animate heading + sub
+    if (cardIdx === 0) {
+      tl.add(this.writeIn('.portfolio-heading h1', 0.06))
+        .to('.portfolio-sub', { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.55);
+    }
+    return tl.to(panel ?? '.project-panel', { opacity: 1, duration: 0.55, ease: 'power2.out', delay: cardIdx === 0 ? 0.18 : 0.06 });
   }
 
   private contactTl() {
@@ -612,7 +626,8 @@ export class AppComponent implements OnInit, OnDestroy {
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
           // sizeAttenuation: world-unit size shrinks with depth.
           // Glow expands the visual point up to +80% (collision impact).
-          gl_PointSize = aSize * (1.0 + aGlow * 0.8) * uPixelR * 230.0 / -mv.z;
+          // max(-mv.z, 1.0) prevents any division-by-zero compilation or driver crash bugs!
+          gl_PointSize = aSize * (1.0 + aGlow * 0.8) * uPixelR * 300.0 / max(-mv.z, 1.0);
           gl_Position  = projectionMatrix * mv;
           vGlow = aGlow;
           vFogD = -mv.z;
@@ -629,8 +644,8 @@ export class AppComponent implements OnInit, OnDestroy {
           vec2 uv = gl_PointCoord - 0.5;
           float dist = length(uv);
           if (dist > 0.5) discard;
-          // Soft base falloff (gentle blur, low alpha)
-          float baseA = pow(smoothstep(0.5, 0.0, dist), 1.6) * 0.50;
+          // Soft base falloff (gentle blur, low alpha) - base opacity increased to 0.85 for premium luminosity
+          float baseA = pow(smoothstep(0.5, 0.0, dist), 1.6) * 0.85;
           // Glow has a bright tight core + softer halo
           float core  = smoothstep(0.5, 0.06, dist);
           float halo  = smoothstep(0.5, 0.22, dist) * 0.55;
@@ -638,8 +653,8 @@ export class AppComponent implements OnInit, OnDestroy {
           float alpha = mix(baseA, glowA, vGlow);
           // Color lerps toward warm white when glowing
           vec3 col = mix(uColor, uGlowCol, vGlow * 0.85);
-          // Fog: distant particles fade to background colour
-          float fogF = 1.0 - exp(-uFogDens * vFogD * vFogD);
+          // Fog: highly robust, linear exponential fog to prevent squared-value explosion
+          float fogF = 1.0 - exp(-0.00015 * vFogD);
           col = mix(col, uFogColor, clamp(fogF, 0.0, 1.0));
           gl_FragColor = vec4(col, alpha);
         }
