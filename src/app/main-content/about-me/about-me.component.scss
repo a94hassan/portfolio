@@ -21,16 +21,12 @@ section {
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: 60px 0;
+  @include sectionPadding();
   @include contentWidth();
   @include flexBox($ai: stretch);
   contain: layout paint;
   content-visibility: auto;
   contain-intrinsic-size: 0 600px;
-
-  @media (min-width: 768px) {
-    padding: 80px 0;
-  }
 }
 
 // ─── About layout ─────────────────────────────────────────────────────────────

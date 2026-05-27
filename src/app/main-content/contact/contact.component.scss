@@ -77,19 +77,22 @@ section {
   display: flex;
   flex-direction: column;
   height: 100%;
+  @include sectionPadding();
+  // Horizontal padding stays section-specific (content inside has its own padding)
+  padding-left: $paddingLR500;
+  padding-right: $paddingLR500;
   contain: layout paint;
   content-visibility: auto;
   contain-intrinsic-size: 0 600px;
 
-  // Mobile
-  padding: 56px $paddingLR500 56px;
-
   @media (min-width: 768px) {
-    padding: 88px $paddingLR1000 72px;
+    padding-left: $paddingLR1000;
+    padding-right: $paddingLR1000;
   }
 
   @media (min-width: 1024px) {
-    padding: 100px $paddingLR 80px;
+    padding-left: $paddingLR;
+    padding-right: $paddingLR;
   }
 }
 

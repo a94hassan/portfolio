@@ -123,6 +123,24 @@ $paddingLR500:   20px;
 $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
              border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
 
+// Vertical section rhythm — single source of truth for top/bottom padding.
+// Used by all sections (about, skills, contact, portfolio sub) for consistent
+// breathing room. Hero is the exception (uses its own larger top padding).
+@mixin sectionPadding() {
+  padding-top: 56px;
+  padding-bottom: 64px;
+
+  @media (min-width: 768px) {
+    padding-top: 80px;
+    padding-bottom: 72px;
+  }
+
+  @media (min-width: 1024px) {
+    padding-top: 96px;
+    padding-bottom: 80px;
+  }
+}
+
 // ─── Mixins ───────────────────────────────────────────────────────────────────
 
 @mixin flexBox($display: flex, $jc: center, $ai: center, $fd: row, $gap: 0) {
