@@ -67,6 +67,17 @@
   --icon-xs:  14px;    // status dot, globe (in language selector)
   --icon-sm:  16px;    // header nav UI, theme toggle, about-trait icons
   --icon-md:  18px;    // social links, button icons, back-to-top
+
+  // ── Shadow scale ────────────────────────────────────────────────────────────
+  // Dark mode: deep black drop shadows reinforce floating glass cards
+  // Light mode (below): same tokens swap to soft warm-grey for ivory bg
+  --shadow-photo:    rgba(0, 0, 0, 0.60);   // hero photo, biggest drop
+  --shadow-photo-md: rgba(0, 0, 0, 0.48);   // about photo
+  --shadow-card-lg:  rgba(0, 0, 0, 0.55);   // project image
+  --shadow-card:     rgba(0, 0, 0, 0.26);   // project info card
+  --shadow-form:     rgba(0, 0, 0, 0.18);   // contact form
+  --shadow-tile:     rgba(0, 0, 0, 0.20);   // skill items default
+  --shadow-tile-h:   rgba(0, 0, 0, 0.30);   // skill items hover
 }
 
 html.light {
@@ -113,6 +124,16 @@ html.light {
   --btn-solid-color:  #f6f4f1;
   --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.14) inset, 0 4px 16px rgba(60, 50, 40, 0.14);
   --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.16) inset, 0 10px 26px rgba(60, 50, 40, 0.20);
+
+  // Light-mode shadows: warm-tinted, ~3-4× softer than dark mode's hard blacks
+  // Pure black on ivory bg reads as a "dirty smudge" — warm soft shadows blend.
+  --shadow-photo:    rgba(60, 50, 40, 0.16);
+  --shadow-photo-md: rgba(60, 50, 40, 0.12);
+  --shadow-card-lg:  rgba(60, 50, 40, 0.14);
+  --shadow-card:     rgba(60, 50, 40, 0.08);
+  --shadow-form:     rgba(60, 50, 40, 0.06);
+  --shadow-tile:     rgba(60, 50, 40, 0.06);
+  --shadow-tile-h:   rgba(60, 50, 40, 0.10);
 }
 
 // ─── Layout vars ──────────────────────────────────────────────────────────────

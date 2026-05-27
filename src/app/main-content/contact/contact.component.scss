@@ -189,7 +189,7 @@ section {
   padding: 26px 20px;
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
-  box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 20px 56px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 20px 56px var(--shadow-form);
 
   @media (min-width: 768px) {
     padding: 36px 32px;

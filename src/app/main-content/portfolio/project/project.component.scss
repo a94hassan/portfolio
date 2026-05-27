@@ -38,7 +38,7 @@
   box-shadow:
     0 0 0 1px var(--fg-04),
     0 2px 0 var(--glass-border-hi) inset,
-    0 32px 80px rgba(0,0,0,0.55),
+    0 32px 80px var(--shadow-card-lg),
     0 0 60px var(--fg-04);
   position: relative;
 
@@ -90,7 +90,7 @@
   box-shadow:
     0 1px 0 var(--glass-border-hi) inset,
     0 -1px 0 var(--fg-04) inset,
-    0 24px 64px rgba(0,0,0,0.26),
+    0 24px 64px var(--shadow-card),
     0 0 0 1px var(--fg-04);
 }
 

@@ -299,7 +299,7 @@ section {
   box-shadow:
     0 0 0 1px var(--fg-03),
     0 0 80px var(--fg-07),
-    0 48px 100px rgba(0, 0, 0, 0.60);
+    0 48px 100px var(--shadow-photo);
   // Photo comes first on mobile
   order: -1;
 

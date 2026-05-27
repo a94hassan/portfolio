@@ -80,7 +80,7 @@ section {
   border-radius: var(--r-lg);
   box-shadow:
     0 1px 0 var(--glass-border-hi) inset,
-    0 4px 20px rgba(0, 0, 0, 0.20);
+    0 4px 20px var(--shadow-tile);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   display: flex;
@@ -149,7 +149,7 @@ section {
       0 0 0 1px var(--fg-09),
       0 1px 0 var(--glass-border-hi) inset,
       0 0 28px var(--fg-07),
-      0 16px 40px rgba(0, 0, 0, 0.30);
+      0 16px 40px var(--shadow-tile-h);
     transform: translateY(-2px);
 
     img { opacity: 0.90; }
