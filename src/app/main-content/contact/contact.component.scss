@@ -40,7 +40,7 @@ $invalid: #E61C40;
   > span {
     background: var(--glass-bg-hi);
     border: 1px solid var(--glass-border-hi);
-    border-radius: 16px;
+    border-radius: var(--r-md);
     padding: 20px 32px;
     font-size: 16px;
     color: #e2e8f0;
@@ -182,14 +182,13 @@ section {
   width: 100%;
   background: linear-gradient(155deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
   border: 1px solid var(--glass-border);
-  border-radius: 18px;
+  border-radius: var(--r-xl);
   padding: 26px 20px;
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 20px 56px rgba(0, 0, 0, 0.18);
 
   @media (min-width: 768px) {
-    border-radius: 24px;
     padding: 36px 32px;
   }
 }
@@ -213,7 +212,7 @@ section {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     outline: none;
-    border-radius: 14px;
+    border-radius: var(--r-md);
     padding: 13px 18px;
     font-size: 14px;
     color: var(--fg);
@@ -265,7 +264,7 @@ section {
     flex-shrink: 0;
     margin-top: 2px;
     border: 1px solid var(--glass-border-hi);
-    border-radius: 6px;
+    border-radius: var(--r-sm);
     background: var(--glass-bg);
     cursor: pointer;
     position: relative;
@@ -341,13 +340,15 @@ section {
     justify-content: center;
     width: 38px;
     height: 38px;
-    border-radius: 11px;
+    border-radius: var(--r-md);
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
     color: var(--fg-40);
     text-decoration: none;
     backdrop-filter: blur(16px);
     transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+
+    svg { width: var(--icon-md); height: var(--icon-md); }
 
     &:hover {
       color: var(--fg);

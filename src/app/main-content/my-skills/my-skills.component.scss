@@ -82,7 +82,7 @@ section {
   padding: 14px 8px 10px;
   background: linear-gradient(160deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  border-radius: var(--r-lg);
   box-shadow:
     0 1px 0 var(--glass-border-hi) inset,
     0 4px 20px rgba(0, 0, 0, 0.20);
@@ -123,7 +123,6 @@ section {
   @media (min-width: 480px) {
     width: 74px;
     height: 88px;
-    border-radius: 17px;
 
     img { width: 32px; height: 32px; }
   }
@@ -133,7 +132,6 @@ section {
     width: 82px;
     height: 98px;
     padding: 14px 8px 12px;
-    border-radius: 18px;
 
     img { width: 34px; height: 34px; }
     span { font-size: 9.5px; }
@@ -144,7 +142,6 @@ section {
     width: 90px;
     height: 108px;
     padding: 16px 10px 14px;
-    border-radius: 20px;
 
     img { width: 38px; height: 38px; }
     span { font-size: 10px; }

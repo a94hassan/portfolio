@@ -32,7 +32,7 @@
   flex: 1;
   min-width: 0;
   max-height: 58vh;
-  border-radius: 22px;
+  border-radius: var(--r-xl);
   overflow: hidden;
   border: 1px solid var(--glass-border);
   box-shadow:
@@ -83,7 +83,7 @@
       rgba(255,255,255,0.018) 100%
     );
   border: 1px solid var(--glass-border);
-  border-radius: 26px;
+  border-radius: var(--r-xl);
   padding: 38px 34px;
   backdrop-filter: blur(32px) saturate(1.4);
   -webkit-backdrop-filter: blur(32px) saturate(1.4);

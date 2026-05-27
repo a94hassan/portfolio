@@ -118,13 +118,15 @@ section {
 .about-icon {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   background: var(--glass-bg-hi);
   border: 1px solid var(--glass-border);
   box-shadow: 0 1px 0 var(--glass-border-hi) inset;
   @include flexBox();
   flex-shrink: 0;
   color: var(--fg-40);
+
+  svg { width: var(--icon-sm); height: var(--icon-sm); }
 }
 
 // ─── Photo column ─────────────────────────────────────────────────────────────

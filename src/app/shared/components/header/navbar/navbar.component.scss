@@ -13,7 +13,7 @@ nav {
   @media (min-width: 768px) {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
-    border-radius: 100px;
+    border-radius: var(--r-pill);
     padding: 4px;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -25,7 +25,7 @@ nav {
     text-decoration: none;
     color: var(--fg-40);
     padding: 7px 14px;
-    border-radius: 100px;
+    border-radius: var(--r-pill);
     transition: color 0.22s ease, background 0.22s ease;
 
     &:hover {
@@ -48,7 +48,7 @@ nav {
   > div {
     @include flexBox($gap: 6px);
     padding: 7px 12px;
-    border-radius: 100px;
+    border-radius: var(--r-pill);
     position: relative;
     z-index: 8;
     border: 1px solid transparent;
@@ -76,10 +76,15 @@ nav {
     }
 
     > img {
-      width: 16px;
-      height: 16px;
+      width: var(--icon-sm);
+      height: var(--icon-sm);
       opacity: 0.7;
       border-radius: 2px;
+    }
+
+    svg {
+      width: var(--icon-xs);
+      height: var(--icon-xs);
     }
   }
 
@@ -93,7 +98,7 @@ nav {
     margin: 0;
     list-style: none;
     border: 1px solid var(--glass-border);
-    border-radius: 16px;
+    border-radius: var(--r-md);
     background: var(--bg-nav);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -101,7 +106,7 @@ nav {
     > li {
       @include flexBox($gap: 8px);
       padding: 8px 12px;
-      border-radius: 12px;
+      border-radius: var(--r-sm);
       cursor: pointer;
       font-size: 11px;
       font-weight: 500;
@@ -121,8 +126,8 @@ nav {
       }
 
       > img {
-        width: 16px;
-        height: 16px;
+        width: var(--icon-sm);
+        height: var(--icon-sm);
         border-radius: 2px;
       }
     }
@@ -135,7 +140,7 @@ nav {
   @include flexBox();
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  border-radius: var(--r-circle);
   border: 1px solid var(--glass-border);
   background: transparent;
   color: var(--fg-35);
@@ -154,6 +159,8 @@ nav {
   svg {
     display: block;
     flex-shrink: 0;
+    width: var(--icon-sm);
+    height: var(--icon-sm);
   }
 }
 
