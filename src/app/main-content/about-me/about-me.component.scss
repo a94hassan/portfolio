@@ -77,22 +77,13 @@ section {
   }
 }
 
-.about-heading {
-  font-size: clamp(28px, 7.5vw, 44px);
-  line-height: 0.96;
+// Section-heading wrapper provides size + decorator via global @mixin sectionHeading()
+// Local override only: spacing below the heading
+.about-content > .section-heading {
   margin-bottom: 22px;
 
-  @media (min-width: 480px) {
-    font-size: clamp(30px, 6.5vw, 50px);
-  }
-
   @media (min-width: 768px) {
-    font-size: clamp(32px, 4.8vw, 64px);
     margin-bottom: 28px;
-  }
-
-  @media (min-width: 1024px) {
-    font-size: clamp(36px, 4.5vw, 72px);
   }
 }
 

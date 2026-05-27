@@ -476,6 +476,11 @@ h1, h2 {
   h1 { @include headingSize(); }
 }
 
+// Global utility: any element with .section-heading gets the editorial mark
+.section-heading {
+  @include sectionHeading();
+}
+
 // Critical fix: When writeIn() splits text into characters with data-char attributes,
 // ensure they have solid color for visibility in 3D-transformed contexts.
 // This overrides parent gradient clipping which doesn't work reliably in 3D transforms.

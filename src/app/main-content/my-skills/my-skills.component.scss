@@ -178,58 +178,15 @@ section {
   margin-top: 32px;
 
   @media (min-width: 768px) {
-    // Desktop: right column, 40% wide
+    // Desktop: right column, 40% wide — heading stays left-aligned for consistency
     width: 40%;
-    align-items: flex-end;
+    align-items: flex-start;
     padding-left: 0;
     padding-right: 0;
     margin-top: 0;
   }
 
-  > div:first-of-type {
-    display: flex;
-    align-items: center;
-
-    // Mobile: left-aligned heading
-    justify-content: flex-start;
-
-    @media (min-width: 768px) {
-      justify-content: flex-end;
-    }
-
-    h1 {
-      // Unbounded is wide — sizes are ~40% of what a narrow serif needed
-      font-size: clamp(28px, 7vw, 44px);
-      line-height: 0.96;
-
-      @media (min-width: 768px) {
-        font-size: clamp(32px, 4.5vw, 60px);
-      }
-
-      @media (min-width: 1024px) {
-        font-size: clamp(36px, 4.5vw, 68px);
-      }
-    }
-
-    > div {
-      height: 3px;
-      width: 28px;
-      background: linear-gradient(90deg, var(--fg-28), transparent);
-      margin-left: 16px;
-      border-top-left-radius: 2px;
-      border-bottom-left-radius: 2px;
-
-      @media (min-width: 768px) {
-        width: 40px;
-        margin-left: 24px;
-      }
-
-      @media (min-width: 1024px) {
-        width: 48px;
-        margin-left: 32px;
-      }
-    }
-  }
+  // Heading container uses the global .section-heading (left rule + h1 size)
 
   > p {
     line-height: 1.65;
@@ -237,15 +194,6 @@ section {
     text-align: left;
     font-size: 14px;
     padding-right: 0;
-
-    @media (min-width: 768px) {
-      text-align: right;
-      padding-right: $paddingLR1000;
-    }
-
-    @media (min-width: 1024px) {
-      padding-right: $paddingLR;
-    }
   }
 
   > div:last-of-type {
@@ -255,29 +203,24 @@ section {
 
     @media (min-width: 768px) {
       display: flex;
-      justify-content: center;
-      padding-right: $paddingLR1000;
-      padding-left: 5vw;
+      justify-content: flex-start;
       margin-top: 12px;
-    }
-
-    @media (min-width: 1024px) {
-      padding-right: $paddingLR;
     }
 
     button { @include button(); }
   }
 }
 
+// German heading is longer — slightly smaller to fit on one line
 .german {
-  font-size: clamp(22px, 5.5vw, 36px) !important;
+  font-size: clamp(22px, 4vw, 42px) !important;
 
   @media (min-width: 768px) {
-    font-size: clamp(26px, 3.8vw, 52px) !important;
+    font-size: clamp(26px, 3.8vw, 46px) !important;
   }
 
   @media (min-width: 1024px) {
-    font-size: clamp(28px, 3.8vw, 56px) !important;
+    font-size: clamp(28px, 3.6vw, 50px) !important;
   }
 }
 

@@ -94,45 +94,14 @@ section {
 }
 
 // ─── Heading ──────────────────────────────────────────────────────────────────
+// .section-heading from styles.scss provides the editorial mark + h1 size.
 
 .contact-heading {
-  display: flex;
-  align-items: center;
   width: 100%;
   margin-bottom: 36px;
 
   @media (min-width: 768px) {
     margin-bottom: 52px;
-  }
-}
-
-.contact-rule {
-  height: 2px;
-  flex-shrink: 0;
-  background: linear-gradient(90deg, transparent, var(--fg-28));
-  border-radius: 0 2px 2px 0;
-
-  // Mobile: minimal rule
-  width: 14px;
-  margin-right: 4px;
-
-  @media (min-width: 768px) {
-    width: 28px;
-    margin-right: 16px;
-  }
-
-  @media (min-width: 1024px) {
-    width: 44px;
-    margin-right: 44px;
-  }
-}
-
-.contact-heading h1 {
-  font-size: clamp(28px, 7.5vw, 44px);
-  line-height: 0.96;
-
-  @media (min-width: 768px) {
-    font-size: clamp(32px, 4.5vw, 64px);
   }
 }
 
