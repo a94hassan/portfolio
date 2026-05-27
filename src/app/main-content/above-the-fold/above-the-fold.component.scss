@@ -359,6 +359,8 @@ section {
   z-index: 1;
   animation: nudge 2.8s ease infinite;
 
+  svg { width: var(--icon-xs); height: var(--icon-xs); }
+
   span {
     font-size: 9px;
     letter-spacing: 0.18em;
