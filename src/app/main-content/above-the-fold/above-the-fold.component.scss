@@ -129,31 +129,28 @@ section {
 // ── Name ─────────────────────────────────────────────────────────────────────
 
 .hero-name {
-  font-family: 'Fraunces', Georgia, serif;
-  font-style: italic;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  // Mobile: smaller
-  font-size: clamp(52px, 14vw, 88px);
-  letter-spacing: 0.015em;
-  line-height: 0.84;
-  margin-bottom: 22px;
-  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  // Unbounded is ~1.8× wider than normal fonts — size scaled accordingly.
+  // The architectural width creates impact; smaller pt-size still dominates the layout.
+  font-family: 'Unbounded', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: clamp(28px, 7.5vw, 48px);
+  letter-spacing: -0.02em;
+  line-height: 1.0;
+  margin-bottom: 24px;
+  color: var(--fg);
 
   @media (min-width: 480px) {
-    font-size: clamp(58px, 13vw, 108px);
+    font-size: clamp(32px, 7vw, 54px);
   }
 
   @media (min-width: 768px) {
-    font-size: clamp(64px, 10vw, 130px);
+    font-size: clamp(36px, 5.5vw, 72px);
     margin-bottom: 28px;
   }
 
   @media (min-width: 1024px) {
-    font-size: clamp(80px, 11vw, 160px);
+    font-size: clamp(42px, 5.2vw, 86px);
     margin-bottom: 30px;
   }
 }

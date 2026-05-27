@@ -78,11 +78,10 @@ footer {
 }
 
 .footer-name-first {
-  font-family: 'Fraunces', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  // Mobile: smaller
-  font-size: clamp(40px, 11vw, 64px);
+  font-family: 'Unbounded', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: clamp(22px, 6vw, 44px);
   letter-spacing: -0.01em;
   background: linear-gradient(160deg, var(--fg) 20%, var(--fg-35) 70%, transparent 100%);
   -webkit-background-clip: text;
@@ -96,10 +95,10 @@ footer {
 }
 
 .footer-name-last {
-  font-family: 'Fraunces', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: clamp(40px, 11vw, 64px);
+  font-family: 'Unbounded', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: clamp(22px, 6vw, 44px);
   letter-spacing: -0.01em;
   background: linear-gradient(160deg, var(--fg-55) 0%, var(--fg-28) 60%, transparent 100%);
   -webkit-background-clip: text;
