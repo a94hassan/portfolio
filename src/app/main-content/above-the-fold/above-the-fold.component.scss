@@ -355,6 +355,14 @@ section {
     // Portrait: top-align to show face
     object-position: center top;
   }
+
+  // Theme-conditional swap — light mode hides dark version & vice versa
+  &--light { display: none; }
+}
+
+:host-context(html.light) {
+  .hero-photo--dark { display: none; }
+  .hero-photo--light { display: block; }
 }
 
 // ─── Scroll indicator ─────────────────────────────────────────────────────────

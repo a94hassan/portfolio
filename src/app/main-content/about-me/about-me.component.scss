@@ -158,6 +158,13 @@ section {
     filter: brightness(1.02) contrast(1.04);
   }
 
+  // Theme-conditional swap — only one image visible at a time
+  .about-photo-img--light { display: none; }
+  :host-context(html.light) & {
+    .about-photo-img--dark  { display: none; }
+    .about-photo-img--light { display: block; }
+  }
+
   &::after {
     content: '';
     position: absolute;
