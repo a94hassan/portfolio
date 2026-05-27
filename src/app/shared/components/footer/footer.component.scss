@@ -9,6 +9,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
 
   // Atmosphere identical to all other stages
   &::before {
@@ -21,7 +24,7 @@
   }
 }
 
-// ─── Footer layout — editorial "outro" page ───────────────────────────────────
+// ─── Footer layout ────────────────────────────────────────────────────────────
 
 footer {
   position: relative;
@@ -39,9 +42,14 @@ footer {
 
 .footer-rule {
   width: 1px;
-  height: 48px;
+  height: 32px;
   background: linear-gradient(to bottom, transparent, var(--fg-28), transparent);
-  margin-bottom: 40px;
+  margin-bottom: 28px;
+
+  @media (min-width: 768px) {
+    height: 48px;
+    margin-bottom: 40px;
+  }
 }
 
 // ── Editorial name block ──────────────────────────────────────────────────────
@@ -51,7 +59,11 @@ footer {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-bottom: 36px;
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 36px;
+  }
 }
 
 .footer-name-link {
@@ -60,38 +72,43 @@ footer {
   align-items: center;
   text-decoration: none;
   line-height: 0.88;
-  // The name IS the design — Instrument Serif at large scale
   transition: opacity 0.25s ease;
 
   &:hover { opacity: 0.72; }
 }
 
 .footer-name-first {
-  // Instrument Serif italic — the whole display typography system
-  font-family: 'Fraunces', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: clamp(48px, 8vw, 88px);
+  font-family: 'Unbounded', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: clamp(22px, 6vw, 44px);
   letter-spacing: -0.01em;
-  // Gradient identical to other headings — coherent design language
   background: linear-gradient(160deg, var(--fg) 20%, var(--fg-35) 70%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   display: block;
+
+  @media (min-width: 768px) {
+    font-size: clamp(48px, 8vw, 88px);
+  }
 }
 
 .footer-name-last {
-  font-family: 'Fraunces', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: clamp(48px, 8vw, 88px);
+  font-family: 'Unbounded', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: clamp(22px, 6vw, 44px);
   letter-spacing: -0.01em;
   background: linear-gradient(160deg, var(--fg-55) 0%, var(--fg-28) 60%, transparent 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   display: block;
+
+  @media (min-width: 768px) {
+    font-size: clamp(48px, 8vw, 88px);
+  }
 }
 
 .footer-role {
@@ -102,13 +119,17 @@ footer {
   color: var(--fg-35);
 }
 
-// ── Social icons — small, refined ─────────────────────────────────────────────
+// ── Social icons ──────────────────────────────────────────────────────────────
 
 .footer-social {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 32px;
+  }
 }
 
 .social-icon-link {
@@ -159,14 +180,4 @@ footer {
   font-size: 11px;
   color: var(--fg-18);
   letter-spacing: 0.04em;
-}
-
-// ─── Responsive ───────────────────────────────────────────────────────────────
-
-@media (max-width: 500px) {
-  .footer-name-first,
-  .footer-name-last { font-size: clamp(40px, 11vw, 64px); }
-  .footer-rule      { height: 32px; margin-bottom: 28px; }
-  .footer-name-block { margin-bottom: 24px; }
-  .footer-social    { margin-bottom: 24px; }
 }

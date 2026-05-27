@@ -10,7 +10,7 @@ $invalid: #E61C40;
   flex-direction: column;
   position: relative;
 
-  // ── Uniform atmosphere — same as all other sections ─────────────────────
+  // ── Uniform atmosphere ──────────────────────────────────────────────────
   &::before {
     content: '';
     position: absolute;
@@ -41,11 +41,16 @@ $invalid: #E61C40;
     background: var(--glass-bg-hi);
     border: 1px solid var(--glass-border-hi);
     border-radius: 16px;
-    padding: 40px 64px;
-    font-size: 22px;
+    padding: 20px 32px;
+    font-size: 16px;
     color: #e2e8f0;
     backdrop-filter: blur(24px);
     box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 24px 60px rgba(0, 0, 0, 0.35);
+
+    @media (min-width: 768px) {
+      padding: 40px 64px;
+      font-size: 22px;
+    }
   }
 }
 
@@ -69,10 +74,23 @@ section {
   width: 100%;
   max-width: $contentWidth;
   margin: 0 auto;
-  padding: 100px $paddingLR 80px;
   display: flex;
   flex-direction: column;
   height: 100%;
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+
+  // Mobile
+  padding: 56px $paddingLR500 56px;
+
+  @media (min-width: 768px) {
+    padding: 88px $paddingLR1000 72px;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 100px $paddingLR 80px;
+  }
 }
 
 // ─── Heading ──────────────────────────────────────────────────────────────────
@@ -81,50 +99,84 @@ section {
   display: flex;
   align-items: center;
   width: 100%;
-  margin-bottom: 52px;
+  margin-bottom: 36px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 52px;
+  }
 }
 
 .contact-rule {
   height: 2px;
-  width: 44px;
-  margin-right: 44px;
   flex-shrink: 0;
   background: linear-gradient(90deg, transparent, var(--fg-28));
   border-radius: 0 2px 2px 0;
+
+  // Mobile: minimal rule
+  width: 14px;
+  margin-right: 4px;
+
+  @media (min-width: 768px) {
+    width: 28px;
+    margin-right: 16px;
+  }
+
+  @media (min-width: 1024px) {
+    width: 44px;
+    margin-right: 44px;
+  }
 }
 
 .contact-heading h1 {
-  font-size: clamp(56px, 7.5vw, 112px);
-  line-height: 0.88;
-  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: clamp(28px, 7.5vw, 44px);
+  line-height: 0.96;
+
+  @media (min-width: 768px) {
+    font-size: clamp(32px, 4.5vw, 64px);
+  }
 }
 
 // ─── Columns ──────────────────────────────────────────────────────────────────
 
 .contact-columns {
   display: flex;
+  // Mobile: stacked vertically
+  flex-direction: column;
   align-items: flex-start;
-  gap: 56px;
+  gap: 40px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 56px;
+  }
 }
 
 // ─── Info ─────────────────────────────────────────────────────────────────────
 
 .contact-info {
-  flex: 0 0 42%;
-  max-width: 460px;
+  flex: none;
+  max-width: 100%;
+
+  @media (min-width: 768px) {
+    flex: 0 0 42%;
+    max-width: 460px;
+  }
 
   h4 {
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 600;
     line-height: 1.2;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     background: linear-gradient(135deg, var(--fg) 40%, var(--fg-55) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+
+    @media (min-width: 768px) {
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
   }
 
   p {
@@ -150,6 +202,7 @@ section {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
 }
 
 // ─── Form ─────────────────────────────────────────────────────────────────────
@@ -160,11 +213,16 @@ section {
   width: 100%;
   background: linear-gradient(155deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
   border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 36px 32px;
+  border-radius: 18px;
+  padding: 26px 20px;
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 20px 56px rgba(0, 0, 0, 0.18);
+
+  @media (min-width: 768px) {
+    border-radius: 24px;
+    padding: 36px 32px;
+  }
 }
 
 .form-fields {
@@ -277,8 +335,12 @@ section {
 // ─── Submit ───────────────────────────────────────────────────────────────────
 
 .contact-form > button {
-  @include button();
+  @include button($mobile: true);
   align-self: flex-start;
+
+  @media (min-width: 768px) {
+    @include button();
+  }
 }
 
 // ─── State classes ────────────────────────────────────────────────────────────
@@ -324,25 +386,4 @@ section {
       background: var(--glass-bg-hi);
     }
   }
-}
-
-// ─── Responsive ───────────────────────────────────────────────────────────────
-
-@media (max-width: 1000px) {
-  section       { padding: 88px $paddingLR1000 72px; }
-  .contact-rule { width: 28px; margin-right: 16px; }
-}
-
-@media (max-width: 720px) {
-  .contact-columns { flex-direction: column; gap: 40px; }
-  .contact-info    { max-width: 100%; flex: none; }
-  #feedback > span { padding: 20px 32px; font-size: 16px; }
-}
-
-@media (max-width: 500px) {
-  section             { padding: 56px $paddingLR500 56px; }
-  .contact-rule       { width: 14px; margin-right: 4px; }
-  .contact-heading h1 { font-size: clamp(44px, 12vw, 72px); }
-  .contact-form       { padding: 26px 20px; border-radius: 18px; }
-  .contact-form > button { @include button($mobile: true); }
 }

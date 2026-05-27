@@ -51,7 +51,7 @@
   --btn-solid-color:  #0a0a0a;
   --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.85) inset, 0 4px 20px rgba(0,0,0,0.35);
   --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.90) inset, 0 10px 32px rgba(0,0,0,0.45);
-  --font-display: 'Fraunces', Georgia, serif;
+  --font-display: 'Unbounded', sans-serif;
 }
 
 html.light {
@@ -81,11 +81,11 @@ html.light {
   --surface-md: rgba(0, 0, 0, 0.065);
   --surface-hi: rgba(0, 0, 0, 0.100);
 
-  // Glass — warmer tone, visible but not harsh
-  --glass-bg:        rgba(0, 0, 0, 0.072);
-  --glass-bg-hi:     rgba(0, 0, 0, 0.110);
-  --glass-border:    rgba(0, 0, 0, 0.140);
-  --glass-border-hi: rgba(0, 0, 0, 0.240);
+  // Glass — airy, barely-there in light mode. Cards feel like frosted paper.
+  --glass-bg:        rgba(0, 0, 0, 0.038);
+  --glass-bg-hi:     rgba(0, 0, 0, 0.062);
+  --glass-border:    rgba(0, 0, 0, 0.090);
+  --glass-border-hi: rgba(0, 0, 0, 0.160);
 
   --sb-track:   #ebe9e5;
   --sb-thumb:   #c4c2be;
@@ -125,39 +125,46 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 
 @mixin button($switchColors: false, $transparent: false, $mobile: false) {
   position: relative;
-  padding: if($mobile, 10px 24px, 14px 32px);
-  border-radius: 14px;
-  font-size: if($mobile, 14px, 16px);
+  padding: if($mobile, 9px 20px, 11px 26px);
+  border-radius: 100px;   // pill — matches the navbar pill language
+  font-size: if($mobile, 12px, 13px);
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
   overflow: hidden;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease,
+              border-color 0.22s ease, opacity 0.22s ease;
 
   @if $switchColors {
+    // Solid primary — filled, high contrast
     background: linear-gradient(175deg, var(--btn-solid-from) 0%, var(--btn-solid-to) 100%);
     border: 1px solid var(--btn-solid-border);
     color: var(--btn-solid-color);
     box-shadow: var(--btn-solid-sh);
     &:hover {
-      transform: translateY(-2px);
+      transform: translateY(-1px);
       box-shadow: var(--btn-solid-sh-h);
+      opacity: 0.92;
     }
-    &:active { transform: translateY(1px); }
+    &:active { transform: translateY(0); opacity: 1; }
   } @else {
-    background: linear-gradient(155deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
+    // Ghost — very thin border, minimal fill, almost invisible
+    background: transparent;
     border: 1px solid var(--glass-border);
-    color: var(--fg);
-    backdrop-filter: blur(20px) saturate(1.6);
-    -webkit-backdrop-filter: blur(20px) saturate(1.6);
-    box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 4px 20px rgba(0,0,0,0.22);
+    color: var(--fg-55);
     &:hover {
-      transform: translateY(-2px);
-      background: linear-gradient(155deg, var(--surface-hi) 0%, var(--glass-bg-hi) 100%);
+      transform: translateY(-1px);
       border-color: var(--glass-border-hi);
-      box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 12px 36px rgba(0,0,0,0.30);
+      color: var(--fg);
+      background: var(--glass-bg);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
     }
-    &:active { transform: translateY(1px); }
+    &:active { transform: translateY(0); }
   }
 }
 
@@ -172,7 +179,7 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 * {
   margin: 0;
   box-sizing: border-box;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: var(--fg);
   // Explicit property list — NOT 'all' or shorthand, to avoid fighting GSAP
   // transform / opacity are deliberately excluded: GSAP owns those on .stage
@@ -198,6 +205,19 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
     border: 2px solid var(--sb-track);
     &:hover { background-color: var(--sb-thumb-h); }
   }
+}
+
+body {
+  position: relative;
+  z-index: 2;
+  background: transparent !important;
+}
+
+app-root {
+  display: block;
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
 }
 
 // ── GSAP-controlled elements: no CSS transitions, stable GPU layer ────────────
@@ -232,6 +252,14 @@ img {
 html {
   background-color: var(--bg);
   /* scroll-snap handled entirely by GSAP ScrollToPlugin */
+  position: relative;
+  z-index: 0;
+}
+
+router-outlet {
+  position: relative;
+  z-index: 1;
+  display: block;
 }
 
 // ─── Three.js: inverted in light mode (white particles → dark on warm-ivory bg) ─
@@ -239,7 +267,7 @@ html {
 
 html.light #global-canvas {
   filter: invert(1) sepia(0.08);
-  opacity: 0.42;
+  opacity: 0.85; // opacity increased from 0.42 to 0.85 for gorgeous contrast in light mode!
 }
 
 // ─── Spotlight border (pearl shimmer) ────────────────────────────────────────
@@ -367,18 +395,36 @@ html.light {
 // frontier apps (Linear, Vercel, Raycast, Claude.ai). Critters will inline the
 // @font-face declarations at build time → zero extra network round-trip.
 
-// ─── Display typography — Fraunces + Space Grotesk ───────────────────────────
-// h1/h2: Fraunces italic 300 — optical-size variable serif, stunning at display scale
-//        Ultra-high stroke contrast + optical size axis = genuine 3D depth feeling
-// Body:  Space Grotesk 300/400/500 — geometric with personality, 2026 tech-editorial
-// The tension: Fraunces' extreme contrast vs. Space Grotesk's clean geometry.
+// ─── Display typography — Unbounded + Inter ───────────────────────────────────
+// h1/h2: Unbounded 500/600 — ultra-wide expanded geometric. No serif, no italic.
+//        Wide letterforms create architectural presence; rare in dev portfolios.
+//        Sizes ~40% smaller than narrow fonts — the width does the work.
+// Body:  Inter — optical-size humanist, zero noise. Together: max contrast.
 
 h1, h2 {
-  font-family: 'Fraunces', Georgia, serif;
-  font-style: italic;
-  font-weight: 300;
-  font-optical-sizing: auto;
-  letter-spacing: -0.01em;
+  font-family: 'Unbounded', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 0.96;
+  // Ensure text remains visible during opacity/transform animations
+  will-change: opacity, transform;
+  backface-visibility: visible;
+  // Architectural fade: heading dissolves toward bottom — adds spatial depth
+  // Works on all children including [data-char] spans from writeIn animation.
+  -webkit-mask-image: linear-gradient(to bottom, black 52%, rgba(0,0,0,0.38) 100%);
+  mask-image:         linear-gradient(to bottom, black 52%, rgba(0,0,0,0.38) 100%);
+}
+
+// Critical fix: When writeIn() splits text into characters with data-char attributes,
+// ensure they have solid color for visibility in 3D-transformed contexts.
+// This overrides parent gradient clipping which doesn't work reliably in 3D transforms.
+[data-char] {
+  color: var(--fg) !important;
+  -webkit-text-fill-color: var(--fg) !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
 }
 
 // ─── Journey / Stage ──────────────────────────────────────────────────────────

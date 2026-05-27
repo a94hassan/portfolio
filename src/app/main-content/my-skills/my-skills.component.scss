@@ -7,7 +7,7 @@
   @include flexBox();
   position: relative;
 
-  // ── Uniform atmosphere — same as all other sections ─────────────────────
+  // ── Uniform atmosphere ──────────────────────────────────────────────────
   &::before {
     content: '';
     position: absolute;
@@ -22,59 +22,132 @@ section {
   position: relative;
   z-index: 1;
   height: 100%;
-  padding-top: 70px;
-  padding-bottom: 60px;
+  // Mobile: stack vertically — grid above, text below
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   @include contentWidth();
-  @include flexBox($jc: space-between);
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+
+  // Mobile padding/spacing
+  padding-top: 48px;
+  padding-bottom: 80px;
+
+  @media (min-width: 768px) {
+    // Two-column: grid left (60%), text right (40%)
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 70px;
+    padding-bottom: 60px;
+  }
 }
 
 // ─── Skill grid ───────────────────────────────────────────────────────────────
 
 .skills-grid {
-  width: 60%;
-  padding-left: 100px;
+  // Mobile: full width, centered
+  width: 100%;
+  padding: 0 $paddingLR500;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 9px;
   align-content: flex-start;
+  justify-content: center;
+
+  @media (min-width: 480px) {
+    gap: 11px;
+  }
+
+  @media (min-width: 768px) {
+    // Desktop: left column, 60% wide
+    width: 60%;
+    padding-left: $paddingLR1000;
+    padding-right: 0;
+    justify-content: flex-start;
+    gap: 13px;
+  }
+
+  @media (min-width: 1024px) {
+    padding-left: $paddingLR;
+  }
 }
 
 .skill-item {
-  width: 86px;
-  height: 104px;
-  padding: 16px 10px 14px;
+  // Mobile: smallest
+  width: 64px;
+  height: 82px;
+  padding: 14px 8px 10px;
   background: linear-gradient(160deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
   border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 4px 16px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 0 var(--glass-border-hi) inset,
+    0 4px 20px rgba(0, 0, 0, 0.20);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 9px;
   text-align: center;
-  will-change: transform;
-  transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+  transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
 
   img {
-    width: 38px;
-    height: 38px;
+    width: 28px;
+    height: 28px;
     object-fit: contain;
-    // Original brand colors, gently desaturated for dark editorial cohesion.
-    // Preserves icon detail (Angular A, TS lettering, etc.) — no silhouettes.
-    filter: saturate(0.70) brightness(0.90);
-    opacity: 0.80;
-    transition: filter 0.30s ease, opacity 0.30s ease;
+    // True monochrome: brightness(0) collapses all color to black,
+    // invert(1) flips to white — result: clean white icon on dark bg.
+    // opacity controls luminosity without reintroducing color.
+    filter: brightness(0) invert(1);
+    opacity: 0.52;
+    transition: opacity 0.30s ease;
   }
 
   span {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--fg-48);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-40);
     line-height: 1.2;
+    transition: color 0.28s ease;
+  }
+
+  &:hover span { color: var(--fg-55); }
+
+  @media (min-width: 480px) {
+    width: 74px;
+    height: 88px;
+    border-radius: 17px;
+
+    img { width: 32px; height: 32px; }
+  }
+
+  @media (min-width: 768px) {
+    // Tablet
+    width: 82px;
+    height: 98px;
+    padding: 14px 8px 12px;
+    border-radius: 18px;
+
+    img { width: 34px; height: 34px; }
+    span { font-size: 9.5px; }
+  }
+
+  @media (min-width: 1024px) {
+    // Desktop
+    width: 90px;
+    height: 108px;
+    padding: 16px 10px 14px;
+    border-radius: 20px;
+
+    img { width: 38px; height: 38px; }
+    span { font-size: 10px; }
   }
 
   &:hover {
@@ -83,129 +156,156 @@ section {
     box-shadow:
       0 0 0 1px var(--fg-09),
       0 1px 0 var(--glass-border-hi) inset,
-      0 12px 36px rgba(0, 0, 0, 0.28);
-    // Full vivid on hover — satisfying color reveal
-    img { filter: saturate(1.0) brightness(1.06); opacity: 1; }
+      0 0 28px var(--fg-07),
+      0 16px 40px rgba(0, 0, 0, 0.30);
+    transform: translateY(-2px);
+
+    img { opacity: 0.90; }
   }
 }
 
 // ─── Text column ──────────────────────────────────────────────────────────────
 
 .skills-text {
-  width: 40%;
+  // Mobile: full width, left-aligned, below the grid
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 18px;
+  padding-left: $paddingLR500;
+  padding-right: $paddingLR500;
+  margin-top: 32px;
+
+  @media (min-width: 768px) {
+    // Desktop: right column, 40% wide
+    width: 40%;
+    align-items: flex-end;
+    padding-left: 0;
+    padding-right: 0;
+    margin-top: 0;
+  }
 
   > div:first-of-type {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+
+    // Mobile: left-aligned heading
+    justify-content: flex-start;
+
+    @media (min-width: 768px) {
+      justify-content: flex-end;
+    }
 
     h1 {
-      // Display font — Instrument Serif italic 400 (self-hosted)
-      font-size: clamp(64px, 7.5vw, 116px);
-      line-height: 0.86;
-      background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      // Unbounded is wide — sizes are ~40% of what a narrow serif needed
+      font-size: clamp(28px, 7vw, 44px);
+      line-height: 0.96;
+
+      @media (min-width: 768px) {
+        font-size: clamp(32px, 4.5vw, 60px);
+      }
+
+      @media (min-width: 1024px) {
+        font-size: clamp(36px, 4.5vw, 68px);
+      }
     }
 
     > div {
       height: 3px;
-      width: 48px;
+      width: 28px;
       background: linear-gradient(90deg, var(--fg-28), transparent);
-      margin-left: 32px;
+      margin-left: 16px;
       border-top-left-radius: 2px;
       border-bottom-left-radius: 2px;
+
+      @media (min-width: 768px) {
+        width: 40px;
+        margin-left: 24px;
+      }
+
+      @media (min-width: 1024px) {
+        width: 48px;
+        margin-left: 32px;
+      }
     }
   }
 
   > p {
-    padding-right: 100px;
     line-height: 1.65;
     color: var(--fg-48);
-    text-align: right;
+    text-align: left;
     font-size: 14px;
+    padding-right: 0;
+
+    @media (min-width: 768px) {
+      text-align: right;
+      padding-right: $paddingLR1000;
+    }
+
+    @media (min-width: 1024px) {
+      padding-right: $paddingLR;
+    }
   }
 
   > div:last-of-type {
+    // Desktop only: CTA button row
+    display: none;
     width: 100%;
-    padding-right: 100px;
-    padding-left: 5vw;
-    margin-top: 12px;
-    @include flexBox();
+
+    @media (min-width: 768px) {
+      display: flex;
+      justify-content: center;
+      padding-right: $paddingLR1000;
+      padding-left: 5vw;
+      margin-top: 12px;
+    }
+
+    @media (min-width: 1024px) {
+      padding-right: $paddingLR;
+    }
 
     button { @include button(); }
   }
 }
 
-.german { font-size: clamp(50px, 6vw, 88px) !important; }
+.german {
+  font-size: clamp(22px, 5.5vw, 36px) !important;
 
-// ─── Light mode: slightly darker + more saturated to pop on ivory background ──
-:host-context(html.light) {
-  .skill-item img {
-    filter: saturate(0.85) brightness(0.82);
-    opacity: 0.85;
+  @media (min-width: 768px) {
+    font-size: clamp(26px, 3.8vw, 52px) !important;
   }
-  .skill-item:hover img {
-    filter: saturate(1.0) brightness(0.95);
-    opacity: 1;
+
+  @media (min-width: 1024px) {
+    font-size: clamp(28px, 3.8vw, 56px) !important;
   }
 }
+
+// ─── Mobile-only CTA button ───────────────────────────────────────────────────
 
 .skills-mobile-btn {
-  display: none;
-  button { @include button(); }
+  // Visible on mobile, hidden on desktop (desktop uses the one inside .skills-text)
+  display: flex;
+  padding: 0 $paddingLR500;
+  margin-top: 4px;
+
+  button { @include button($mobile: true); }
+
+  @media (min-width: 768px) {
+    display: none;
+  }
 }
 
-// ─── Responsive ───────────────────────────────────────────────────────────────
+// ─── Light mode: dark monochrome icons on warm-ivory bg ──────────────────────
+// brightness(0) collapses all color to black — no invert needed in light mode.
+// Matches the obsidian design token aesthetic.
 
-@media (max-width: 1440px) {
-  .skills-text > div:first-of-type h1 { font-size: clamp(56px, 7vw, 104px); }
-  .german { font-size: clamp(46px, 5.5vw, 84px) !important; }
-}
-
-@media (max-width: 1000px) {
-  .skills-grid { padding-left: $paddingLR1000; }
-  .skills-text > div:last-of-type { padding-right: $paddingLR1000; }
-  .skills-text > p { padding-right: $paddingLR1000; }
-  .skills-text > div:first-of-type > div { width: 28px; margin-left: 16px; }
-  .german { font-size: 6vw !important; }
-}
-
-@media (max-width: 900px) {
-  .skills-grid { gap: 10px; }
-  .skill-item  { width: 78px; height: 94px; padding: 14px 8px 12px; }
-  .skill-item img  { width: 32px; height: 32px; }
-  .skill-item span { font-size: 10px; }
-}
-
-@media (max-width: 720px) {
-  :host { padding-top: 72px; padding-bottom: 100px; }
-  section { flex-direction: column-reverse; gap: 36px; }
-  .skills-grid { width: 100%; padding: 0 $paddingLR1000; gap: 10px; justify-content: center; }
-  .skills-text { width: 100%; padding-left: $paddingLR1000; align-items: flex-start; }
-  .skills-text > p { padding-right: 0; text-align: left; }
-  .skills-text > div:last-of-type { display: none; }
-  .skills-mobile-btn { display: flex; }
-  .german { font-size: 48px !important; }
-}
-
-@media (max-width: 500px) {
-  .skills-grid { padding: 0 $paddingLR500; gap: 8px; }
-  .skills-text { padding-left: $paddingLR500; }
-  .skills-text > div:first-of-type h1 { font-size: clamp(44px, 12vw, 70px); }
-  .skill-item  { width: 72px; height: 86px; border-radius: 14px; }
-  .skills-mobile-btn button { @include button($mobile: true); }
-  .german { font-size: clamp(44px, 12vw, 70px) !important; }
-}
-
-@media (max-width: 400px) {
-  :host { padding-top: 48px; padding-bottom: 80px; }
-  .skill-item      { width: 64px; height: 78px; gap: 8px; }
-  .skill-item img  { width: 28px; height: 28px; }
-  .skill-item span { font-size: 9px; }
+:host-context(html.light) {
+  .skill-item img {
+    filter: brightness(0);
+    opacity: 0.62;
+  }
+  .skill-item:hover img {
+    opacity: 0.88;
+  }
 }

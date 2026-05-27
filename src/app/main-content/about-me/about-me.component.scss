@@ -6,7 +6,7 @@
   @include flexBox($fd: column);
   position: relative;
 
-  // ── Uniform atmosphere — same as all other sections ─────────────────────
+  // ── Uniform atmosphere ──────────────────────────────────────────────────
   &::before {
     content: '';
     position: absolute;
@@ -21,46 +21,92 @@ section {
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: 80px 0;
+  padding: 60px 0;
   @include contentWidth();
   @include flexBox($ai: stretch);
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+
+  @media (min-width: 768px) {
+    padding: 80px 0;
+  }
 }
+
+// ─── About layout ─────────────────────────────────────────────────────────────
 
 .about-section {
   width: 100%;
   height: 100%;
-  @include flexBox($jc: space-between, $ai: center);
-  gap: 64px;
-  padding: 0 $paddingLR;
+  // Mobile: single column, photo centered above text
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 0 $paddingLR500;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 44px;
+    padding: 0 $paddingLR1000;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 64px;
+    padding: 0 $paddingLR;
+  }
+
+  @media (min-width: 1280px) {
+    gap: 72px;
+  }
 }
 
 // ─── Text column ──────────────────────────────────────────────────────────────
 
 .about-content {
   flex: 1;
-  max-width: 520px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0;
+
+  @media (min-width: 768px) {
+    max-width: 520px;
+  }
 }
 
 .about-heading {
-  // Display font — Instrument Serif italic 400 (self-hosted)
-  font-size: clamp(60px, 7vw, 112px);
-  line-height: 0.88;
-  margin-bottom: 28px;
-  background: linear-gradient(160deg, var(--fg) 15%, var(--fg-35) 60%, transparent 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: clamp(28px, 7.5vw, 44px);
+  line-height: 0.96;
+  margin-bottom: 22px;
+
+  @media (min-width: 480px) {
+    font-size: clamp(30px, 6.5vw, 50px);
+  }
+
+  @media (min-width: 768px) {
+    font-size: clamp(32px, 4.8vw, 64px);
+    margin-bottom: 28px;
+  }
+
+  @media (min-width: 1024px) {
+    font-size: clamp(36px, 4.5vw, 72px);
+  }
 }
 
 .about-body {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.72;
   color: var(--fg-48);
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   font-weight: 400;
+
+  @media (min-width: 768px) {
+    font-size: 15px;
+    margin-bottom: 32px;
+  }
 }
 
 .about-trait {
@@ -94,21 +140,31 @@ section {
 
 .about-photo-wrap {
   flex-shrink: 0;
-  width: clamp(260px, 32%, 420px);
-  aspect-ratio: 1 / 1;    // forces square — combined with border-radius:50% = circle
+  // Mobile: circle, centered, constrained by viewport width
+  width: min(300px, 80vw);
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
-  overflow: hidden;        // clips the image to the circle
+  overflow: hidden;
   border: 1px solid var(--glass-border);
   box-shadow:
     0 0 0 1px var(--fg-03),
     0 32px 80px rgba(0, 0, 0, 0.48);
   position: relative;
 
+  @media (min-width: 768px) {
+    // Desktop: responsive width within column
+    width: clamp(280px, 30%, 400px);
+  }
+
+  @media (min-width: 1024px) {
+    width: clamp(300px, 32%, 420px);
+  }
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center top;  // show face / upper body, not feet
+    object-position: center top;
     display: block;
     filter: brightness(1.02) contrast(1.04);
   }
@@ -118,47 +174,21 @@ section {
     position: absolute;
     inset: 0;
     border-radius: 50%;
+    // Vignette Fix: matches exact --bg dark tone (#070608)
     background: radial-gradient(
       ellipse 82% 82% at 50% 50%,
       transparent 40%,
-      rgba(4, 4, 6, 0.38) 100%
+      rgba(7, 6, 8, 0.20) 100%
     );
     pointer-events: none;
     z-index: 1;
     :host-context(html.light) & {
+      // Light mode: matches --bg light tone (#f6f4f1)
       background: radial-gradient(
         ellipse 82% 82% at 50% 50%,
         transparent 44%,
-        rgba(200, 198, 194, 0.32) 100%
+        rgba(246, 244, 241, 0.25) 100%
       );
     }
   }
-}
-
-// ─── Responsive ───────────────────────────────────────────────────────────────
-
-@media (max-width: 1100px) {
-  .about-section { gap: 44px; }
-  .about-photo-wrap { width: clamp(220px, 28%, 360px); }
-}
-
-@media (max-width: 900px) {
-  .about-section {
-    flex-direction: column-reverse;
-    padding: 0 $paddingLR1000;
-    gap: 32px;
-    align-items: center;
-  }
-  .about-content { max-width: 100%; }
-  .about-photo-wrap {
-    width: min(260px, 72%);
-  }
-  .about-heading { font-size: clamp(48px, 11vw, 88px); }
-}
-
-@media (max-width: 600px) {
-  section { padding: 60px 0; }
-  .about-section { padding: 0 $paddingLR500; gap: 24px; }
-  .about-heading { font-size: clamp(42px, 12vw, 68px); }
-  .about-body { font-size: 14px; }
 }

@@ -35,15 +35,37 @@
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid var(--glass-border);
-  box-shadow: 0 0 0 1px var(--fg-04), 0 28px 72px rgba(0,0,0,0.45);
+  box-shadow:
+    0 0 0 1px var(--fg-04),
+    0 2px 0 var(--glass-border-hi) inset,
+    0 32px 80px rgba(0,0,0,0.55),
+    0 0 60px var(--fg-04);
+  position: relative;
+
+  // Subtle vignette edge — cinematic depth
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      ellipse 85% 85% at 50% 50%,
+      transparent 55%,
+      rgba(0,0,0,0.30) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.65s cubic-bezier(0.4,0,0.2,1);
+    transition: transform 0.75s cubic-bezier(0.4,0,0.2,1);
+    transform-origin: center center;
   }
-  &:hover img { transform: scale(1.04); }
+  &:hover img { transform: scale(1.05); }
 }
 
 // ─── Info card ──────────────────────────────────────────────────────────────
@@ -52,14 +74,24 @@
   flex: 0 0 420px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  background: linear-gradient(155deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
+  gap: 20px;
+  // Layered glass: slight top-left highlight for depth illusion
+  background:
+    linear-gradient(145deg,
+      rgba(255,255,255,0.065) 0%,
+      rgba(255,255,255,0.028) 40%,
+      rgba(255,255,255,0.018) 100%
+    );
   border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 36px 32px;
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
-  box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 20px 56px rgba(0,0,0,0.22);
+  border-radius: 26px;
+  padding: 38px 34px;
+  backdrop-filter: blur(32px) saturate(1.4);
+  -webkit-backdrop-filter: blur(32px) saturate(1.4);
+  box-shadow:
+    0 1px 0 var(--glass-border-hi) inset,
+    0 -1px 0 var(--fg-04) inset,
+    0 24px 64px rgba(0,0,0,0.26),
+    0 0 0 1px var(--fg-04);
 }
 
 .project-meta {
@@ -69,42 +101,45 @@
 }
 
 .project-num {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.30em;
+  letter-spacing: 0.38em;
   text-transform: uppercase;
   color: var(--fg-18);
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .project-tech {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.20em;
   text-transform: uppercase;
-  color: var(--fg-35);
-  padding: 4px 10px;
+  color: var(--fg-40);
+  padding: 4px 12px;
   border: 1px solid var(--glass-border);
-  border-radius: 6px;
+  border-radius: 100px;  // pill shape
   background: var(--glass-bg);
+  backdrop-filter: blur(12px);
 }
 
 h4 {
-  font-size: clamp(24px, 2.4vw, 36px);
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
-  background: linear-gradient(135deg, var(--fg) 30%, var(--fg-55) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(28px, 2.8vw, 44px);
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+  // Solid colour — works reliably inside 3D-transformed cards
+  color: var(--fg);
   margin: 0;
 }
 
 p {
-  font-size: 14px;
-  line-height: 1.68;
+  font-size: 13px;
+  line-height: 1.72;
   color: var(--fg-48);
   margin: 0;
+  font-weight: 400;
 }
 
 .project-actions {

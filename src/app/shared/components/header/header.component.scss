@@ -13,7 +13,6 @@
   background-color: rgba(7, 6, 8, 0.22);
   backdrop-filter: blur(48px) saturate(2.0);
   -webkit-backdrop-filter: blur(48px) saturate(2.0);
-  // Hairline glow instead of hard border — more glassmorphic
   border-bottom: 1px solid transparent;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.055), 0 4px 32px rgba(0, 0, 0, 0.10);
   @include flexBox();
@@ -29,7 +28,16 @@
 header {
   @include contentWidth();
   @include flexBox($jc: space-between);
-  padding: 18px $paddingLR;
+  // Mobile: tightest padding
+  padding: 14px $paddingLR500;
+
+  @media (min-width: 768px) {
+    padding: 16px $paddingLR1000;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 18px $paddingLR;
+  }
 }
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
@@ -49,9 +57,11 @@ header {
   &:hover .logo-ln       { color: var(--fg-48); }
 }
 
-// Editorial logo wordmark: Instrument Serif name stacked above tracked sans surname
+// Editorial logo wordmark
 
 .logo-wordmark {
+  // Always visible — even on small phones.
+  // The logo IS the brand identity.
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -59,11 +69,10 @@ header {
 }
 
 .logo-fn {
-  // Instrument Serif italic — the display font as the logo itself
-  font-family: 'Fraunces', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 21px;
+  font-family: 'Unbounded', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 13px;
   letter-spacing: -0.01em;
   line-height: 1;
   color: var(--fg);
@@ -71,26 +80,14 @@ header {
 }
 
 .logo-ln {
-  // Ultra-tracked uppercase Inter — editorial contrast to the serif above
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-style: normal;
   font-size: 8px;
   font-weight: 500;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--fg-35);
   line-height: 1;
-  padding-left: 2px; // optical correction for italic serif's left overhang
+  padding-left: 2px;
   transition: color 0.25s ease;
-}
-
-// ─── Responsive ───────────────────────────────────────────────────────────────
-
-@media (max-width: 1000px) {
-  header { padding: 16px $paddingLR1000; }
-}
-
-@media (max-width: 500px) {
-  header { padding: 14px $paddingLR500; }
-  .logo-wordmark { display: none; }
 }

@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import * as THREE from 'three';
+import Lenis from 'lenis';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +20,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private zone         = inject(NgZone);
   private themeService = inject(ThemeService);
   private animId       = 0;
+  private lenis?: Lenis;
   private threeCleanup?: () => void;
   private cursorCleanup?: () => void;
   private scrollCleanup?: () => void;
@@ -32,8 +34,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.zone.runOutsideAngular(() => {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!reducedMotion && !this.isMobile) this.initGlobalThreeJS();
+      if (!reducedMotion) {
+        if (!this.isMobile) this.initGlobalThreeJS();
+        this.initLenis();
+      }
       this.initCustomCursor();
+      if (!this.isMobile && !reducedMotion) this.initElementTilt();
     });
 
     setTimeout(() => this.initJourney(), 500);
@@ -44,7 +50,31 @@ export class AppComponent implements OnInit, OnDestroy {
   // ════════════════════════════════════════════════════════════════════════════
 
   private get isMobile(): boolean {
-    return window.innerWidth <= 900 || !window.matchMedia('(hover: hover)').matches;
+    return window.innerWidth <= 768; // simple, standard screen width check (bypasses touch false-positives)
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // LENIS — butter-smooth scroll, synced with GSAP ScrollTrigger
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private initLenis() {
+    this.lenis = new Lenis({
+      duration:            1.3,
+      easing:              (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation:         'vertical',
+      gestureOrientation:  'vertical',
+      smoothWheel:         true,
+      wheelMultiplier:     1.0,
+      touchMultiplier:     2.0,
+      infinite:            false,
+    });
+
+    // Sync Lenis scroll events → GSAP ScrollTrigger updates
+    this.lenis.on('scroll', () => ScrollTrigger.update());
+
+    // Drive Lenis via GSAP ticker so both share the same RAF loop
+    gsap.ticker.add((time) => { this.lenis!.raf(time * 1000); });
+    gsap.ticker.lagSmoothing(0);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -89,12 +119,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private writeIn(selector: string, delay = 0): gsap.core.Timeline {
     const el = document.querySelector(selector);
     if (!el) return gsap.timeline();
-    gsap.set(el, { perspective: 900, transformStyle: 'preserve-3d' });
+    gsap.set(el, { opacity: 1, y: 0 });
     const chars = this.splitChars(el);
     return gsap.timeline().fromTo(chars,
-      { opacity: 0, rotateX: -80, y: 18, transformOrigin: '50% 100%' },
-      { opacity: 1, rotateX:   0, y:  0,
-        duration: 0.52, ease: 'back.out(1.4)',
+      { opacity: 0, y: 18 },
+      { opacity: 1, y:  0,
+        duration: 0.55, ease: 'power2.out',
         stagger: 0.026, delay }
     );
   }
@@ -105,7 +135,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private initJourney() {
     const stages = gsap.utils.toArray<HTMLElement>('.stage');
-    if (stages.length < 6) return;
+    if (stages.length < 6) {
+      // Retry robustly in case Angular router has not settled/rendered the default route yet
+      setTimeout(() => this.initJourney(), 100);
+      return;
+    }
 
     if (this.isMobile) { this.initMobileScroll(); return; }
 
@@ -113,15 +147,19 @@ export class AppComponent implements OnInit, OnDestroy {
     // Identical parameters for EVERY beat: outgoing recedes, incoming emerges.
     // Z_OFF / SC_OFF are intentionally subtle — the depth shift is felt, not seen.
 
-    const Z_OFF  = -200;  // reduced: was -350 (too aggressive, caused flash)
-    const SC_OFF = 0.93;  // near-1: barely visible scale — depth cue, not distortion
+    const Z_OFF   = -200;       // reduced: was -350 (too aggressive, caused flash)
+    const SC_OFF  = 0.93;       // near-1: barely visible scale — depth cue
+    const BLUR_OFF = 'blur(6px)';  // cinematic out-of-focus on departing section
 
-    // All non-hero stages start behind the viewer (far in the distance)
-    gsap.set(stages[1], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
-    gsap.set(stages[2], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
-    gsap.set(stages[3], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
-    gsap.set(stages[4], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
-    gsap.set(stages[5], { z: Z_OFF, scale: SC_OFF, opacity: 0 });
+    // Hero (stage 0) starts in focus; others start behind, blurred, hidden
+    // Note: no filter set on stage[0] — setting filter:blur(0px) creates a stacking context
+    // that breaks background-clip:text on descendant headings. Stage[0] is already in focus.
+    const initialOut = { z: Z_OFF, scale: SC_OFF, opacity: 0, filter: BLUR_OFF };
+    gsap.set(stages[1], initialOut);
+    gsap.set(stages[2], initialOut);
+    gsap.set(stages[3], initialOut);
+    gsap.set(stages[4], initialOut);
+    gsap.set(stages[5], initialOut);
 
     // Pre-hide content elements for entrance animations
     gsap.set([
@@ -140,14 +178,20 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.set('.skill-item', { opacity: 0, scale: 0.68, y: 10 });
 
     gsap.set([
+      '.portfolio-heading h1', '.portfolio-sub',
+    ], { opacity: 0, y: 10 });
+
+    gsap.set([
       '.contact-heading h1', '.contact-columns',
     ], { opacity: 0, y: 10 });
 
     gsap.set(['.footer-rule', '.footer-name-block', '.footer-social', '.footer-legal'], { opacity: 0, y: 14 });
 
     // ── Master timeline: OUT/IN share identical parameters ───────────────────
-    const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, duration: 1, ease: 'power2.inOut' } as const;
-    const IN  = { z: 0,     scale: 1,      opacity: 1, duration: 1, ease: 'power2.out'  } as const;
+    // The filter blur creates a cinematic "out of focus → snap to focus" effect
+    // that harmonises with the camera's spiral descent through the particle vortex.
+    const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, filter: BLUR_OFF,    duration: 1, ease: 'power2.inOut' } as const;
+    const IN  = { z: 0,     scale: 1,      opacity: 1, filter: 'blur(0px)', duration: 1, ease: 'power2.out'  } as const;
 
     const tl = gsap.timeline()
       // Beat 0→1: Hero → About
@@ -184,19 +228,23 @@ export class AppComponent implements OnInit, OnDestroy {
       lastBeat = beat;
       if (seek) tl.seek(beat / 7 * tl.duration());
       setTimeout(() => this.fireEntrance(beat), 40);
+      // Notify Three.js: section transition → emit a pulse wave through the vortex
+      (window as any).__beatPulse?.();
     };
 
     const st = ScrollTrigger.create({
       trigger: '#journey',
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 0.22,
+      // With Lenis providing smooth scroll, scrub can be very tight (near-instant).
+      // Lenis handles all the easing — GSAP just needs to track the position.
+      scrub: 0.06,
       animation: tl,
       snap: {
         snapTo:   1 / 7,
-        duration: { min: 0.28, max: 0.45 },
-        delay:    0.38,
-        ease:     'power2.inOut',
+        duration: { min: 0.42, max: 0.75 },   // more cinematic snap
+        delay:    0.18,                         // quicker to commit after release
+        ease:     'power3.inOut',               // sharper in, softer out = cinematic
       },
       onUpdate:       (self) => { rawF = self.progress; fireBeat(Math.round(self.progress * 7)); },
       onSnapComplete: (self) => { fireBeat(Math.round(self.progress * 7), true); },
@@ -220,13 +268,42 @@ export class AppComponent implements OnInit, OnDestroy {
       const id = a.getAttribute('href')!.slice(1);
       if (id in BEAT) {
         e.preventDefault();
-        gsap.to(window, { scrollTo: (BEAT[id] / 7) * scrollMax(), duration: 1.1, ease: 'power2.inOut' });
+        const target = (BEAT[id] / 7) * scrollMax();
+        // Prefer Lenis scrollTo (smooth, consistent with scroll easing)
+        if (this.lenis) {
+          this.lenis.scrollTo(target, { duration: 1.6, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
+        } else {
+          gsap.to(window, { scrollTo: target, duration: 1.4, ease: 'power3.inOut' });
+        }
       }
     });
 
     (window as any).__journeyProgress = () => rawF;
     this.scrollCleanup = () => st.kill();
     setTimeout(() => { lastBeat = 0; this.fireEntrance(0); }, 120);
+    // Hide loader once first beat is animating in + fonts are ready
+    this.scheduleLoaderHide(180);
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // LOADER — fades out once page is ready + fonts loaded
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private scheduleLoaderHide(extraDelay = 0) {
+    const fire = () => setTimeout(() => this.hideLoader(), extraDelay);
+    if ('fonts' in document && (document as any).fonts?.ready) {
+      (document as any).fonts.ready.then(fire).catch(fire);
+    } else {
+      setTimeout(fire, 400); // legacy browsers
+    }
+  }
+
+  private hideLoader() {
+    const loader = document.getElementById('app-loader');
+    if (!loader) return;
+    loader.classList.add('hidden');
+    // Remove fully after the CSS transition completes (matches 800ms duration)
+    setTimeout(() => loader.remove(), 900);
   }
 
   private fireEntrance(beat: number) {
@@ -278,8 +355,13 @@ export class AppComponent implements OnInit, OnDestroy {
   private portfolioTl(cardIdx: number) {
     const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
     const panel  = panels[Math.max(0, cardIdx)] ?? panels[0];
-    return gsap.timeline()
-      .to(panel ?? '.project-panel', { opacity: 1, duration: 0.55, ease: 'power2.out', delay: 0.08 });
+    const tl = gsap.timeline();
+    // First beat of portfolio (cardIdx 0): animate heading + sub
+    if (cardIdx === 0) {
+      tl.add(this.writeIn('.portfolio-heading h1', 0.06))
+        .to('.portfolio-sub', { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.55);
+    }
+    return tl.to(panel ?? '.project-panel', { opacity: 1, duration: 0.55, ease: 'power2.out', delay: cardIdx === 0 ? 0.18 : 0.06 });
   }
 
   private contactTl() {
@@ -343,11 +425,19 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     (window as any).__journeyProgress = () => 0;
+    this.scheduleLoaderHide(120);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // THREE.JS — fish school + camera journey
+  // THREE.JS — Vortex / Strudel: spiral descent with reactive billiard physics
   // ════════════════════════════════════════════════════════════════════════════
+  //
+  // Core concept: the user descends through a HELIX of stars. The camera spirals
+  // down along a path INSIDE the helix, looking forward. Each individual star is
+  // reactive: when the mouse cursor "collides" with it (proximity sphere), the
+  // star receives an IMPULSE (3D bounce, billiard-style) AND lights up with a
+  // GLOW HALO that decays over time. A custom ShaderMaterial provides per-particle
+  // size and glow attributes — true individual reactivity, not a global effect.
 
   private initGlobalThreeJS() {
     const canvas = document.querySelector('#global-canvas') as HTMLCanvasElement;
@@ -355,200 +445,390 @@ export class AppComponent implements OnInit, OnDestroy {
 
     let w = window.innerWidth, h = window.innerHeight;
 
-    const scene    = new THREE.Scene();
-    const camera   = new THREE.PerspectiveCamera(58, w / h, 0.1, 8000);
+    const scene = new THREE.Scene();
+    // Exponential fog: distant stars dissolve into the deep-space background.
+    // Strengthens the sense of true depth — near is crisp, far is mist.
+    scene.fog = new THREE.FogExp2(0x070608, 0.00018);
+
+    const camera   = new THREE.PerspectiveCamera(65, w / h, 1, 6000);
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
     renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    const dpr = navigator.hardwareConcurrency <= 4 ? 1.0 : Math.min(window.devicePixelRatio, 1.5);
+    renderer.setPixelRatio(dpr);
 
     const SY = [0, -h * 1.15, -h * 2.55, -h * 4.05, -h * 5.35];
-    const _c  = (x: number, fy: number, z: number) =>
+    const _c = (x: number, fy: number, z: number) =>
       new THREE.Vector3(x, fy !== 0 ? h * fy : 0, z);
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // SPIRAL CAMERA PATH — descent through the vortex
+    // ──────────────────────────────────────────────────────────────────────────
+    // The camera traces a HELIX as it descends: cos(yT * 2π * TURNS) for X,
+    // sin(yT * 2π * TURNS) blended into Z. We make 1.4 full turns over the
+    // whole journey — enough to feel the rotation but not dizzying.
+    // The Z component also has its own gentle dive-and-rise: start far (z=900,
+    // outside the swirl), plunge through (z≈170 at deepest), then rise back.
+    const CAM_TURNS = 1.4;
+    const TWO_PI    = Math.PI * 2;
+    const camSpiral = (yT: number, zOff: number): THREE.Vector3 => {
+      const ang = yT * TWO_PI * CAM_TURNS;
+      // Spiral radius widens at top/bottom, narrows in middle = vortex shape
+      const r = 110 + Math.sin(yT * Math.PI) * 75;
+      return new THREE.Vector3(Math.cos(ang) * r, yT * SY[4], zOff);
+    };
+
     const camCurve = new THREE.CatmullRomCurve3([
-      _c(   0,    0,   560), _c( 280, -0.08, 430), _c( -80, -0.26, 710),
-      _c( 130, -0.50, 270),  _c(-220, -0.72, 620), _c(-200, -1.10, 500),
-      _c( 180, -1.35, 455),  _c( 370, -1.55, 720), _c(   0, -1.82, 255),
-      _c(-260, -2.02, 610),  _c( 240, -2.40, 485), _c(-130, -2.70, 515),
-      _c(-175, -3.00, 730),  _c(  85, -3.22, 248), _c( 225, -3.50, 595),
-      _c(-185, -3.90, 530),  _c( 220, -4.20, 465), _c(  85, -4.50, 715),
-      _c(-165, -4.75, 262),  _c(  55, -5.00, 585), _c(  25, -5.22, 565),
-      _c(   0, -5.50, 600),
-    ], false, 'catmullrom', 0.4);
+      new THREE.Vector3(0, 0, 900),         // outside the vortex, looking down
+      camSpiral(0.05, 790), camSpiral(0.13, 620),
+      camSpiral(0.22, 460), camSpiral(0.31, 330),
+      camSpiral(0.40, 240), camSpiral(0.48, 180),   // deepest point of dive
+      camSpiral(0.56, 190), camSpiral(0.64, 245),
+      camSpiral(0.72, 305), camSpiral(0.79, 365),
+      camSpiral(0.86, 430), camSpiral(0.92, 510),
+      camSpiral(0.97, 590),
+      new THREE.Vector3(0, SY[4], 680),
+    ], false, 'catmullrom', 0.42);
+
+    // Look-ahead curve: camera looks slightly ahead+down along the spiral,
+    // creating the sensation of LEANING INTO the turn (like a fighter pilot).
+    const lookSpiral = (yT: number): THREE.Vector3 => {
+      const ang = yT * TWO_PI * CAM_TURNS + Math.PI * 0.45;  // ahead of cam position
+      const r   = 55 + Math.sin(yT * Math.PI) * 35;
+      return new THREE.Vector3(Math.cos(ang) * r, yT * SY[4] - h * 0.10, -40);
+    };
 
     const lkCurve = new THREE.CatmullRomCurve3([
-      _c(   0,    0,    0), _c(-180, -0.08,  0), _c( 200, -0.28,  0),
-      _c( -80, -0.52, -65), _c( 160, -0.72,  0), _c( 165, -1.10,  0),
-      _c(-185, -1.35,  0),  _c(-200, -1.60,  0), _c(   0, -1.85,-110),
-      _c( 185, -2.05,  0),  _c(-185, -2.40,  0), _c( 155, -2.70,  0),
-      _c( 215, -3.02,  0),  _c(-100, -3.25, -80),_c(-185, -3.52,  0),
-      _c( 205, -3.90,  0),  _c(-165, -4.20,  0), _c(-115, -4.52,  0),
-      _c( 105, -4.78, -90), _c(   0, -5.02,  0), _c( -65, -5.22,  0),
-      _c(   0, -5.50,  0),
-    ], false, 'catmullrom', 0.4);
+      new THREE.Vector3(0, 0, 0),
+      lookSpiral(0.08), lookSpiral(0.18),
+      lookSpiral(0.30), lookSpiral(0.42),
+      lookSpiral(0.54), lookSpiral(0.66),
+      lookSpiral(0.78), lookSpiral(0.88),
+      lookSpiral(0.95),
+      new THREE.Vector3(0, SY[4], -40),
+    ], false, 'catmullrom', 0.42);
 
-    // ── PARTICLE FIELD — ring distribution, true 3D depth, uniform screen size ─
-    //
-    // Distribution design:
-    //  • Ring (not sphere): inner void 200px, outer edge 800px → particles spread
-    //    from screen edges, not center — center stays clear for content
-    //  • True 3D depth: Z from -350 to -1100 → real layered depth in 3D space
-    //  • sizeAttenuation: false → all particles identical screen size regardless
-    //    of Z depth — creates a flat, minimal, consistent field, not a fog effect
-    //  • Organic drift: individual sinusoidal oscillation per particle (fish school)
+    // ──────────────────────────────────────────────────────────────────────────
+    // PARTICLE LAYERS — Strudel/Vortex helix + ambient dust
+    // ──────────────────────────────────────────────────────────────────────────
 
-    const PC     = 260;
-    const GA     = Math.PI * (3 - Math.sqrt(5));   // golden angle
-    const R_IN   = 200;   // inner void radius — center kept clear
-    const R_OUT  = 820;   // outer ring edge
-    const totalY = Math.abs(SY[4]) * 1.12;
+    const GA      = Math.PI * (3 - Math.sqrt(5));   // golden angle
+    const totalY  = Math.abs(SY[4]) * 1.15;
 
-    const bX = new Float32Array(PC), bY = new Float32Array(PC), bZ = new Float32Array(PC);
-    const fX = new Float32Array(PC), fY = new Float32Array(PC), fZ = new Float32Array(PC);
-    const pX = new Float32Array(PC), pY = new Float32Array(PC), pZ = new Float32Array(PC);
-    const pos = new Float32Array(PC * 3);
+    // ── Layer 1: Background dust (atmosphere, no helix structure) ─────────────
+    // Wide cloud, very deep. Adds spatial fill without competing visually
+    // with the reactive helix layer.
+    const DUST_PC = 180;
+    const dPos = new Float32Array(DUST_PC * 3);
+    const dBX  = new Float32Array(DUST_PC), dBY = new Float32Array(DUST_PC);
+    const dFX  = new Float32Array(DUST_PC), dFY = new Float32Array(DUST_PC);
+    const dPX  = new Float32Array(DUST_PC), dPY = new Float32Array(DUST_PC);
 
-    for (let i = 0; i < PC; i++) {
-      const t   = i / PC;
+    for (let i = 0; i < DUST_PC; i++) {
       const ang = GA * i;
+      const r   = 200 + Math.sqrt(Math.random()) * 1100;
+      dBX[i] = Math.cos(ang) * r + (Math.random() - 0.5) * 220;
+      dBY[i] = (i / DUST_PC) * SY[4] + (Math.random() - 0.5) * h * 0.75;
+      const z = -450 - Math.random() * 2300;        // Z -450 to -2750: deep background
+      dFX[i] = 0.05 + Math.random() * 0.10;
+      dFY[i] = 0.04 + Math.random() * 0.08;
+      dPX[i] = Math.random() * TWO_PI;
+      dPY[i] = Math.random() * TWO_PI;
+      dPos[i*3] = dBX[i]; dPos[i*3+1] = dBY[i]; dPos[i*3+2] = z;
+    }
+    const dustGeo = new THREE.BufferGeometry();
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
+    const dustMat = new THREE.PointsMaterial({
+      color: 0xb8b4ae, size: 2.6, sizeAttenuation: true,
+      transparent: true, opacity: 0.11, depthWrite: false, fog: true,
+    });
+    scene.add(new THREE.Points(dustGeo, dustMat));
 
-      // Annular (ring) distribution: sqrt-bias pushes density toward outer edge
-      const r = R_IN + Math.sqrt(Math.random()) * (R_OUT - R_IN);
-      bX[i] = Math.cos(ang) * r;
+    // ── Layer 2: HELIX STARS — the reactive vortex with per-particle glow ─────
+    //
+    // Each particle is placed in a HELICAL arrangement around the journey's
+    // Y axis. HELIX_TURNS sets how many full revolutions the vortex makes
+    // from top to bottom — 5 = visible swirl without becoming a wall.
+    //
+    // Custom ShaderMaterial: per-particle `aSize` and `aGlow` attributes.
+    // - aSize:  varies 3-9 world units per particle → natural size variation
+    // - aGlow:  0-1, set to ~1 on mouse collision, decays each frame
+    //   When glowing: point expands +80%, becomes a bright halo via additive
+    //   blending. Result: billiard-style "lit up on impact" feel in 3D space.
+    const STAR_PC      = 240;
+    const HELIX_TURNS  = 5;
 
-      // Full journey Y span, slightly randomised within each section band
-      bY[i] = t * SY[4] + (Math.random() - 0.5) * h * 0.55;
+    const sPos  = new Float32Array(STAR_PC * 3);
+    const sSize = new Float32Array(STAR_PC);    // per-particle world size
+    const sGlow = new Float32Array(STAR_PC);    // per-particle glow [0,1]
 
-      // True 3D depth: -350 to -1100 (more distant than before, real 3D spread)
-      bZ[i] = -350 - Math.random() * 750;
+    // Per-particle motion state
+    const sBX = new Float32Array(STAR_PC), sBY = new Float32Array(STAR_PC), sBZ = new Float32Array(STAR_PC);
+    const sFX = new Float32Array(STAR_PC), sFY = new Float32Array(STAR_PC), sFZ = new Float32Array(STAR_PC);
+    const sPX = new Float32Array(STAR_PC), sPY = new Float32Array(STAR_PC), sPZ = new Float32Array(STAR_PC);
+    // Velocity (billiard physics)
+    const svX = new Float32Array(STAR_PC), svY = new Float32Array(STAR_PC), svZ = new Float32Array(STAR_PC);
 
-      // Unique oscillation frequencies — organic, no two particles in sync
-      fX[i] = 0.10 + Math.random() * 0.18;
-      fY[i] = 0.07 + Math.random() * 0.12;
-      fZ[i] = 0.04 + Math.random() * 0.08;
+    for (let i = 0; i < STAR_PC; i++) {
+      const phase = i / STAR_PC;
+      // Helix angle: phase advances around the axis as we descend.
+      // Add slight golden-angle scatter so the helix doesn't look mechanical.
+      const ang = phase * TWO_PI * HELIX_TURNS + (i * GA) * 0.35 + (Math.random() - 0.5) * 0.6;
 
-      pX[i] = Math.random() * Math.PI * 2;
-      pY[i] = Math.random() * Math.PI * 2;
-      pZ[i] = Math.random() * Math.PI * 2;
+      // Radius profile: wider at journey extremes, slight pinch in middle =
+      // hourglass-vortex shape that's most dramatic at the entry/exit points.
+      const pinch  = 1 - Math.sin(phase * Math.PI) * 0.18;
+      const baseR  = 170 + Math.random() * 380;
+      const r      = baseR * pinch;
 
-      pos[i*3] = bX[i]; pos[i*3+1] = bY[i]; pos[i*3+2] = bZ[i];
+      sBX[i] = Math.cos(ang) * r;
+      // Z arranges along the helix — particles wrap around in 3D, not just X-Y
+      sBZ[i] = -260 + Math.sin(ang) * r * 0.55 + (Math.random() - 0.5) * 380;
+      sBY[i] = phase * SY[4] + (Math.random() - 0.5) * h * 0.32;
+
+      sFX[i] = 0.08 + Math.random() * 0.14;
+      sFY[i] = 0.06 + Math.random() * 0.11;
+      sFZ[i] = 0.03 + Math.random() * 0.06;
+      sPX[i] = Math.random() * TWO_PI;
+      sPY[i] = Math.random() * TWO_PI;
+      sPZ[i] = Math.random() * TWO_PI;
+
+      sSize[i] = 3 + Math.random() * 6;          // 3-9 world units
+      sGlow[i] = 0;
+
+      sPos[i*3] = sBX[i]; sPos[i*3+1] = sBY[i]; sPos[i*3+2] = sBZ[i];
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const mat = new THREE.PointsMaterial({
-      color:           0xe8e4de,       // warm ivory — matches --fg: #ede9e3
-      size:            2.0,
-      transparent:     true,
-      opacity:         0.15,           // very subtle — barely there, editorial starfield
-      sizeAttenuation: false,
-      depthWrite:      false,
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+    starGeo.setAttribute('aSize',    new THREE.BufferAttribute(sSize, 1));
+    starGeo.setAttribute('aGlow',    new THREE.BufferAttribute(sGlow, 1));
+
+    // ── Custom ShaderMaterial — soft circular points with glow halo ────────────
+    // Vertex shader: applies sizeAttenuation manually + glow-expanded size.
+    // Fragment shader: circular falloff + glow lerp + manual fog integration.
+    // AdditiveBlending: glowing particles add light (magical), non-glowing
+    // particles use their alpha normally.
+    const starMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uColor:     { value: new THREE.Color(0xede9e3) },
+        uGlowCol:   { value: new THREE.Color(0xfff8e8) },
+        uFogColor:  { value: new THREE.Color(0x070608) },
+        uFogDens:   { value: 0.00018 },
+        uPixelR:    { value: dpr },
+      },
+      vertexShader: /* glsl */ `
+        attribute float aSize;
+        attribute float aGlow;
+        varying float vGlow;
+        varying float vFogD;
+        uniform float uPixelR;
+        void main() {
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          // sizeAttenuation: world-unit size shrinks with depth.
+          // Glow expands the visual point up to +80% (collision impact).
+          // max(-mv.z, 1.0) prevents any division-by-zero compilation or driver crash bugs!
+          gl_PointSize = aSize * (1.0 + aGlow * 0.8) * uPixelR * 300.0 / max(-mv.z, 1.0);
+          gl_Position  = projectionMatrix * mv;
+          vGlow = aGlow;
+          vFogD = -mv.z;
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uColor;
+        uniform vec3 uGlowCol;
+        uniform vec3 uFogColor;
+        uniform float uFogDens;
+        varying float vGlow;
+        varying float vFogD;
+        void main() {
+          vec2 uv = gl_PointCoord - 0.5;
+          float dist = length(uv);
+          if (dist > 0.5) discard;
+          // Soft base falloff (gentle blur, low alpha) - base opacity increased to 0.85 for premium luminosity
+          float baseA = pow(smoothstep(0.5, 0.0, dist), 1.6) * 0.85;
+          // Glow has a bright tight core + softer halo
+          float core  = smoothstep(0.5, 0.06, dist);
+          float halo  = smoothstep(0.5, 0.22, dist) * 0.55;
+          float glowA = max(core, halo);
+          float alpha = mix(baseA, glowA, vGlow);
+          // Color lerps toward warm white when glowing
+          vec3 col = mix(uColor, uGlowCol, vGlow * 0.85);
+          // Fog: highly robust, linear exponential fog to prevent squared-value explosion
+          float fogF = 1.0 - exp(-0.00015 * vFogD);
+          col = mix(col, uFogColor, clamp(fogF, 0.0, 1.0));
+          gl_FragColor = vec4(col, alpha);
+        }
+      `,
+      transparent: true,
+      depthWrite:  false,
+      blending:    THREE.AdditiveBlending,    // magical bloom on glow
     });
-    scene.add(new THREE.Points(geo, mat));
+    scene.add(new THREE.Points(starGeo, starMat));
 
-    const pathGeo = new THREE.BufferGeometry().setFromPoints(camCurve.getPoints(240));
-    const pathMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.006 });
-    scene.add(new THREE.Line(pathGeo, pathMat));
-
-    // ── Per-particle velocity-physics repulsion ────────────────────────────
-    // Velocity model: each particle accumulates an impulse when the mouse enters
-    // its radius. Impulse is proportional to proximity × mouse speed.
-    // Exponential DRAG per frame causes the velocity to decay naturally —
-    // particles spring away, decelerate, and drift back to their sinusoidal path.
-    //
-    // REPULSE_R:  much smaller influence radius (world units) — only nearby particles react
-    // REPULSE_F:  base impulse factor per frame inside radius
-    // DRAG:       velocity multiplier per frame (0.89 → ~50% speed in 6 frames)
-    // tanHFov: precomputed tan(FOV/2) for unprojecting mouse NDC → world X/Y at particle depth
-    const REPULSE_R = 80;
-    const REPULSE_F = 1.6;
-    const DRAG      = 0.89;
-    const tanHFov   = Math.tan(29 * Math.PI / 180); // camera FOV=58 → half=29°
-
-    const vX = new Float32Array(PC); // per-particle X velocity
-    const vY = new Float32Array(PC); // per-particle Y velocity
+    // ──────────────────────────────────────────────────────────────────────────
+    // BILLIARD PHYSICS — individual collision response with glow trigger
+    // ──────────────────────────────────────────────────────────────────────────
+    // REPULSE_R: world-unit radius — the "cue ball" size around the cursor.
+    // REPULSE_F: impulse strength when at distance 0; scales linearly down to 0
+    //            at REPULSE_R. Mouse speed multiplies this for fast-swipe punch.
+    // DRAG:      per-frame velocity multiplier — particles slow exponentially
+    //            and drift back to their natural helix path.
+    // GLOW_*:    glow attribute is set on impact, decays each frame.
+    const REPULSE_R   = 105;     // collision sphere radius
+    const REPULSE_F   = 2.4;     // base impulse strength
+    const DRAG        = 0.875;   // velocity decay per frame
+    const GLOW_HIT    = 0.85;    // glow added per direct hit
+    const GLOW_DECAY  = 0.93;    // glow attribute decay per frame
+    const tanHFov     = Math.tan(32.5 * Math.PI / 180);
 
     let mNX = 0, mNY = 0, smX = 0, smY = 0;
     let prevMX = 0, prevMY = 0, mSpeed = 0;
     const onMouseMove = (e: MouseEvent) => {
       const nx = (e.clientX / w - 0.5) * 2;
       const ny = -((e.clientY / h) - 0.5) * 2;
-      mSpeed = Math.sqrt((nx - prevMX) ** 2 + (ny - prevMY) ** 2);
+      mSpeed = Math.min(Math.sqrt((nx - prevMX) ** 2 + (ny - prevMY) ** 2), 0.12);
       prevMX = mNX; prevMY = mNY;
       mNX = nx; mNY = ny;
     };
 
-    const sCam = new THREE.Vector3(0, 0, 600);
+    const sCam = new THREE.Vector3(0, 0, 900);
     const sLk  = new THREE.Vector3(0, 0, 0);
     const tCam = new THREE.Vector3(), tLk = new THREE.Vector3();
     const upV  = new THREE.Vector3(0, 1, 0);
     let sFrac = 0, time = 0;
 
-    const animate = () => {
+    // ── Beat-pulse system — UI section change emits a glow wave ────────────────
+    // Triggered from initJourney's fireBeat. A pulse lasts ~0.7s, with strength
+    // attenuated by distance from the camera's current Y. Stars near the camera
+    // light up brightest; far ones get a softer touch. Visually: a shimmer
+    // ripples through the vortex right when a section enters.
+    const PULSE_DURATION = 0.7;
+    const PULSE_REACH    = 1.0;          // multiples of viewport h
+    let pulseStart       = -10;          // last beat-change time
+    (window as any).__beatPulse = () => { pulseStart = time; };
+
+    // 30fps cap — heavy math 30Hz, RAF 60Hz for scheduling smoothness
+    let lastRender = 0;
+    const FRAME_MS = 1000 / 30;
+
+    const animate = (now: number) => {
       if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
-      time += 0.007;
+      if (now - lastRender < FRAME_MS) return;
+      lastRender = now;
+      time += 0.014;
       smX += (mNX - smX) * 0.036;
       smY += (mNY - smY) * 0.036;
 
-      const rawF = (window as any).__journeyProgress?.() ?? 0;
-      // Camera fraction: full path by beat 6 (6/7 progress), hold at footer (beat 7)
+      const rawF    = (window as any).__journeyProgress?.() ?? 0;
       const camFrac = Math.min(rawF * 7 / 6, 1.0);
-      sFrac += (camFrac - sFrac) * 0.038;
+      sFrac += (camFrac - sFrac) * 0.032;
 
       camCurve.getPoint(Math.min(sFrac, 0.9999), tCam);
       lkCurve.getPoint( Math.min(sFrac, 0.9999), tLk);
-      tCam.x += smX * 7; tCam.y += smY * 3.5;
-      sCam.lerp(tCam, 0.032); sLk.lerp(tLk, 0.032);
+      tCam.x += smX * 6; tCam.y += smY * 3;
+      sCam.lerp(tCam, 0.030); sLk.lerp(tLk, 0.030);
       camera.position.copy(sCam);
-      upV.set(-Math.sin(sFrac * Math.PI * 7) * 0.028, 1, 0).normalize();
-      camera.up.lerp(upV, 0.028);
+      // Slight cam roll based on spiral angle — adds organic banking feel
+      const roll = Math.cos(sFrac * TWO_PI * CAM_TURNS) * 0.032;
+      upV.set(roll, 1, 0).normalize();
+      camera.up.lerp(upV, 0.025);
       camera.lookAt(sLk);
 
-      const p = geo.attributes['position'].array as Float32Array;
       const aspect = w / h;
-      for (let i = 0; i < PC; i++) {
+
+      // Active pulse intensity for this frame (0 if no recent beat change)
+      const pulseElapsed = time - pulseStart;
+      const pulseActive  = pulseElapsed < PULSE_DURATION;
+      const pulseStrength = pulseActive
+        ? Math.pow(1 - pulseElapsed / PULSE_DURATION, 1.6)  // ease-out cubic-ish
+        : 0;
+      const pulseReachW  = h * PULSE_REACH;
+
+      // ── HELIX STARS: drift + billiard physics + glow per particle ─────────
+      const sp = starGeo.attributes['position'].array as Float32Array;
+      const sg = starGeo.attributes['aGlow'].array as Float32Array;
+      let glowDirty = false;
+
+      for (let i = 0; i < STAR_PC; i++) {
         const ix = i*3, iy = ix+1, iz = ix+2;
+        // Natural sinusoidal drift around base helix position
+        const natX = sBX[i] + Math.sin(time * sFX[i] + sPX[i]) * 22;
+        const natY = sBY[i] + Math.sin(time * sFY[i] + sPY[i]) * 14;
+        const natZ = sBZ[i] + Math.sin(time * sFZ[i] + sPZ[i]) * 11;
 
-        // Natural sinusoidal drift position (base path)
-        const natX = bX[i] + Math.sin(time * fX[i] + pX[i]) * 20;
-        const natY = bY[i] + Math.sin(time * fY[i] + pY[i]) * 13;
-        const natZ = bZ[i] + Math.sin(time * fZ[i] + pZ[i]) * 10;
-
-        // ── Velocity-physics repulsion ─────────────────────────────────────
-        // Unproject mouse NDC → world coords at this particle's depth plane.
-        // Apply an impulse when inside REPULSE_R. Impulse scales with
-        // proximity AND current mouse speed → fast swipes = big bounce,
-        // slow hover = gentle nudge.  DRAG decays velocity each frame so
-        // particles decelerate naturally and drift back to their path.
+        // ── Mouse collision detection ────────────────────────────────────
+        // Unproject mouse NDC → world coords at this particle's Z plane.
+        // dist² < R² → collision → impulse + glow.
         const dz = sCam.z - natZ;
         if (dz > 0) {
           const mwx = sCam.x + smX * dz * tanHFov * aspect;
           const mwy = sCam.y + smY * dz * tanHFov;
-          const dx  = natX - mwx;
-          const dy2 = natY - mwy;
-          const dist2 = dx*dx + dy2*dy2;
-          if (dist2 < REPULSE_R * REPULSE_R && dist2 > 0.25) {
-            const dist    = Math.sqrt(dist2);
-            const impulse = (1 - dist / REPULSE_R) * REPULSE_F * (1 + mSpeed * 9);
-            vX[i] += (dx  / dist) * impulse;
-            vY[i] += (dy2 / dist) * impulse;
+          const dx  = natX - mwx, dy2 = natY - mwy;
+          const d2  = dx*dx + dy2*dy2;
+          if (d2 < REPULSE_R * REPULSE_R && d2 > 0.25) {
+            const d   = Math.sqrt(d2);
+            const prox = 1 - d / REPULSE_R;
+            const imp  = prox * REPULSE_F * (1 + mSpeed * 14);
+            // Bounce direction: away from cursor (3D — XY plane at particle depth)
+            svX[i] += (dx  / d) * imp;
+            svY[i] += (dy2 / d) * imp;
+            // Tiny Z impulse: particle is also pushed slightly forward/back
+            svZ[i] += (Math.sign(dz - 50) || 1) * prox * 0.6;
+            // GLOW: set on collision, proportional to closeness + mouse speed.
+            // Brighter on direct hits and fast swipes.
+            sg[i] = Math.min(1.0, sg[i] + prox * (GLOW_HIT + mSpeed * 6));
+            glowDirty = true;
           }
         }
-        // Exponential drag — space-like deceleration, returns to natural path
-        vX[i] *= DRAG;
-        vY[i] *= DRAG;
 
-        p[ix] = natX + vX[i];
-        p[iy] = natY + vY[i];
-        p[iz] = natZ;
+        // Exponential drag — particle bounces back, decelerates, returns to path
+        svX[i] *= DRAG; svY[i] *= DRAG; svZ[i] *= DRAG;
 
-        // Y wrap — keeps particle field centred on camera as we travel down
-        const dy = p[iy] - sCam.y;
-        if (dy >  totalY * 0.52) { p[iy] -= totalY; bY[i] -= totalY; }
-        if (dy < -totalY * 0.52) { p[iy] += totalY; bY[i] += totalY; }
+        sp[ix] = natX + svX[i];
+        sp[iy] = natY + svY[i];
+        sp[iz] = natZ + svZ[i];
+
+        // Beat pulse: particles near camera Y get a soft glow lift,
+        // creating the harmony between section change and the vortex
+        if (pulseActive) {
+          const dYcam = Math.abs(natY - sCam.y);
+          if (dYcam < pulseReachW) {
+            const dProx = 1 - dYcam / pulseReachW;
+            sg[i] = Math.min(1.0, sg[i] + pulseStrength * dProx * 0.22);
+            glowDirty = true;
+          }
+        }
+
+        // Glow decay — particles return to non-glowing over ~30 frames
+        if (sg[i] > 0.002) {
+          sg[i] *= GLOW_DECAY;
+          glowDirty = true;
+        } else if (sg[i] > 0) {
+          sg[i] = 0;
+          glowDirty = true;
+        }
+
+        // Y-wrap: keep helix infinitely centred on the camera as we descend
+        const dyW = sp[iy] - sCam.y;
+        if (dyW >  totalY * 0.52) { sp[iy] -= totalY; sBY[i] -= totalY; }
+        if (dyW < -totalY * 0.52) { sp[iy] += totalY; sBY[i] += totalY; }
       }
-      geo.attributes['position'].needsUpdate = true;
+      starGeo.attributes['position'].needsUpdate = true;
+      if (glowDirty) starGeo.attributes['aGlow'].needsUpdate = true;
+
+      // ── DUST: pure drift (no physics, atmospheric layer) ──────────────────
+      const dp = dustGeo.attributes['position'].array as Float32Array;
+      for (let i = 0; i < DUST_PC; i++) {
+        const ix = i*3, iy = ix+1;
+        dp[ix] = dBX[i] + Math.sin(time * dFX[i] + dPX[i]) * 16;
+        dp[iy] = dBY[i] + Math.sin(time * dFY[i] + dPY[i]) * 10;
+        const dyW = dp[iy] - sCam.y;
+        if (dyW >  totalY * 0.52) { dp[iy] -= totalY; dBY[i] -= totalY; }
+        if (dyW < -totalY * 0.52) { dp[iy] += totalY; dBY[i] += totalY; }
+      }
+      dustGeo.attributes['position'].needsUpdate = true;
+
       renderer.render(scene, camera);
     };
 
@@ -556,22 +836,72 @@ export class AppComponent implements OnInit, OnDestroy {
       w = window.innerWidth; h = window.innerHeight;
       camera.aspect = w / h; camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      starMat.uniforms['uPixelR'].value = renderer.getPixelRatio();
     };
-    const onVis = () => { if (!document.hidden && this.animId === 0) animate(); };
+    const onVis = () => { if (!document.hidden && this.animId === 0) animate(performance.now()); };
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('resize',   onResize);
     document.addEventListener('visibilitychange', onVis);
-    animate();
+    animate(performance.now());
 
     this.threeCleanup = () => {
       cancelAnimationFrame(this.animId);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize',   onResize);
       document.removeEventListener('visibilitychange', onVis);
-      renderer.dispose(); geo.dispose(); mat.dispose();
-      pathGeo.dispose(); pathMat.dispose();
+      delete (window as any).__beatPulse;
+      renderer.dispose();
+      dustGeo.dispose();  dustMat.dispose();
+      starGeo.dispose();  starMat.dispose();
     };
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // 3D TILT — premium card behaviour on skill items + project cards
+  // Mouse position drives rotateX/rotateY around the card centre. Damped via
+  // GSAP power2.out for smooth follow; elastic ease-out on leave for "snap back"
+  // feel. Max ±9° tilt with 700px perspective = subtle but distinctly 3D.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private initElementTilt() {
+    const attachTilt = () => {
+      const targets = document.querySelectorAll<HTMLElement>('.skill-item, .project-info');
+      targets.forEach((el) => {
+        if (el.dataset['tiltBound']) return;          // idempotent — don't double-bind
+        el.dataset['tiltBound'] = '1';
+        let rect: DOMRect | null = null;
+
+        el.addEventListener('mouseenter', () => { rect = el.getBoundingClientRect(); });
+        el.addEventListener('mousemove', (e) => {
+          if (!rect) rect = el.getBoundingClientRect();
+          const px = ((e.clientX - rect.left) / rect.width  - 0.5) * 2;   // -1 .. 1
+          const py = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
+          gsap.to(el, {
+            rotateY: px *  9,
+            rotateX: py * -9,
+            transformPerspective: 700,
+            transformOrigin: '50% 50%',
+            duration: 0.35,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          });
+        });
+        el.addEventListener('mouseleave', () => {
+          rect = null;
+          gsap.to(el, {
+            rotateX: 0, rotateY: 0,
+            duration: 0.85,
+            ease: 'elastic.out(1, 0.55)',
+            overwrite: 'auto',
+          });
+        });
+      });
+    };
+
+    // Skill items render via @for from a service — wait for the DOM to settle.
+    // 950ms aligns with the custom cursor's spotlight-binding delay.
+    setTimeout(attachTilt, 950);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -640,6 +970,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.threeCleanup?.();
     this.cursorCleanup?.();
     this.scrollCleanup?.();
+    this.lenis?.destroy();
     ScrollTrigger.getAll().forEach(t => t.kill());
     gsap.killTweensOf(window);
   }
