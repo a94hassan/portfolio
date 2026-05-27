@@ -14,10 +14,6 @@ export class AboveTheFoldComponent implements AfterViewInit {
   translate = inject(TranslationService);
   private el = inject(ElementRef);
 
-  get isGerman(): boolean {
-    return localStorage.getItem('selectedLanguage') === 'de';
-  }
-
   ngAfterViewInit() {
     this.initMagneticButton();
     this.initPhotoTilt();
