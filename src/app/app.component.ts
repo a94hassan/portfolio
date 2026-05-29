@@ -533,11 +533,13 @@ export class AppComponent implements OnInit, OnDestroy {
     // ── Layer 1: Background dust (atmosphere, no helix structure) ─────────────
     // Wide cloud, very deep. More particles + larger spread for full-page coverage.
     // Power-distributed Z: ~40% near-mid (-300 to -1200), ~60% distant (-1200 to -5000).
-    const DUST_PC = 240;
+    const DUST_PC = 200;
     const dPos = new Float32Array(DUST_PC * 3);
     const dBX  = new Float32Array(DUST_PC), dBY = new Float32Array(DUST_PC);
     const dFX  = new Float32Array(DUST_PC), dFY = new Float32Array(DUST_PC);
     const dPX  = new Float32Array(DUST_PC), dPY = new Float32Array(DUST_PC);
+    // Directional drift — each dust particle has a slow constant flow direction
+    const dVX  = new Float32Array(DUST_PC), dVY = new Float32Array(DUST_PC);
 
     for (let i = 0; i < DUST_PC; i++) {
       const ang = GA * i;
@@ -548,11 +550,13 @@ export class AppComponent implements OnInit, OnDestroy {
       dBY[i] = (i / DUST_PC) * SY[4] + (Math.random() - 0.5) * h * 0.90;
       // Power-law Z distribution: skewed toward far distances for realistic depth fog
       const zPow = Math.pow(Math.random(), 0.45);   // 0=near, 1=far
-      const z    = -300 - zPow * 4700;              // -300 near-mid → -5000 deep
+      const z    = -380 - zPow * 4600;              // -380 near-mid → -4980 deep (pushed further)
       dFX[i] = 0.05 + Math.random() * 0.10;
       dFY[i] = 0.04 + Math.random() * 0.08;
       dPX[i] = Math.random() * TWO_PI;
       dPY[i] = Math.random() * TWO_PI;
+      dVX[i] = (Math.random() - 0.5) * 0.14;   // slow lateral drift
+      dVY[i] = (Math.random() - 0.5) * 0.09;
       dPos[i*3] = dBX[i]; dPos[i*3+1] = dBY[i]; dPos[i*3+2] = z;
     }
     const dustGeo = new THREE.BufferGeometry();
@@ -692,21 +696,25 @@ export class AppComponent implements OnInit, OnDestroy {
     // Unlike the helix (fixed world coords + Y-wrap), this cloud tracks the camera.
     // Result: particles are ALWAYS uniformly present across every section — no gaps.
     // Motion is omnidirectional sinusoidal drift, different from the spiral helix flow.
-    const AMB_PC = 200;
+    const AMB_PC = 120;   // reduced — fewer, more spaced ambient particles
     const ambPos = new Float32Array(AMB_PC * 3);
     const aFX = new Float32Array(AMB_PC), aFY = new Float32Array(AMB_PC);
     const aPX = new Float32Array(AMB_PC), aPY = new Float32Array(AMB_PC);
-    const AMB_HX = 750, AMB_HY = 500;   // camera-relative half-extents
+    // Directional drift velocities — create genuine flow, not just oscillation
+    const aVX = new Float32Array(AMB_PC), aVY = new Float32Array(AMB_PC);
+    const AMB_HX = 720, AMB_HY = 480;   // camera-relative half-extents
 
     for (let i = 0; i < AMB_PC; i++) {
       ambPos[i*3]   = (Math.random() - 0.5) * AMB_HX * 2;
       ambPos[i*3+1] = (Math.random() - 0.5) * AMB_HY * 2;
-      // Z: power-distributed -80 to -680 for varied depth layers
-      ambPos[i*3+2] = -80 - Math.pow(Math.random(), 0.55) * 600;
+      // Z: pushed further from camera — no particles within arm's reach
+      ambPos[i*3+2] = -170 - Math.pow(Math.random(), 0.55) * 760;   // -170 to -930
       aFX[i] = 0.04 + Math.random() * 0.09;
       aFY[i] = 0.03 + Math.random() * 0.07;
       aPX[i] = Math.random() * TWO_PI;
       aPY[i] = Math.random() * TWO_PI;
+      aVX[i] = (Math.random() - 0.5) * 0.28;   // slow constant drift direction
+      aVY[i] = (Math.random() - 0.5) * 0.20;
     }
 
     const ambGeo = new THREE.BufferGeometry();
@@ -875,25 +883,33 @@ export class AppComponent implements OnInit, OnDestroy {
       starGeo.attributes['position'].needsUpdate = true;
       if (glowDirty) starGeo.attributes['aGlow'].needsUpdate = true;
 
-      // ── DUST: pure drift (no physics, atmospheric layer) ──────────────────
+      // ── DUST: directional drift + atmospheric oscillation ─────────────────
       const dp = dustGeo.attributes['position'].array as Float32Array;
       for (let i = 0; i < DUST_PC; i++) {
         const ix = i*3, iy = ix+1;
+        // Advance base position by directional drift each frame → genuine flow
+        dBX[i] += dVX[i];
+        dBY[i] += dVY[i];
         dp[ix] = dBX[i] + Math.sin(time * dFX[i] + dPX[i]) * 16;
         dp[iy] = dBY[i] + Math.sin(time * dFY[i] + dPY[i]) * 10;
+        // X-wrap — keep drifting particles visible
+        const dxW = dBX[i] - sCam.x;
+        if (dxW >  2400) { dBX[i] -= 4800; }
+        if (dxW < -2400) { dBX[i] += 4800; }
         const dyW = dp[iy] - sCam.y;
         if (dyW >  totalY * 0.52) { dp[iy] -= totalY; dBY[i] -= totalY; }
         if (dyW < -totalY * 0.52) { dp[iy] += totalY; dBY[i] += totalY; }
       }
       dustGeo.attributes['position'].needsUpdate = true;
 
-      // ── AMBIENT CLOUD: omnidirectional drift + camera-relative wrap ────────
-      // Wrap ensures uniform presence in every section — never gaps.
+      // ── AMBIENT CLOUD: directional drift + oscillation + camera-relative wrap
+      // Each particle has a fixed drift direction (aVX/aVY) so it visibly flows,
+      // plus a sin oscillation for organic variation. Wrap keeps coverage uniform.
       const ap = ambGeo.attributes['position'].array as Float32Array;
       for (let i = 0; i < AMB_PC; i++) {
         const ix = i*3, iy = ix+1;
-        ap[ix] += Math.sin(time * aFX[i] + aPX[i]) * 0.10;
-        ap[iy] += Math.cos(time * aFY[i] + aPY[i]) * 0.08;
+        ap[ix] += aVX[i] + Math.sin(time * aFX[i] + aPX[i]) * 0.36;
+        ap[iy] += aVY[i] + Math.cos(time * aFY[i] + aPY[i]) * 0.28;
         const relX = ap[ix] - sCam.x;
         const relY = ap[iy] - sCam.y;
         if (relX >  AMB_HX) ap[ix] -= AMB_HX * 2;

@@ -63,7 +63,7 @@ html.light #cursor-dot {
   span {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 1);
+    background: rgba(188, 190, 196, 1);   // warm silver — not stark white
 
     // Each blob: different size, position, blur radius, animation timing
     &:nth-child(1) {
@@ -111,9 +111,9 @@ html.light #cursor-dot {
   }
 }
 
-// Light mode: dark blobs — same sizes, positions, blur, slightly more opacity for visibility
+// Light mode: warm dark blobs — not pure black, warmer tone
 html.light #bokeh-layer span {
-  background: rgba(0, 0, 0, 1);
+  background: rgba(72, 66, 58, 1);   // warm dark brown — not stark black
 
   &:nth-child(1) { opacity: 0.040; }
   &:nth-child(2) { opacity: 0.035; }

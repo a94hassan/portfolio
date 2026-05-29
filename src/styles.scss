@@ -46,10 +46,10 @@
   --img-filter-dark: var(--img-brightness-dark) var(--img-contrast-dark) var(--img-saturate-dark);
 
   // ── THREE.JS Particle Colors ────────────────────────────────────────────
-  // Dark mode: warm white with slight blue tint for depth
-  --particle-color: #ede9e3;  // rgb(237, 233, 227)
-  --particle-glow: #fff8e8;   // warm white glow
-  --particle-opacity: 0.12;   // dust layer opacity (material-level)
+  // Dark mode: cool neutral silver — softer than stark white, more atmospheric
+  --particle-color: #a6a8ac;  // neutral silver-grey
+  --particle-glow: #c2c4c8;   // lighter silver for glow halo
+  --particle-opacity: 0.11;   // dust layer opacity (material-level)
   --particle-size: 2.6;       // dust layer size
   --particle-fog: #070608;    // fog color matches --bg
 
@@ -169,12 +169,11 @@ html.light {
 
   // ── THREE.JS Particle Colors (Light Mode) ──────────────────────────────
   // Light mode uses NormalBlending (not Additive) — blending switch in JS.
-  // Warm mid-grey: enough contrast against ivory #f6f4f1 (~2.2:1 contrast ratio).
-  // AdditiveBlending on a bright bg adds nothing visible; NormalBlending + grey = clear.
-  --particle-color: #888582;
-  --particle-glow: #4a4845;
-  --particle-opacity: 0.14;    // slightly higher — compensates for Normal vs Additive
-  --particle-size: 2.2;
+  // Warm neutral mid-grey: visible against ivory but softer than stark dark grey.
+  --particle-color: #8a8884;
+  --particle-glow: #5c5a56;
+  --particle-opacity: 0.15;    // slightly higher — compensates for Normal vs Additive
+  --particle-size: 2.0;
   --particle-fog: #f6f4f1;     // fog color matches --bg (ivory)
 }
 
