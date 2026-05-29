@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="14" fill="#4A90D9"/>
+  <text x="64" y="52" text-anchor="middle" font-family="monospace" font-weight="700" font-size="22" fill="#fff">REST</text>
+  <text x="64" y="80" text-anchor="middle" font-family="monospace" font-weight="700" font-size="22" fill="#fff">API</text>
+  <line x1="22" y1="90" x2="106" y2="90" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+  <text x="64" y="108" text-anchor="middle" font-family="monospace" font-size="13" fill="rgba(255,255,255,0.7)">HTTP</text>
+</svg>
