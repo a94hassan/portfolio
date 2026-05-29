@@ -168,12 +168,13 @@ html.light {
   --img-filter-light: var(--img-brightness-light) var(--img-contrast-light) var(--img-saturate-light);
 
   // ── THREE.JS Particle Colors (Light Mode) ──────────────────────────────
-  // Light mode: pure white — brighter than the ivory --bg, clearly visible.
-  // Same achromatic approach as dark mode (warm white on dark → pure white on light).
-  --particle-color: #ffffff;
-  --particle-glow: #ffffff;
-  --particle-opacity: 0.09;    // dust layer opacity (material-level)
-  --particle-size: 2.2;        // slightly smaller for delicacy
+  // Light mode uses NormalBlending (not Additive) — blending switch in JS.
+  // Warm mid-grey: enough contrast against ivory #f6f4f1 (~2.2:1 contrast ratio).
+  // AdditiveBlending on a bright bg adds nothing visible; NormalBlending + grey = clear.
+  --particle-color: #888582;
+  --particle-glow: #4a4845;
+  --particle-opacity: 0.14;    // slightly higher — compensates for Normal vs Additive
+  --particle-size: 2.2;
   --particle-fog: #f6f4f1;     // fog color matches --bg (ivory)
 }
 

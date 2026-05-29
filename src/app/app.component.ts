@@ -632,7 +632,7 @@ export class AppComponent implements OnInit, OnDestroy {
       uniforms: {
         uColor:     { value: new THREE.Color(particleColorStr) },
         uGlowCol:   { value: new THREE.Color(particleGlowStr) },
-        uFogColor:  { value: new THREE.Color(0x070608) },
+        uFogColor:  { value: new THREE.Color(particleFogStr) },
         uFogDens:   { value: 0.00018 },
         uPixelR:    { value: dpr },
       },
@@ -683,7 +683,45 @@ export class AppComponent implements OnInit, OnDestroy {
       depthWrite:  false,
       blending:    THREE.AdditiveBlending,    // magical bloom on glow
     });
+    // Initial blending: light mode can't use AdditiveBlending (adds nothing on bright bg)
+    const isInitLight = document.documentElement.classList.contains('light');
+    if (isInitLight) { starMat.blending = THREE.NormalBlending; starMat.needsUpdate = true; }
     scene.add(new THREE.Points(starGeo, starMat));
+
+    // ── Layer 0: Ambient camera-following cloud ────────────────────────────────
+    // Unlike the helix (fixed world coords + Y-wrap), this cloud tracks the camera.
+    // Result: particles are ALWAYS uniformly present across every section — no gaps.
+    // Motion is omnidirectional sinusoidal drift, different from the spiral helix flow.
+    const AMB_PC = 200;
+    const ambPos = new Float32Array(AMB_PC * 3);
+    const aFX = new Float32Array(AMB_PC), aFY = new Float32Array(AMB_PC);
+    const aPX = new Float32Array(AMB_PC), aPY = new Float32Array(AMB_PC);
+    const AMB_HX = 750, AMB_HY = 500;   // camera-relative half-extents
+
+    for (let i = 0; i < AMB_PC; i++) {
+      ambPos[i*3]   = (Math.random() - 0.5) * AMB_HX * 2;
+      ambPos[i*3+1] = (Math.random() - 0.5) * AMB_HY * 2;
+      // Z: power-distributed -80 to -680 for varied depth layers
+      ambPos[i*3+2] = -80 - Math.pow(Math.random(), 0.55) * 600;
+      aFX[i] = 0.04 + Math.random() * 0.09;
+      aFY[i] = 0.03 + Math.random() * 0.07;
+      aPX[i] = Math.random() * TWO_PI;
+      aPY[i] = Math.random() * TWO_PI;
+    }
+
+    const ambGeo = new THREE.BufferGeometry();
+    ambGeo.setAttribute('position', new THREE.BufferAttribute(ambPos, 3));
+    const ambMat = new THREE.PointsMaterial({
+      color:          new THREE.Color(particleColorStr),
+      size:           1.8,
+      sizeAttenuation: true,
+      transparent:    true,
+      opacity:        0.08,
+      depthWrite:     false,
+      fog:            true,
+      blending:       isInitLight ? THREE.NormalBlending : THREE.AdditiveBlending,
+    });
+    scene.add(new THREE.Points(ambGeo, ambMat));
 
     // ──────────────────────────────────────────────────────────────────────────
     // BILLIARD PHYSICS — individual collision response with glow trigger
@@ -849,6 +887,22 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       dustGeo.attributes['position'].needsUpdate = true;
 
+      // ── AMBIENT CLOUD: omnidirectional drift + camera-relative wrap ────────
+      // Wrap ensures uniform presence in every section — never gaps.
+      const ap = ambGeo.attributes['position'].array as Float32Array;
+      for (let i = 0; i < AMB_PC; i++) {
+        const ix = i*3, iy = ix+1;
+        ap[ix] += Math.sin(time * aFX[i] + aPX[i]) * 0.10;
+        ap[iy] += Math.cos(time * aFY[i] + aPY[i]) * 0.08;
+        const relX = ap[ix] - sCam.x;
+        const relY = ap[iy] - sCam.y;
+        if (relX >  AMB_HX) ap[ix] -= AMB_HX * 2;
+        if (relX < -AMB_HX) ap[ix] += AMB_HX * 2;
+        if (relY >  AMB_HY) ap[iy] -= AMB_HY * 2;
+        if (relY < -AMB_HY) ap[iy] += AMB_HY * 2;
+      }
+      ambGeo.attributes['position'].needsUpdate = true;
+
       renderer.render(scene, camera);
     };
 
@@ -862,19 +916,31 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Live theme-colour update — fires when user toggles dark/light
     const updateThemeColors = () => {
+      const isLight = document.documentElement.classList.contains('light');
       const col  = getCSSColor('--particle-color', '#ede9e3');
       const glow = getCSSColor('--particle-glow',  '#fff8e8');
       const fog  = getCSSColor('--particle-fog',   '#070608');
       const op   = getRootFloat('--particle-opacity', 0.12);
       const sz   = getRootFloat('--particle-size',    2.6);
+
       starMat.uniforms['uColor'].value.set(col);
       starMat.uniforms['uGlowCol'].value.set(glow);
       starMat.uniforms['uFogColor'].value.set(fog);
       (scene.fog as THREE.FogExp2).color.set(fog);
+
+      // Blending: AdditiveBlending = glowing stars on dark bg (magical).
+      // NormalBlending = opaque specs on bright bg (required for visibility on light mode).
+      starMat.blending = isLight ? THREE.NormalBlending : THREE.AdditiveBlending;
+      starMat.needsUpdate = true;
+
       dustMat.color.set(col);
       dustMat.opacity = op;
       dustMat.size    = sz;
       dustMat.needsUpdate = true;
+
+      ambMat.color.set(col);
+      ambMat.blending = isLight ? THREE.NormalBlending : THREE.AdditiveBlending;
+      ambMat.needsUpdate = true;
     };
 
     window.addEventListener('mousemove', onMouseMove);
@@ -893,6 +959,7 @@ export class AppComponent implements OnInit, OnDestroy {
       renderer.dispose();
       dustGeo.dispose();  dustMat.dispose();
       starGeo.dispose();  starMat.dispose();
+      ambGeo.dispose();   ambMat.dispose();
     };
   }
 
