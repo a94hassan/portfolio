@@ -15,11 +15,11 @@ nav {
     border: 1px solid var(--glass-border);
     border-radius: var(--r-pill);
     padding: 4px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: var(--glass-blur-medium);
+    -webkit-backdrop-filter: var(--glass-blur-medium);
   }
 
-  > a {
+  >a {
     display: none;
     position: relative;
     text-decoration: none;
@@ -45,7 +45,7 @@ nav {
   position: relative;
   width: max-content;
 
-  > div {
+  >div {
     @include flexBox($gap: 6px);
     padding: 7px 12px;
     border-radius: var(--r-pill);
@@ -75,7 +75,7 @@ nav {
       background: var(--glass-bg-hi) !important;
     }
 
-    > img {
+    >img {
       width: var(--icon-sm);
       height: var(--icon-sm);
       opacity: 0.7;
@@ -88,7 +88,7 @@ nav {
     }
   }
 
-  > ul {
+  >ul {
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
@@ -103,7 +103,7 @@ nav {
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
 
-    > li {
+    >li {
       @include flexBox($gap: 8px);
       padding: 8px 12px;
       border-radius: var(--r-sm);
@@ -125,7 +125,7 @@ nav {
         color: var(--fg);
       }
 
-      > img {
+      >img {
         width: var(--icon-sm);
         height: var(--icon-sm);
         border-radius: 2px;
@@ -154,7 +154,9 @@ nav {
     transform: scale(1.08);
   }
 
-  &:active { transform: scale(0.93); }
+  &:active {
+    transform: scale(0.93);
+  }
 
   svg {
     display: block;
@@ -167,7 +169,7 @@ nav {
 // ─── Mobile burger overlay ────────────────────────────────────────────────────
 
 :host {
-  > div {
+  >div {
     height: 100vh;
     height: 100svh;
     position: absolute;
@@ -183,10 +185,10 @@ nav {
     display: none;
     animation: slide 150ms forwards;
 
-    > div {
+    >div {
       @include flexBox($fd: column, $gap: 32px);
 
-      > a {
+      >a {
         text-decoration: none;
         font-size: 13px;
         font-weight: 500;
@@ -195,11 +197,15 @@ nav {
         color: var(--fg-40);
         transition: color 0.22s ease;
 
-        &:hover { color: var(--fg); }
+        &:hover {
+          color: var(--fg);
+        }
       }
     }
 
-    &.visible { display: flex; }
+    &.visible {
+      display: flex;
+    }
   }
 }
 
@@ -212,7 +218,9 @@ nav {
   cursor: pointer;
   display: block;
 
-  @media (min-width: 768px) { display: none; }
+  @media (min-width: 768px) {
+    display: none;
+  }
 }
 
 .burger_menu span {
@@ -224,22 +232,38 @@ nav {
   height: 1.5px;
 }
 
-.burger_menu span:nth-child(1) { top: 0; }
-.burger_menu span:nth-child(2) { top: 10px; width: 65%; }
-.burger_menu span:nth-child(3) { bottom: 0; }
+.burger_menu span:nth-child(1) {
+  top: 0;
+}
 
-.burger_menu:not(.open):hover span     { background-color: var(--fg); }
-.burger_menu:not(.open):hover span:nth-child(2) { width: 100%; }
+.burger_menu span:nth-child(2) {
+  top: 10px;
+  width: 65%;
+}
+
+.burger_menu span:nth-child(3) {
+  bottom: 0;
+}
+
+.burger_menu:not(.open):hover span {
+  background-color: var(--fg);
+}
+
+.burger_menu:not(.open):hover span:nth-child(2) {
+  width: 100%;
+}
 
 .burger_menu.open span:nth-child(1) {
   transform: rotate(45deg);
   top: 10px;
   background-color: var(--fg);
 }
+
 .burger_menu.open span:nth-child(2) {
   opacity: 0;
   transform: translateX(-8px);
 }
+
 .burger_menu.open span:nth-child(3) {
   transform: rotate(-45deg);
   top: 10px;
@@ -247,5 +271,7 @@ nav {
 }
 
 @keyframes slide {
-  to { left: 0; }
+  to {
+    left: 0;
+  }
 }

@@ -122,8 +122,17 @@ section {
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1;   box-shadow: 0 0 0 0   rgba(93, 220, 138, 0.45); }
-  55%       { opacity: 0.7; box-shadow: 0 0 0 6px rgba(93, 220, 138, 0); }
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(93, 220, 138, 0.45);
+  }
+
+  55% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 6px rgba(93, 220, 138, 0);
+  }
 }
 
 // ── Name ─────────────────────────────────────────────────────────────────────
@@ -182,7 +191,9 @@ section {
   background: var(--fg-28);
   flex-shrink: 0;
 
-  @media (min-width: 1024px) { width: 32px; }
+  @media (min-width: 1024px) {
+    width: 32px;
+  }
 }
 
 .hero-role {
@@ -238,8 +249,13 @@ section {
 }
 
 .hero-cta {
-  a { text-decoration: none; }
-  button { @include button(); }
+  a {
+    text-decoration: none;
+  }
+
+  button {
+    @include button();
+  }
 }
 
 .hero-socials {
@@ -264,7 +280,10 @@ section {
   -webkit-backdrop-filter: blur(16px);
   transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 
-  svg { width: var(--icon-md); height: var(--icon-md); }
+  svg {
+    width: var(--icon-md);
+    height: var(--icon-md);
+  }
 
   &:hover {
     color: var(--fg);
@@ -327,17 +346,14 @@ section {
     inset: 0;
     pointer-events: none;
     z-index: 1;
-    background: radial-gradient(
-      ellipse 78% 78% at 50% 50%,
-      transparent 38%,
-      rgba(4, 4, 6, 0.50) 100%
-    );
+    background: radial-gradient(ellipse 78% 78% at 50% 50%,
+        transparent 38%,
+        rgba(4, 4, 6, 0.50) 100%);
+
     :host-context(html.light) & {
-      background: radial-gradient(
-        ellipse 78% 78% at 50% 50%,
-        transparent 42%,
-        rgba(200, 198, 194, 0.40) 100%
-      );
+      background: radial-gradient(ellipse 78% 78% at 50% 50%,
+          transparent 40%,
+          rgba(180, 160, 140, 0.28) 100%);
     }
   }
 }
@@ -349,7 +365,7 @@ section {
   // Mobile landscape: show face/upper body
   object-position: center 18%;
   display: block;
-  filter: brightness(1.02) contrast(1.04);
+  filter: var(--img-filter-dark);
 
   @media (min-width: 768px) {
     // Portrait: top-align to show face
@@ -357,12 +373,20 @@ section {
   }
 
   // Theme-conditional swap — light mode hides dark version & vice versa
-  &--light { display: none; }
-}
+  &--dark {
+    :host-context(html.light) & {
+      display: none;
+    }
+  }
 
-:host-context(html.light) {
-  .hero-photo--dark { display: none; }
-  .hero-photo--light { display: block; }
+  &--light {
+    display: none;
+    filter: var(--img-filter-light);
+
+    :host-context(html.light) & {
+      display: block;
+    }
+  }
 }
 
 // ─── Scroll indicator ─────────────────────────────────────────────────────────
@@ -378,7 +402,10 @@ section {
   z-index: 1;
   animation: nudge 2.8s ease infinite;
 
-  svg { width: var(--icon-xs); height: var(--icon-xs); }
+  svg {
+    width: var(--icon-xs);
+    height: var(--icon-xs);
+  }
 
   span {
     font-size: 9px;
@@ -389,6 +416,14 @@ section {
 }
 
 @keyframes nudge {
-  0%, 65%, 100% { transform: translateY(0); }
-  40%           { transform: translateY(7px); }
+
+  0%,
+  65%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(7px);
+  }
 }

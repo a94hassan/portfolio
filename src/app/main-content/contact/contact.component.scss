@@ -32,7 +32,7 @@ $invalid: #E61C40;
   transform: translate(-50%, -50%);
   z-index: 8;
   background-color: rgba(10, 10, 10, 0.88);
-  backdrop-filter: blur(12px);
+  backdrop-filter: var(--glass-blur-medium);
   display: none;
   align-items: center;
   justify-content: center;
@@ -44,7 +44,7 @@ $invalid: #E61C40;
     padding: 20px 32px;
     font-size: 16px;
     color: #e2e8f0;
-    backdrop-filter: blur(24px);
+    backdrop-filter: var(--glass-blur-strong);
     box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 24px 60px rgba(0, 0, 0, 0.35);
 
     @media (min-width: 768px) {
@@ -187,8 +187,8 @@ section {
   border: 1px solid var(--glass-border);
   border-radius: var(--r-xl);
   padding: 26px 20px;
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
   box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 20px 56px var(--shadow-form);
 
   @media (min-width: 768px) {

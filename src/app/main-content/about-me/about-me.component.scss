@@ -75,7 +75,7 @@ section {
 
 // Section-heading wrapper provides size + decorator via global @mixin sectionHeading()
 // Local override only: spacing below the heading
-.about-content > .section-heading {
+.about-content>.section-heading {
   margin-bottom: 22px;
 
   @media (min-width: 768px) {
@@ -122,7 +122,10 @@ section {
   flex-shrink: 0;
   color: var(--fg-40);
 
-  svg { width: var(--icon-sm); height: var(--icon-sm); }
+  svg {
+    width: var(--icon-sm);
+    height: var(--icon-sm);
+  }
 }
 
 // ─── Photo column ─────────────────────────────────────────────────────────────
@@ -155,14 +158,23 @@ section {
     object-fit: cover;
     object-position: center top;
     display: block;
-    filter: brightness(1.02) contrast(1.04);
   }
 
-  // Theme-conditional swap — only one image visible at a time
-  .about-photo-img--light { display: none; }
-  :host-context(html.light) & {
-    .about-photo-img--dark  { display: none; }
-    .about-photo-img--light { display: block; }
+  .about-photo-img--dark {
+    filter: var(--img-filter-dark);
+
+    :host-context(html.light) & {
+      display: none;
+    }
+  }
+
+  .about-photo-img--light {
+    display: none;
+    filter: var(--img-filter-light);
+
+    :host-context(html.light) & {
+      display: block;
+    }
   }
 
   &::after {
@@ -171,20 +183,17 @@ section {
     inset: 0;
     border-radius: 50%;
     // Vignette Fix: matches exact --bg dark tone (#070608)
-    background: radial-gradient(
-      ellipse 82% 82% at 50% 50%,
-      transparent 40%,
-      rgba(7, 6, 8, 0.20) 100%
-    );
+    background: radial-gradient(ellipse 82% 82% at 50% 50%,
+        transparent 40%,
+        rgba(7, 6, 8, 0.20) 100%);
     pointer-events: none;
     z-index: 1;
+
     :host-context(html.light) & {
-      // Light mode: matches --bg light tone (#f6f4f1)
-      background: radial-gradient(
-        ellipse 82% 82% at 50% 50%,
-        transparent 44%,
-        rgba(246, 244, 241, 0.25) 100%
-      );
+      // Light mode: warm vignette instead of cool grey
+      background: radial-gradient(ellipse 82% 82% at 50% 50%,
+          transparent 42%,
+          rgba(180, 160, 140, 0.15) 100%);
     }
   }
 }

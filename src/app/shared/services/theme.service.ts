@@ -17,5 +17,6 @@ export class ThemeService {
 
   private apply(): void {
     document.documentElement.classList.toggle('light', !this.isDark);
+    window.dispatchEvent(new CustomEvent('themeChange'));
   }
 }

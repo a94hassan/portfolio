@@ -445,10 +445,26 @@ export class AppComponent implements OnInit, OnDestroy {
 
     let w = window.innerWidth, h = window.innerHeight;
 
+    // Helper: Extract CSS variable color from computed root styles
+    const getCSSColor = (varName: string, fallback: string): string => {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+      return val || fallback;
+    };
+
+    // Get theme-aware particle colors from CSS variables
+    const getRootFloat = (v: string, fb: number) =>
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue(v).trim()) || fb;
+
+    const particleColorStr = getCSSColor('--particle-color', '#ede9e3');
+    const particleGlowStr  = getCSSColor('--particle-glow',  '#fff8e8');
+    const dustColorStr     = getCSSColor('--particle-color', '#ede9e3');
+    const particleFogStr   = getCSSColor('--particle-fog',   '#070608');
+    const dustOpacity      = getRootFloat('--particle-opacity', 0.12);
+    const dustSize         = getRootFloat('--particle-size',    2.6);
+
     const scene = new THREE.Scene();
     // Exponential fog: distant stars dissolve into the deep-space background.
-    // Strengthens the sense of true depth — near is crisp, far is mist.
-    scene.fog = new THREE.FogExp2(0x070608, 0.00018);
+    scene.fog = new THREE.FogExp2(new THREE.Color(particleFogStr).getHex(), 0.00018);
 
     const camera   = new THREE.PerspectiveCamera(65, w / h, 1, 6000);
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
@@ -517,7 +533,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // ── Layer 1: Background dust (atmosphere, no helix structure) ─────────────
     // Wide cloud, very deep. Adds spatial fill without competing visually
     // with the reactive helix layer.
-    const DUST_PC = 180;
+    const DUST_PC = 145;
     const dPos = new Float32Array(DUST_PC * 3);
     const dBX  = new Float32Array(DUST_PC), dBY = new Float32Array(DUST_PC);
     const dFX  = new Float32Array(DUST_PC), dFY = new Float32Array(DUST_PC);
@@ -538,8 +554,8 @@ export class AppComponent implements OnInit, OnDestroy {
     const dustGeo = new THREE.BufferGeometry();
     dustGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
     const dustMat = new THREE.PointsMaterial({
-      color: 0xb8b4ae, size: 2.6, sizeAttenuation: true,
-      transparent: true, opacity: 0.11, depthWrite: false, fog: true,
+      color: new THREE.Color(dustColorStr), size: dustSize, sizeAttenuation: true,
+      transparent: true, opacity: dustOpacity, depthWrite: false, fog: true,
     });
     scene.add(new THREE.Points(dustGeo, dustMat));
 
@@ -610,8 +626,8 @@ export class AppComponent implements OnInit, OnDestroy {
     // particles use their alpha normally.
     const starMat = new THREE.ShaderMaterial({
       uniforms: {
-        uColor:     { value: new THREE.Color(0xede9e3) },
-        uGlowCol:   { value: new THREE.Color(0xfff8e8) },
+        uColor:     { value: new THREE.Color(particleColorStr) },
+        uGlowCol:   { value: new THREE.Color(particleGlowStr) },
         uFogColor:  { value: new THREE.Color(0x070608) },
         uFogDens:   { value: 0.00018 },
         uPixelR:    { value: dpr },
@@ -840,8 +856,26 @@ export class AppComponent implements OnInit, OnDestroy {
     };
     const onVis = () => { if (!document.hidden && this.animId === 0) animate(performance.now()); };
 
+    // Live theme-colour update — fires when user toggles dark/light
+    const updateThemeColors = () => {
+      const col  = getCSSColor('--particle-color', '#ede9e3');
+      const glow = getCSSColor('--particle-glow',  '#fff8e8');
+      const fog  = getCSSColor('--particle-fog',   '#070608');
+      const op   = getRootFloat('--particle-opacity', 0.12);
+      const sz   = getRootFloat('--particle-size',    2.6);
+      starMat.uniforms['uColor'].value.set(col);
+      starMat.uniforms['uGlowCol'].value.set(glow);
+      starMat.uniforms['uFogColor'].value.set(fog);
+      (scene.fog as THREE.FogExp2).color.set(fog);
+      dustMat.color.set(col);
+      dustMat.opacity = op;
+      dustMat.size    = sz;
+      dustMat.needsUpdate = true;
+    };
+
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('resize',   onResize);
+    window.addEventListener('themeChange', updateThemeColors);
     document.addEventListener('visibilitychange', onVis);
     animate(performance.now());
 
@@ -849,6 +883,7 @@ export class AppComponent implements OnInit, OnDestroy {
       cancelAnimationFrame(this.animId);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize',   onResize);
+      window.removeEventListener('themeChange', updateThemeColors);
       document.removeEventListener('visibilitychange', onVis);
       delete (window as any).__beatPulse;
       renderer.dispose();
@@ -922,7 +957,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const ringHover = () => isLight() ? 'rgba(17,17,17,0.72)'  : 'rgba(255,255,255,0.75)';
 
     let appeared = false;
-    const SEL = '.skill-item,button,a,input,textarea';
+    const SEL = 'app-header,.skill-item,button,a,input,textarea';
     let spotEls: HTMLElement[] = [], rects: DOMRect[] = [];
     const refresh = () => { rects = spotEls.map(el => el.getBoundingClientRect()); };
     setTimeout(() => { spotEls = Array.from(document.querySelectorAll(SEL)); refresh(); }, 900);

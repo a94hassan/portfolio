@@ -8,142 +8,183 @@
   // Accent "red thread": warm copper extracted from hero photo skin tones
   // → rgba(200, 124, 70, α)  =  hsl(25°, 68%, 53%)
 
-  --bg:         #070608;  // deep space — near-black, slight violet warmth
-  --bg-nav:     rgba(7, 6, 8, 0.86);
-  --fg:         #ede9e3;
-  --fg-55:      rgba(226, 232, 240, 0.55);
-  --fg-48:      rgba(226, 232, 240, 0.48);
-  --fg-40:      rgba(226, 232, 240, 0.40);
-  --fg-35:      rgba(226, 232, 240, 0.35);
-  --fg-28:      rgba(226, 232, 240, 0.28);
-  --fg-18:      rgba(226, 232, 240, 0.18);
-  --fg-12:      rgba(226, 232, 240, 0.12);
-  --fg-09:      rgba(226, 232, 240, 0.09);
-  --fg-07:      rgba(226, 232, 240, 0.07);
-  --fg-05:      rgba(226, 232, 240, 0.05);
-  --fg-04:      rgba(226, 232, 240, 0.04);
-  --fg-03:      rgba(226, 232, 240, 0.03);
+  --bg: #070608; // deep space — near-black, slight violet warmth
+  --bg-nav: rgba(7, 6, 8, 0.86);
+  --fg: #ede9e3;
+  --fg-55: rgba(226, 232, 240, 0.55);
+  --fg-48: rgba(226, 232, 240, 0.48);
+  --fg-40: rgba(226, 232, 240, 0.40);
+  --fg-35: rgba(226, 232, 240, 0.35);
+  --fg-28: rgba(226, 232, 240, 0.28);
+  --fg-18: rgba(226, 232, 240, 0.18);
+  --fg-12: rgba(226, 232, 240, 0.12);
+  --fg-09: rgba(226, 232, 240, 0.09);
+  --fg-07: rgba(226, 232, 240, 0.07);
+  --fg-05: rgba(226, 232, 240, 0.05);
+  --fg-04: rgba(226, 232, 240, 0.04);
+  --fg-03: rgba(226, 232, 240, 0.03);
 
-  --surface:    rgba(255, 255, 255, 0.04);
+  --surface: rgba(255, 255, 255, 0.04);
   --surface-md: rgba(255, 255, 255, 0.055);
   --surface-hi: rgba(255, 255, 255, 0.09);
 
-  --glass-bg:        rgba(255, 255, 255, 0.052);
-  --glass-bg-hi:     rgba(255, 255, 255, 0.090);
-  --glass-border:    rgba(255, 255, 255, 0.100);
+  --glass-bg: rgba(255, 255, 255, 0.052);
+  --glass-bg-hi: rgba(255, 255, 255, 0.090);
+  --glass-border: rgba(255, 255, 255, 0.100);
   --glass-border-hi: rgba(255, 255, 255, 0.175);
 
-  // ── Silver / Pearl accent system ────────────────────────────────────────
-  // Achromatic palette — black, white, silver, pearlescent iridescence only
-  --silver:       rgba(210, 212, 218, 1);
-  --silver-a08:   rgba(210, 212, 218, 0.08);
-  --silver-a14:   rgba(210, 212, 218, 0.14);
-  --silver-a22:   rgba(210, 212, 218, 0.22);
-  --silver-a36:   rgba(210, 212, 218, 0.36);
+  // ── Glass Backdrop Blur Scale ──────────────────────────────────────────
+  --glass-blur-soft: blur(8px);
+  --glass-blur-medium: blur(16px);
+  --glass-blur-strong: blur(24px);
 
-  --sb-track:   #111111;
-  --sb-thumb:   #333333;
+  // ── Image Filters / Color Grading ──────────────────────────────────────
+  // Dark mode: preserve rich tones, slight boost to perceived depth
+  --img-brightness-dark: brightness(1.02);
+  --img-contrast-dark: contrast(1.04);
+  --img-saturate-dark: saturate(1.05);
+  --img-filter-dark: var(--img-brightness-dark) var(--img-contrast-dark) var(--img-saturate-dark);
+
+  // ── THREE.JS Particle Colors ────────────────────────────────────────────
+  // Dark mode: warm white with slight blue tint for depth
+  --particle-color: #ede9e3;  // rgb(237, 233, 227)
+  --particle-glow: #fff8e8;   // warm white glow
+  --particle-opacity: 0.12;   // dust layer opacity (material-level)
+  --particle-size: 2.6;       // dust layer size
+  --particle-fog: #070608;    // fog color matches --bg
+
+  // Silver / Pearl accent system ────────────────────────────────────────
+  // Achromatic palette — black, white, silver, pearlescent iridescence only
+  --silver: rgba(210, 212, 218, 1);
+  --silver-a08: rgba(210, 212, 218, 0.08);
+  --silver-a14: rgba(210, 212, 218, 0.14);
+  --silver-a22: rgba(210, 212, 218, 0.22);
+  --silver-a36: rgba(210, 212, 218, 0.36);
+
+  --sb-track: #111111;
+  --sb-thumb: #333333;
   --sb-thumb-h: #555555;
 
-  --btn-solid-from:   rgba(255, 255, 255, 0.97);
-  --btn-solid-to:     rgba(230, 230, 230, 0.91);
+  --btn-solid-from: rgba(255, 255, 255, 0.97);
+  --btn-solid-to: rgba(230, 230, 230, 0.91);
   --btn-solid-border: rgba(255, 255, 255, 0.55);
-  --btn-solid-color:  #0a0a0a;
-  --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.85) inset, 0 4px 20px rgba(0,0,0,0.35);
-  --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.90) inset, 0 10px 32px rgba(0,0,0,0.45);
+  --btn-solid-color: #0a0a0a;
+  --btn-solid-sh: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 4px 20px rgba(0, 0, 0, 0.35);
+  --btn-solid-sh-h: 0 1px 0 rgba(255, 255, 255, 0.90) inset, 0 10px 32px rgba(0, 0, 0, 0.45);
   --font-display: 'Unbounded', sans-serif;
 
   // ── Border-radius scale ─────────────────────────────────────────────────────
   // Single source of truth — every rounded element references this scale.
-  --r-sm:     8px;     // small badges, checkboxes, mini chips
-  --r-md:     14px;    // form fields, social icons, about-icons
-  --r-lg:     20px;    // medium cards (skill-item, hero photo crop)
-  --r-xl:     28px;    // large cards (project-info, contact form)
-  --r-pill:   100px;   // buttons, status chips, tech badges, nav pill
-  --r-circle: 50%;     // theme toggle, photo rounds
+  --r-sm: 8px; // small badges, checkboxes, mini chips
+  --r-md: 14px; // form fields, social icons, about-icons
+  --r-lg: 20px; // medium cards (skill-item, hero photo crop)
+  --r-xl: 28px; // large cards (project-info, contact form)
+  --r-pill: 100px; // buttons, status chips, tech badges, nav pill
+  --r-circle: 50%; // theme toggle, photo rounds
 
   // ── Icon-size scale ─────────────────────────────────────────────────────────
   // 14 / 16 / 18 — three sizes, no more
-  --icon-xs:  14px;    // status dot, globe (in language selector)
-  --icon-sm:  16px;    // header nav UI, theme toggle, about-trait icons
-  --icon-md:  18px;    // social links, button icons, back-to-top
+  --icon-xs: 14px; // status dot, globe (in language selector)
+  --icon-sm: 16px; // header nav UI, theme toggle, about-trait icons
+  --icon-md: 18px; // social links, button icons, back-to-top
 
   // ── Shadow scale ────────────────────────────────────────────────────────────
   // Dark mode: deep black drop shadows reinforce floating glass cards
   // Light mode (below): same tokens swap to soft warm-grey for ivory bg
-  --shadow-photo:    rgba(0, 0, 0, 0.60);   // hero photo, biggest drop
-  --shadow-photo-md: rgba(0, 0, 0, 0.48);   // about photo
-  --shadow-card-lg:  rgba(0, 0, 0, 0.55);   // project image
-  --shadow-card:     rgba(0, 0, 0, 0.26);   // project info card
-  --shadow-form:     rgba(0, 0, 0, 0.18);   // contact form
-  --shadow-tile:     rgba(0, 0, 0, 0.20);   // skill items default
-  --shadow-tile-h:   rgba(0, 0, 0, 0.30);   // skill items hover
+  --shadow-photo: rgba(0, 0, 0, 0.60); // hero photo, biggest drop
+  --shadow-photo-md: rgba(0, 0, 0, 0.48); // about photo
+  --shadow-card-lg: rgba(0, 0, 0, 0.55); // project image
+  --shadow-card: rgba(0, 0, 0, 0.26); // project info card
+  --shadow-form: rgba(0, 0, 0, 0.18); // contact form
+  --shadow-tile: rgba(0, 0, 0, 0.20); // skill items default
+  --shadow-tile-h: rgba(0, 0, 0, 0.30); // skill items hover
 }
 
 html.light {
   color-scheme: light;
 
   // Warm ivory background — easier on the eyes than pure white
-  --bg:         #f6f4f1;
-  --bg-nav:     rgba(246, 244, 241, 0.88);
+  --bg: #f6f4f1;
+  --bg-nav: rgba(246, 244, 241, 0.88);
 
   // Slightly warm near-black text — softer than #111
-  --fg:         #1c1a18;
-  --fg-55:      rgba(28, 26, 24, 0.58);
-  --fg-48:      rgba(28, 26, 24, 0.52);
-  --fg-40:      rgba(28, 26, 24, 0.44);
-  --fg-35:      rgba(28, 26, 24, 0.38);
-  --fg-28:      rgba(28, 26, 24, 0.30);
-  --fg-18:      rgba(28, 26, 24, 0.18);
-  --fg-12:      rgba(28, 26, 24, 0.12);
-  --fg-09:      rgba(28, 26, 24, 0.09);
-  --fg-07:      rgba(28, 26, 24, 0.07);
-  --fg-05:      rgba(28, 26, 24, 0.05);
-  --fg-04:      rgba(28, 26, 24, 0.04);
-  --fg-03:      rgba(28, 26, 24, 0.03);
+  --fg: #1c1a18;
+  --fg-55: rgba(28, 26, 24, 0.58);
+  --fg-48: rgba(28, 26, 24, 0.52);
+  --fg-40: rgba(28, 26, 24, 0.44);
+  --fg-35: rgba(28, 26, 24, 0.38);
+  --fg-28: rgba(28, 26, 24, 0.30);
+  --fg-18: rgba(28, 26, 24, 0.18);
+  --fg-12: rgba(28, 26, 24, 0.12);
+  --fg-09: rgba(28, 26, 24, 0.09);
+  --fg-07: rgba(28, 26, 24, 0.07);
+  --fg-05: rgba(28, 26, 24, 0.05);
+  --fg-04: rgba(28, 26, 24, 0.04);
+  --fg-03: rgba(28, 26, 24, 0.03);
 
   // Slightly warmer surfaces
-  --surface:    rgba(0, 0, 0, 0.045);
+  --surface: rgba(0, 0, 0, 0.045);
   --surface-md: rgba(0, 0, 0, 0.065);
   --surface-hi: rgba(0, 0, 0, 0.100);
 
   // Glass — airy, barely-there in light mode. Cards feel like frosted paper.
-  --glass-bg:        rgba(0, 0, 0, 0.038);
-  --glass-bg-hi:     rgba(0, 0, 0, 0.062);
-  --glass-border:    rgba(0, 0, 0, 0.090);
+  --glass-bg: rgba(0, 0, 0, 0.038);
+  --glass-bg-hi: rgba(0, 0, 0, 0.062);
+  --glass-border: rgba(0, 0, 0, 0.090);
   --glass-border-hi: rgba(0, 0, 0, 0.160);
 
-  --sb-track:   #ebe9e5;
-  --sb-thumb:   #c4c2be;
+  // ── Glass Backdrop Blur Scale (Light Mode) ────────────────────────────
+  --glass-blur-soft:   blur(6px);
+  --glass-blur-medium: blur(12px);
+  --glass-blur-strong: blur(18px);
+
+  --sb-track: #ebe9e5;
+  --sb-thumb: #c4c2be;
   --sb-thumb-h: #a6a4a0;
 
   // Solid button: muted warm grey instead of near-black — softer light-mode contrast
-  --btn-solid-from:   #7a736b;
-  --btn-solid-to:     #5e5751;
+  --btn-solid-from: #7a736b;
+  --btn-solid-to: #5e5751;
   --btn-solid-border: rgba(0, 0, 0, 0.12);
-  --btn-solid-color:  #f6f4f1;
-  --btn-solid-sh:     0 1px 0 rgba(255,255,255,0.14) inset, 0 4px 16px rgba(60, 50, 40, 0.14);
-  --btn-solid-sh-h:   0 1px 0 rgba(255,255,255,0.16) inset, 0 10px 26px rgba(60, 50, 40, 0.20);
+  --btn-solid-color: #f6f4f1;
+  --btn-solid-sh: 0 1px 0 rgba(255, 255, 255, 0.14) inset, 0 4px 16px rgba(60, 50, 40, 0.14);
+  --btn-solid-sh-h: 0 1px 0 rgba(255, 255, 255, 0.16) inset, 0 10px 26px rgba(60, 50, 40, 0.20);
 
   // Light-mode shadows: warm-tinted, ~3-4× softer than dark mode's hard blacks
   // Pure black on ivory bg reads as a "dirty smudge" — warm soft shadows blend.
-  --shadow-photo:    rgba(60, 50, 40, 0.16);
+  --shadow-photo: rgba(60, 50, 40, 0.16);
   --shadow-photo-md: rgba(60, 50, 40, 0.12);
-  --shadow-card-lg:  rgba(60, 50, 40, 0.14);
-  --shadow-card:     rgba(60, 50, 40, 0.08);
-  --shadow-form:     rgba(60, 50, 40, 0.06);
-  --shadow-tile:     rgba(60, 50, 40, 0.06);
-  --shadow-tile-h:   rgba(60, 50, 40, 0.10);
+  --shadow-card-lg: rgba(60, 50, 40, 0.14);
+  --shadow-card: rgba(60, 50, 40, 0.08);
+  --shadow-form: rgba(60, 50, 40, 0.06);
+  --shadow-tile: rgba(60, 50, 40, 0.06);
+  --shadow-tile-h: rgba(60, 50, 40, 0.10);
+
+  // ── Image Filters / Color Grading (Light Mode) ────────────────────────
+  // Light mode: reduce saturation, warm tint, slightly lower brightness for harmony
+  --img-brightness-light: brightness(0.98);
+  --img-contrast-light: contrast(1.08);
+  --img-saturate-light: saturate(0.88);
+  --img-filter-light: var(--img-brightness-light) var(--img-contrast-light) var(--img-saturate-light);
+
+  // ── THREE.JS Particle Colors (Light Mode) ──────────────────────────────
+  // Light mode: dark warm particles — visible on ivory background.
+  // No CSS invert filter; JS reads these and applies directly to materials.
+  --particle-color: #2c2a28;   // dark warm brown — echoes --fg
+  --particle-glow: #1a1614;    // deeper for glow contrast
+  --particle-opacity: 0.09;    // dust layer opacity (material-level)
+  --particle-size: 2.2;        // slightly smaller for delicacy
+  --particle-fog: #f6f4f1;     // fog color matches --bg (ivory)
 }
 
 // ─── Layout vars ──────────────────────────────────────────────────────────────
 
-$contentWidth:   1440px;
-$paddingLR:      100px;
-$paddingLR1000:  50px;
-$paddingLR500:   20px;
+$contentWidth: 1440px;
+$paddingLR: 100px;
+$paddingLR1000: 50px;
+$paddingLR500: 20px;
 $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
-             border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+  border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
 
 // Vertical section rhythm — single source of truth for top/bottom padding.
 // Used by all sections (about, skills, contact, portfolio sub) for consistent
@@ -181,7 +222,7 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
 @mixin button($switchColors: false, $transparent: false, $mobile: false) {
   position: relative;
   padding: if($mobile, 9px 18px, 11px 22px);
-  border-radius: var(--r-pill);   // pill — matches the navbar pill language
+  border-radius: var(--r-pill); // pill — matches the navbar pill language
   font-size: if($mobile, 12px, 13px);
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -194,10 +235,10 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   gap: 8px;
   line-height: 1;
   transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease,
-              border-color 0.22s ease, opacity 0.22s ease;
+    border-color 0.22s ease, opacity 0.22s ease;
 
   // Icon inside the button — sized via system scale, vertically aligned
-  > svg {
+  >svg {
     width: if($mobile, 14px, 15px);
     height: if($mobile, 14px, 15px);
     flex-shrink: 0;
@@ -205,7 +246,7 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   }
 
   // Text span — keeps baseline aligned with icon
-  > span {
+  >span {
     display: inline-block;
     line-height: 1;
   }
@@ -216,32 +257,45 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
     border: 1px solid var(--btn-solid-border);
     color: var(--btn-solid-color);
     box-shadow: var(--btn-solid-sh);
+
     &:hover {
       transform: translateY(-1px);
       box-shadow: var(--btn-solid-sh-h);
       opacity: 0.92;
     }
-    &:active { transform: translateY(0); opacity: 1; }
-  } @else {
+
+    &:active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @else {
     // Ghost — very thin border, minimal fill, almost invisible
     background: transparent;
     border: 1px solid var(--glass-border);
     color: var(--fg-55);
+
     &:hover {
       transform: translateY(-1px);
       border-color: var(--glass-border-hi);
       color: var(--fg);
       background: var(--glass-bg);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
     }
-    &:active { transform: translateY(0); }
+
+    &:active {
+      transform: translateY(0);
+    }
   }
 }
 
 // ─── Global cursor override ───────────────────────────────────────────────────
 
 @media (hover: hover) {
-  * { cursor: none !important; }
+  * {
+    cursor: none !important;
+  }
 }
 
 // ─── Base reset ───────────────────────────────────────────────────────────────
@@ -254,9 +308,9 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   // Explicit property list — NOT 'all' or shorthand, to avoid fighting GSAP
   // transform / opacity are deliberately excluded: GSAP owns those on .stage
   transition: color 150ms ease-in-out,
-              background-color 150ms ease-in-out,
-              border-color 150ms ease-in-out,
-              box-shadow 150ms ease-in-out;
+    background-color 150ms ease-in-out,
+    border-color 150ms ease-in-out,
+    box-shadow 150ms ease-in-out;
 
   // ── Font-smoothing — CRITICAL for preventing font flicker ─────────────────
   // When GSAP promotes/demotes GPU compositor layers (e.g. during opacity:0→1
@@ -264,16 +318,26 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   // antialiasing. This appears as fonts "jumping" or briefly blurring.
   // Forcing non-subpixel antialiasing globally keeps rendering consistent
   // regardless of compositor layer state.
-  -webkit-font-smoothing: antialiased;   /* correct value — was typo 'antialiasing' */
+  -webkit-font-smoothing: antialiased;
+  /* correct value — was typo 'antialiasing' */
   -moz-osx-font-smoothing: grayscale;
 
-  &::-webkit-scrollbar { width: 8px; }
-  &::-webkit-scrollbar-track { background: var(--sb-track); }
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--sb-track);
+  }
+
   &::-webkit-scrollbar-thumb {
     background-color: var(--sb-thumb);
     border-radius: 4px;
     border: 2px solid var(--sb-track);
-    &:hover { background-color: var(--sb-thumb-h); }
+
+    &:hover {
+      background-color: var(--sb-thumb-h);
+    }
   }
 }
 
@@ -305,8 +369,8 @@ app-root {
 .contact-heading,
 .contact-columns {
   transition: none !important;
-  transform: translateZ(0);     // persistent GPU layer — no blit on animation end
-  backface-visibility: hidden;  // disables subpixel AA on this layer (matches font fix)
+  transform: translateZ(0); // persistent GPU layer — no blit on animation end
+  backface-visibility: hidden; // disables subpixel AA on this layer (matches font fix)
 }
 
 // ── Images: stable GPU layer — translateZ(0) only ────────────────────────────
@@ -320,24 +384,28 @@ img {
 }
 
 html {
-  background-color: var(--bg);
-  /* scroll-snap handled entirely by GSAP ScrollToPlugin */
+  // Aurora nebula gradient — visible through Three.js particles for depth
+  background:
+    radial-gradient(ellipse 60% 50% at 8% 92%,  rgba(65, 10,  95, 0.40) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 92% 8%,  rgba(10, 42, 110, 0.34) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 48% 56%, rgba( 5, 18,  58, 0.22) 0%, transparent 68%),
+    var(--bg);
   position: relative;
   z-index: 0;
+}
+
+html.light {
+  // Light mode aurora: very subtle lavender + sky-blue hints
+  background:
+    radial-gradient(ellipse 55% 45% at 8% 92%,  rgba(200, 155, 240, 0.10) 0%, transparent 58%),
+    radial-gradient(ellipse 50% 40% at 92% 8%,  rgba(150, 198, 255, 0.09) 0%, transparent 58%),
+    var(--bg);
 }
 
 router-outlet {
   position: relative;
   z-index: 1;
   display: block;
-}
-
-// ─── Three.js: inverted in light mode (white particles → dark on warm-ivory bg) ─
-// sepia(0.08) adds a barely-visible warmth to match the ivory --bg tone
-
-html.light #global-canvas {
-  filter: invert(1) sepia(0.08);
-  opacity: 0.85; // opacity increased from 0.42 to 0.85 for gorgeous contrast in light mode!
 }
 
 // ─── Spotlight border (pearl shimmer) ────────────────────────────────────────
@@ -358,13 +426,11 @@ form {
     padding: 1px;
     // Pearlescent: pure white centre → barely-tinted pastels → transparent
     // Resembles thin-film iridescence / nacre shimmer
-    background: radial-gradient(
-      180px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(255, 255, 255, 0.36),
-      rgba(220, 232, 250, 0.18),
-      rgba(248, 228, 240, 0.08),
-      transparent 65%
-    );
+    background: radial-gradient(180px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(255, 255, 255, 0.36),
+        rgba(220, 232, 250, 0.18),
+        rgba(248, 228, 240, 0.08),
+        transparent 65%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: destination-out;
     mask-composite: subtract;
@@ -378,11 +444,13 @@ form {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(
-      140px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(255, 255, 255, 0.038) 0%,
-      transparent 72%
-    );
+    background:
+      // Permanent corner light reflection — top-left edge catches ambient light
+      linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, transparent 42%),
+      // Mouse-following surface glow — inner radiance where cursor hovers
+      radial-gradient(160px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(255, 255, 255, 0.055) 0%,
+        transparent 72%);
     pointer-events: none;
     z-index: 1;
     transition: none;
@@ -395,12 +463,10 @@ button::before {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: radial-gradient(
-    120px circle at var(--mx, -400px) var(--my, -400px),
-    rgba(255, 255, 255, 0.30),
-    rgba(220, 228, 245, 0.14),
-    transparent 65%
-  );
+  background: radial-gradient(120px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(255, 255, 255, 0.30),
+      rgba(220, 228, 245, 0.14),
+      transparent 65%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: destination-out;
   mask-composite: subtract;
@@ -411,18 +477,17 @@ button::before {
 
 // Light mode spotlight — dark mirror / obsidian reflection
 html.light {
+
   .skill-item::before,
   .project-info::before,
   .project-img-wrap::before,
   .about-icon::before,
   .social-icon-link::before,
   form::before {
-    background: radial-gradient(
-      180px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(8, 8, 12, 0.42),
-      rgba(20, 20, 30, 0.20),
-      transparent 65%
-    );
+    background: radial-gradient(180px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(8, 8, 12, 0.42),
+        rgba(20, 20, 30, 0.20),
+        transparent 65%);
   }
 
   // Surface glow also needs to be dark in light mode
@@ -432,32 +497,54 @@ html.light {
   .about-icon::after,
   .social-icon-link::after,
   form::after {
-    background: radial-gradient(
-      90px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(8, 8, 12, 0.014) 0%,
-      transparent 75%
-    );
+    background:
+      linear-gradient(135deg, rgba(8, 8, 12, 0.04) 0%, transparent 42%),
+      radial-gradient(90px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(8, 8, 12, 0.018) 0%,
+        transparent 75%);
   }
 
   button::before {
-    background: radial-gradient(
-      90px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(8, 8, 12, 0.28),
-      rgba(20, 20, 30, 0.12),
-      transparent 65%
-    );
+    background: radial-gradient(90px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(8, 8, 12, 0.28),
+        rgba(20, 20, 30, 0.12),
+        transparent 65%);
   }
+}
+
+// ─── Global Glass Utility Classes ─────────────────────────────────────────
+
+// .glass-layer: minimal transparent surface with soft blur
+.glass-layer {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur-soft);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--glass-border);
+}
+
+// .glass-layer-strong: prominent glass with strong blur
+.glass-layer-strong {
+  background: var(--glass-bg-hi);
+  backdrop-filter: var(--glass-blur-strong);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
+  border: 1px solid var(--glass-border-hi);
 }
 
 // ─── Reduced motion ───────────────────────────────────────────────────────────
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  #global-canvas { display: none; }
+
+  #global-canvas {
+    display: none;
+  }
 }
 
 // ─── Inter — loaded via Google Fonts CDN (index.html) ────────────────────────
@@ -471,7 +558,8 @@ html.light {
 //        Sizes ~40% smaller than narrow fonts — the width does the work.
 // Body:  Inter — optical-size humanist, zero noise. Together: max contrast.
 
-h1, h2 {
+h1,
+h2 {
   font-family: 'Unbounded', sans-serif;
   font-style: normal;
   font-weight: 500;
@@ -482,8 +570,8 @@ h1, h2 {
   backface-visibility: visible;
   // Architectural fade: heading dissolves toward bottom — adds spatial depth
   // Works on all children including [data-char] spans from writeIn animation.
-  -webkit-mask-image: linear-gradient(to bottom, black 52%, rgba(0,0,0,0.38) 100%);
-  mask-image:         linear-gradient(to bottom, black 52%, rgba(0,0,0,0.38) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 52%, rgba(0, 0, 0, 0.38) 100%);
+  mask-image: linear-gradient(to bottom, black 52%, rgba(0, 0, 0, 0.38) 100%);
 }
 
 // ─── Unified section heading sizes ────────────────────────────────────────────
@@ -512,8 +600,13 @@ h1, h2 {
   align-items: center;
   gap: 14px;
 
-  @media (min-width: 768px) { gap: 20px; }
-  @media (min-width: 1024px) { gap: 28px; }
+  @media (min-width: 768px) {
+    gap: 20px;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 28px;
+  }
 
   &::before {
     content: '';
@@ -524,11 +617,18 @@ h1, h2 {
     background: linear-gradient(90deg, transparent, var(--fg-28));
     border-radius: 2px;
 
-    @media (min-width: 768px)  { width: 28px; }
-    @media (min-width: 1024px) { width: 40px; }
+    @media (min-width: 768px) {
+      width: 28px;
+    }
+
+    @media (min-width: 1024px) {
+      width: 40px;
+    }
   }
 
-  h1 { @include headingSize(); }
+  h1 {
+    @include headingSize();
+  }
 }
 
 // Global utility: any element with .section-heading gets the editorial mark
@@ -578,7 +678,7 @@ h1, h2 {
   transform-style: preserve-3d;
 
   // Angular host component fills the stage
-  > * {
+  >* {
     width: 100% !important;
     height: 100% !important;
     max-width: none !important;
@@ -589,7 +689,8 @@ h1, h2 {
 // On touch/small screens the 700vh pinned scroll causes jank. Switch to
 // natural document flow: stages stack vertically, native scroll handles momentum.
 
-@media (max-width: 900px), (hover: none) {
+@media (max-width: 900px),
+(hover: none) {
   #journey {
     height: auto !important;
   }

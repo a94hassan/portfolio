@@ -81,8 +81,8 @@ section {
   box-shadow:
     0 1px 0 var(--glass-border-hi) inset,
     0 4px 20px var(--shadow-tile);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: var(--glass-blur-medium);
+  -webkit-backdrop-filter: var(--glass-blur-medium);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -113,13 +113,18 @@ section {
     transition: color 0.28s ease;
   }
 
-  &:hover span { color: var(--fg-55); }
+  &:hover span {
+    color: var(--fg-55);
+  }
 
   @media (min-width: 480px) {
     width: 74px;
     height: 88px;
 
-    img { width: 32px; height: 32px; }
+    img {
+      width: 32px;
+      height: 32px;
+    }
   }
 
   @media (min-width: 768px) {
@@ -128,8 +133,14 @@ section {
     height: 98px;
     padding: 14px 8px 12px;
 
-    img { width: 34px; height: 34px; }
-    span { font-size: 9.5px; }
+    img {
+      width: 34px;
+      height: 34px;
+    }
+
+    span {
+      font-size: 9.5px;
+    }
   }
 
   @media (min-width: 1024px) {
@@ -138,8 +149,14 @@ section {
     height: 108px;
     padding: 16px 10px 14px;
 
-    img { width: 38px; height: 38px; }
-    span { font-size: 10px; }
+    img {
+      width: 38px;
+      height: 38px;
+    }
+
+    span {
+      font-size: 10px;
+    }
   }
 
   &:hover {
@@ -152,7 +169,9 @@ section {
       0 16px 40px var(--shadow-tile-h);
     transform: translateY(-2px);
 
-    img { opacity: 0.90; }
+    img {
+      opacity: 0.90;
+    }
   }
 }
 
@@ -180,7 +199,7 @@ section {
 
   // Heading container uses the global .section-heading (left rule + h1 size)
 
-  > p {
+  >p {
     line-height: 1.65;
     color: var(--fg-48);
     text-align: left;
@@ -188,7 +207,7 @@ section {
     padding-right: 0;
   }
 
-  > div:last-of-type {
+  >div:last-of-type {
     // Desktop only: CTA button row
     display: none;
     width: 100%;
@@ -199,7 +218,9 @@ section {
       margin-top: 12px;
     }
 
-    button { @include button(); }
+    button {
+      @include button();
+    }
   }
 }
 
@@ -224,7 +245,9 @@ section {
   padding: 0 $paddingLR500;
   margin-top: 4px;
 
-  button { @include button($mobile: true); }
+  button {
+    @include button($mobile: true);
+  }
 
   @media (min-width: 768px) {
     display: none;
@@ -241,6 +264,7 @@ section {
     filter: brightness(0.42) sepia(0.08);
     opacity: 0.78;
   }
+
   .skill-item:hover img {
     filter: brightness(0.28) sepia(0.06);
     opacity: 0.92;

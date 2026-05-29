@@ -1,6 +1,6 @@
 @import './../../../../styles.scss';
 
-// ─── Host — ultra-transparent liquid glass ────────────────────────────────────
+// ─── Host — premium liquid glass with iridescent border ──────────────────────
 
 :host {
   width: 100%;
@@ -10,19 +10,84 @@
   top: 0;
   left: 0;
   right: 0;
-  background-color: rgba(7, 6, 8, 0.22);
-  backdrop-filter: blur(48px) saturate(2.0);
-  -webkit-backdrop-filter: blur(48px) saturate(2.0);
-  border-bottom: 1px solid transparent;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.055), 0 4px 32px rgba(0, 0, 0, 0.10);
+  // Richer glass: more opaque base + high saturation + brightness boost
+  background-color: rgba(7, 6, 8, 0.28);
+  backdrop-filter: var(--glass-blur-strong) saturate(2.4) brightness(1.05);
+  -webkit-backdrop-filter: var(--glass-blur-strong) saturate(2.4) brightness(1.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.065);
+  // Layered shadows: inner top-edge reflection + outer depth glow
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.10) inset,     // top inner reflection
+    0 -1px 0 rgba(255, 255, 255, 0.04) inset,    // subtle bottom inner line
+    0 8px 40px rgba(0, 0, 0, 0.18),               // depth shadow
+    0 1px 0 rgba(255, 255, 255, 0.06);            // bottom border glow
   @include flexBox();
+
+  // ── Top reflection line — caught ambient light at the glass edge ────────
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.22) 20%,
+        rgba(255, 255, 255, 0.55) 50%,
+        rgba(255, 255, 255, 0.22) 80%,
+        transparent 100%);
+    pointer-events: none;
+    z-index: 8;
+  }
+
+  // ── Pearl shimmer — bottom border follows cursor horizontally ───────────
+  // JS sets --mx via cursor tracking; shimmer centre moves with the mouse
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: radial-gradient(380px circle at var(--mx, -600px) 0px,
+        rgba(255, 255, 255, 0.85),
+        rgba(200, 220, 255, 0.50),
+        rgba(240, 200, 255, 0.28),
+        rgba(200, 240, 220, 0.14),
+        transparent 58%);
+    pointer-events: none;
+    z-index: 8;
+    transition: none;
+  }
 }
 
 :host-context(html.light) {
-  background-color: rgba(246, 244, 241, 0.38);
-  box-shadow: 0 1px 0 rgba(28, 26, 24, 0.07), 0 4px 24px rgba(0, 0, 0, 0.04);
-  backdrop-filter: blur(48px) saturate(1.8);
-  -webkit-backdrop-filter: blur(48px) saturate(1.8);
+  background-color: rgba(246, 244, 241, 0.45);
+  backdrop-filter: var(--glass-blur-strong) saturate(2.0) brightness(1.02);
+  -webkit-backdrop-filter: var(--glass-blur-strong) saturate(2.0) brightness(1.02);
+  border-bottom-color: rgba(28, 26, 24, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.60) inset,
+    0 8px 32px rgba(60, 50, 40, 0.08),
+    0 1px 0 rgba(28, 26, 24, 0.05);
+
+  &::after {
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.45) 20%,
+        rgba(255, 255, 255, 0.85) 50%,
+        rgba(255, 255, 255, 0.45) 80%,
+        transparent 100%);
+  }
+
+  &::before {
+    background: radial-gradient(380px circle at var(--mx, -600px) 0px,
+        rgba(8, 8, 20, 0.60),
+        rgba(30, 20, 50, 0.32),
+        rgba(20, 30, 60, 0.16),
+        transparent 58%);
+  }
 }
 
 header {
@@ -52,9 +117,17 @@ header {
     transition: color 0.25s ease;
   }
 
-  &:hover .logo-mark     { color: var(--fg-55); }
-  &:hover .logo-fn       { opacity: 0.80; }
-  &:hover .logo-ln       { color: var(--fg-48); }
+  &:hover .logo-mark {
+    color: var(--fg-55);
+  }
+
+  &:hover .logo-fn {
+    opacity: 0.80;
+  }
+
+  &:hover .logo-ln {
+    color: var(--fg-48);
+  }
 }
 
 // Editorial logo wordmark
