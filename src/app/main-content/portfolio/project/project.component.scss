@@ -75,23 +75,15 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  // Layered glass: slight top-left highlight for depth illusion
-  background:
-    linear-gradient(145deg,
-      rgba(255,255,255,0.065) 0%,
-      rgba(255,255,255,0.028) 40%,
-      rgba(255,255,255,0.018) 100%
-    );
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-xl);
   padding: 38px 34px;
-  backdrop-filter: var(--glass-blur-strong) saturate(1.4);
-  -webkit-backdrop-filter: var(--glass-blur-strong) saturate(1.4);
+  backdrop-filter: var(--glass-blur-strong) saturate(1.6);
+  -webkit-backdrop-filter: var(--glass-blur-strong) saturate(1.6);
   box-shadow:
     0 1px 0 var(--glass-border-hi) inset,
-    0 -1px 0 var(--fg-04) inset,
-    0 24px 64px var(--shadow-card),
-    0 0 0 1px var(--fg-04);
+    0 24px 64px var(--shadow-card);
 }
 
 .project-meta {

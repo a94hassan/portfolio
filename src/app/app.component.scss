@@ -47,3 +47,90 @@ html.light #cursor-ring {
 html.light #cursor-dot {
   background: rgba(28, 26, 24, 0.82);
 }
+
+// ─── Bokeh layer — near out-of-focus particles for spatial 3D depth ───────────
+// Each span is a large blurred circle that drifts slowly.
+// They sit between the Three.js canvas and the page content.
+// Dark mode: white blobs | Light mode: dark blobs (via html.light override)
+
+#bokeh-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+
+  span {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 1);
+
+    // Each blob: different size, position, blur radius, animation timing
+    &:nth-child(1) {
+      width: 260px; height: 260px;
+      top:  6%; left:  4%;
+      opacity: 0.032;
+      filter: blur(52px);
+      animation: bokehDrift 20s  0s   ease-in-out infinite;
+    }
+    &:nth-child(2) {
+      width: 190px; height: 190px;
+      top: 58%; right:  6%;
+      opacity: 0.028;
+      filter: blur(40px);
+      animation: bokehDrift 26s  5s   ease-in-out infinite reverse;
+    }
+    &:nth-child(3) {
+      width: 340px; height: 340px;
+      top: 32%; left:  38%;
+      opacity: 0.018;
+      filter: blur(72px);
+      animation: bokehDrift 32s  10s  ease-in-out infinite;
+    }
+    &:nth-child(4) {
+      width: 140px; height: 140px;
+      top: 78%; left:  14%;
+      opacity: 0.038;
+      filter: blur(34px);
+      animation: bokehDrift 17s  2s   ease-in-out infinite reverse;
+    }
+    &:nth-child(5) {
+      width: 220px; height: 220px;
+      top: 18%; right: 18%;
+      opacity: 0.024;
+      filter: blur(48px);
+      animation: bokehDrift 23s  8s   ease-in-out infinite;
+    }
+    &:nth-child(6) {
+      width: 160px; height: 160px;
+      top: 45%; left:  72%;
+      opacity: 0.030;
+      filter: blur(38px);
+      animation: bokehDrift 19s  14s  ease-in-out infinite reverse;
+    }
+  }
+}
+
+// Light mode: dark blobs — same sizes, positions, blur levels, just inverted color
+html.light #bokeh-layer span {
+  background: rgba(0, 0, 0, 1);
+
+  &:nth-child(1) { opacity: 0.020; }
+  &:nth-child(2) { opacity: 0.018; }
+  &:nth-child(3) { opacity: 0.012; }
+  &:nth-child(4) { opacity: 0.025; }
+  &:nth-child(5) { opacity: 0.016; }
+  &:nth-child(6) { opacity: 0.020; }
+}
+
+@keyframes bokehDrift {
+  0%,  100% { transform: translate(   0px,    0px); }
+  25%        { transform: translate( 14px,  -20px); }
+  50%        { transform: translate( -8px,   12px); }
+  75%        { transform: translate(  6px,  -10px); }
+}
+
+// Reduced motion: disable bokeh animation but keep the static blur blobs
+@media (prefers-reduced-motion: reduce) {
+  #bokeh-layer span { animation: none !important; }
+}

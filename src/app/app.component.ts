@@ -531,9 +531,9 @@ export class AppComponent implements OnInit, OnDestroy {
     const totalY  = Math.abs(SY[4]) * 1.15;
 
     // ── Layer 1: Background dust (atmosphere, no helix structure) ─────────────
-    // Wide cloud, very deep. Adds spatial fill without competing visually
-    // with the reactive helix layer.
-    const DUST_PC = 145;
+    // Wide cloud, very deep. More particles + larger spread for full-page coverage.
+    // Power-distributed Z: ~40% near-mid (-300 to -1200), ~60% distant (-1200 to -5000).
+    const DUST_PC = 240;
     const dPos = new Float32Array(DUST_PC * 3);
     const dBX  = new Float32Array(DUST_PC), dBY = new Float32Array(DUST_PC);
     const dFX  = new Float32Array(DUST_PC), dFY = new Float32Array(DUST_PC);
@@ -541,10 +541,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
     for (let i = 0; i < DUST_PC; i++) {
       const ang = GA * i;
-      const r   = 200 + Math.sqrt(Math.random()) * 1100;
-      dBX[i] = Math.cos(ang) * r + (Math.random() - 0.5) * 220;
-      dBY[i] = (i / DUST_PC) * SY[4] + (Math.random() - 0.5) * h * 0.75;
-      const z = -450 - Math.random() * 2300;        // Z -450 to -2750: deep background
+      // Wider horizontal spread — covers full viewport width and beyond
+      const r   = 300 + Math.sqrt(Math.random()) * 1800;
+      dBX[i] = Math.cos(ang) * r + (Math.random() - 0.5) * 400;
+      // Evenly distributed across full journey Y, with extra scatter for density feel
+      dBY[i] = (i / DUST_PC) * SY[4] + (Math.random() - 0.5) * h * 0.90;
+      // Power-law Z distribution: skewed toward far distances for realistic depth fog
+      const zPow = Math.pow(Math.random(), 0.45);   // 0=near, 1=far
+      const z    = -300 - zPow * 4700;              // -300 near-mid → -5000 deep
       dFX[i] = 0.05 + Math.random() * 0.10;
       dFY[i] = 0.04 + Math.random() * 0.08;
       dPX[i] = Math.random() * TWO_PI;
