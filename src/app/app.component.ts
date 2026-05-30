@@ -77,57 +77,7 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.ticker.lagSmoothing(0);
   }
 
-  // ════════════════════════════════════════════════════════════════════════════
-  // TEXT — character-by-character 3D write-in animation
-  // Each character flips up from rotateX:-80° (face-down) to 0° (upright),
-  // staggered left-to-right. Combined with Instrument Serif italic 400,
-  // this creates the "being written" handwriting effect.
-  // ════════════════════════════════════════════════════════════════════════════
 
-  private splitChars(el: Element): HTMLElement[] {
-    // Guard: already split — return existing spans (no double-wrapping on revisit)
-    if (el.querySelector('[data-char]')) {
-      return Array.from(el.querySelectorAll('[data-char]')) as HTMLElement[];
-    }
-    const frag = document.createDocumentFragment();
-    const spans: HTMLElement[] = [];
-
-    // Walk child nodes so <br> elements are preserved as real line breaks.
-    // textContent alone collapses <br> into \n which doesn't render in inline-block spans.
-    const walk = (node: ChildNode) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        for (const ch of node.textContent ?? '') {
-          if (ch === '\n') continue; // <br> already handled via BR branch
-          const s = document.createElement('span');
-          s.setAttribute('data-char', '1');
-          s.style.display = 'inline-block';
-          s.textContent = ch === ' ' ? ' ' : ch;
-          frag.appendChild(s);
-          spans.push(s);
-        }
-      } else if ((node as Element).tagName === 'BR') {
-        frag.appendChild(document.createElement('br'));
-      }
-    };
-
-    Array.from(el.childNodes).forEach(walk);
-    el.innerHTML = '';
-    el.appendChild(frag);
-    return spans;
-  }
-
-  private writeIn(selector: string, delay = 0): gsap.core.Timeline {
-    const el = document.querySelector(selector);
-    if (!el) return gsap.timeline();
-    gsap.set(el, { opacity: 1, y: 0 });
-    const chars = this.splitChars(el);
-    return gsap.timeline().fromTo(chars,
-      { opacity: 0, y: 18 },
-      { opacity: 1, y:  0,
-        duration: 0.55, ease: 'power2.out',
-        stagger: 0.026, delay }
-    );
-  }
 
   // ════════════════════════════════════════════════════════════════════════════
   // JOURNEY — 6-beat pinned scroll, single unified depth transition
@@ -161,35 +111,7 @@ export class AppComponent implements OnInit, OnDestroy {
     gsap.set(stages[4], initialOut);
     gsap.set(stages[5], initialOut);
 
-    // Pre-hide content elements for entrance animations
-    gsap.set([
-      '.hero-name', '.hero-status', '.hero-role-wrap',
-      '.hero-tagline', '.hero-actions', '.hero-email', '.hero-photo-wrapper',
-    ], { opacity: 0, y: 10 });
-
-    gsap.set([
-      '.about-heading', '.about-body', '.about-trait', '.about-photo-wrap',
-    ], { opacity: 0, y: 10 });
-
-    gsap.set([
-      '.skills-text h1', '.skills-text > p', '.skills-text > div:last-of-type',
-    ], { opacity: 0, y: 10 });
-
-    gsap.set('.skill-item', { opacity: 0, scale: 0.68, y: 10 });
-
-    gsap.set([
-      '.portfolio-heading h1', '.portfolio-sub',
-    ], { opacity: 0, y: 10 });
-
-    gsap.set([
-      '.contact-heading h1', '.contact-columns',
-    ], { opacity: 0, y: 10 });
-
-    gsap.set(['.footer-rule', '.footer-name-block', '.footer-social', '.footer-legal'], { opacity: 0, y: 14 });
-
     // ── Master timeline: OUT/IN share identical parameters ───────────────────
-    // The filter blur creates a cinematic "out of focus → snap to focus" effect
-    // that harmonises with the camera's spiral descent through the particle vortex.
     const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, filter: BLUR_OFF,    duration: 1, ease: 'power2.inOut' } as const;
     const IN  = { z: 0,     scale: 1,      opacity: 1, filter: 'blur(0px)', duration: 1, ease: 'power2.out'  } as const;
 
@@ -227,8 +149,6 @@ export class AppComponent implements OnInit, OnDestroy {
       if (beat === lastBeat) return;
       lastBeat = beat;
       if (seek) tl.seek(beat / 7 * tl.duration());
-      setTimeout(() => this.fireEntrance(beat), 40);
-      // Notify Three.js: section transition → emit a pulse wave through the vortex
       (window as any).__beatPulse?.();
     };
 
@@ -284,9 +204,8 @@ export class AppComponent implements OnInit, OnDestroy {
       st.kill();
       document.removeEventListener('click', onLinkClick);
     };
-    setTimeout(() => { lastBeat = 0; this.fireEntrance(0); }, 120);
-    // Hide loader once first beat is animating in + fonts are ready
-    this.scheduleLoaderHide(180);
+    lastBeat = 0;
+    this.scheduleLoaderHide(120);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -308,78 +227,6 @@ export class AppComponent implements OnInit, OnDestroy {
     loader.classList.add('hidden');
     // Remove fully after the CSS transition completes (matches 800ms duration)
     setTimeout(() => loader.remove(), 900);
-  }
-
-  private fireEntrance(beat: number) {
-    const idx = beat <= 2 ? beat : beat <= 5 ? 3 : beat === 6 ? 4 : 5;
-    const builders = [
-      () => this.heroTl(),
-      () => this.aboutTl(),
-      () => this.skillsTl(),
-      () => this.portfolioTl(beat - 3),
-      () => this.contactTl(),
-      () => this.footerTl(),
-    ];
-    builders[idx]?.()?.restart();
-  }
-
-  // ─── Section entrance timelines ───────────────────────────────────────────
-
-  private heroTl() {
-    return gsap.timeline()
-      .add(this.writeIn('.hero-name', 0.08))
-      .to('.hero-status',        { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.20)
-      .to('.hero-role-wrap',     { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.30)
-      .to('.hero-tagline',       { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.40)
-      .to('.hero-actions',       { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.50)
-      .to('.hero-email',         { opacity: 1, y: 0, duration: 0.40, ease: 'power2.out' }, 0.58)
-      .to('.hero-photo-wrapper', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.12);
-  }
-
-  private aboutTl() {
-    return gsap.timeline()
-      .to('.about-photo-wrap', { opacity: 1, y: 0, duration: 0.60, ease: 'power2.out', delay: 0.10 })
-      .add(this.writeIn('.about-heading', 0.15))
-      .to('.about-body',  { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.55)
-      .to('.about-trait', { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out', stagger: 0.10 }, 0.65);
-  }
-
-  private skillsTl() {
-    return gsap.timeline()
-      .add(this.writeIn('.skills-text h1', 0.08))
-      .to('.skills-text > p',               { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.45)
-      .to('.skills-text > div:last-of-type',{ opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.55)
-      .to('.skill-item', {
-        opacity: 1, scale: 1, y: 0,
-        duration: 0.40, ease: 'back.out(1.5)',
-        stagger: { amount: 0.60, from: 'start', ease: 'power2.in' },
-      }, 0.30);
-  }
-
-  private portfolioTl(cardIdx: number) {
-    const panels = gsap.utils.toArray<HTMLElement>('.project-panel');
-    const panel  = panels[Math.max(0, cardIdx)] ?? panels[0];
-    const tl = gsap.timeline();
-    // First beat of portfolio (cardIdx 0): animate heading + sub
-    if (cardIdx === 0) {
-      tl.add(this.writeIn('.portfolio-heading h1', 0.06))
-        .to('.portfolio-sub', { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.55);
-    }
-    return tl.to(panel ?? '.project-panel', { opacity: 1, duration: 0.55, ease: 'power2.out', delay: cardIdx === 0 ? 0.18 : 0.06 });
-  }
-
-  private contactTl() {
-    return gsap.timeline()
-      .add(this.writeIn('.contact-heading h1', 0.08))
-      .to('.contact-columns', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.50);
-  }
-
-  private footerTl() {
-    return gsap.timeline()
-      .to('.footer-rule',       { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out', delay: 0.05 })
-      .to('.footer-name-block', { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, 0.18)
-      .to('.footer-social',     { opacity: 1, y: 0, duration: 0.50, ease: 'power2.out' }, 0.42)
-      .to('.footer-legal',      { opacity: 1, y: 0, duration: 0.45, ease: 'power2.out' }, 0.56);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -554,7 +401,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // ── Camera state ─────────────────────────────────────────────────────────
     let mNX = 0, mNY = 0, smX = 0, smY = 0;
-    let camZ = 50, camZVel = 0;
+    let camZ = 50, camZVel = 0, camX = 0;
     let time = 0, pulseStart = -10;
     const PULSE_DUR = 0.52;
 
@@ -587,38 +434,69 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       camZVel *= 0.84;
 
-      const targetZ = -(rawF * TUNNEL_Z * 0.97) + 50;
-      camZ += (targetZ - camZ) * 0.044 + camZVel * 0.48;
+      // Portfolio (beats 3-5, rawF 3/7→6/7): camera slides X to mirror card track.
+      // Z is locked at portfolio entry depth — no forward movement during card swipes.
+      const PORT_START  = 3 / 7;
+      const PORT_END    = 6 / 7;
+      const PORT_X_SPAN = 480;
 
-      // Camera: straight Z flight with mouse parallax + gentle organic breathe
+      let targetZ    = -(rawF * TUNNEL_Z * 0.97) + 50;
+      let targetCamX = smX * 42;
+
+      if (rawF >= PORT_START && rawF <= PORT_END) {
+        targetZ = -(PORT_START * TUNNEL_Z * 0.97) + 50;
+        const portFrac = (rawF - PORT_START) / (PORT_END - PORT_START);
+        targetCamX = smX * 42 - portFrac * PORT_X_SPAN;
+      }
+
+      camZ += (targetZ - camZ) * 0.044 + camZVel * 0.48;
+      camX += (targetCamX - camX) * 0.055;
+
+      // Camera: Z tunnel + portfolio X slide + mouse parallax + gentle organic breathe
       camera.position.set(
-        smX * 42,
+        camX,
         -45 + smY * 22 + Math.sin(time * 0.30) * 5,
         camZ,
       );
-      camera.lookAt(smX * 20, -88 + smY * 10, camZ - 750);
+      camera.lookAt(camX * 0.55, -88 + smY * 10, camZ - 750);
       camera.up.set(smX * 0.03, 1, 0).normalize();
 
-      // Gate glow: opacity rises as camera approaches each gate
+      // Gate glow: approach glow in Z tunnel; during portfolio: all gates subtle
+      const inPort = rawF >= PORT_START && rawF <= PORT_END;
       for (const { mat, z } of gates) {
-        const dz   = Math.abs(camZ - z);
-        const prox = Math.max(0, 1 - dz / 380);
-        mat.opacity = 0.07 + prox * 0.34;
+        if (inPort) {
+          mat.opacity = 0.06;
+        } else {
+          const dz   = Math.abs(camZ - z);
+          const prox = Math.max(0, 1 - dz / 380);
+          mat.opacity = 0.07 + prox * 0.34;
+        }
       }
 
-      // Speed streaks: visible burst during section transition
+      // Speed streaks: Z-transition = forward horizontal streaks,
+      // Portfolio = vertical streaks (matching the lateral X slide direction)
       if (pElapsed < PULSE_DUR * 1.5) {
         const str = Math.max(0, 1 - pElapsed / (PULSE_DUR * 1.5));
         streakMat.opacity = str * 0.26;
         streakGeo.setDrawRange(0, STREAK_N * 2);
         const sb = streakGeo.attributes['position'].array as Float32Array;
         for (let i = 0; i < STREAK_N; i++) {
-          const y  = FLOOR_Y + Math.random() * (CEIL_Y - FLOOR_Y);
-          const z  = camZ - 60 - Math.random() * 550;
-          const dx = (60 + Math.random() * 180) * (Math.random() > 0.5 ? 1 : -1);
-          const x0 = (Math.random() - 0.5) * GATE_W;
-          sb[i*6]   = x0;    sb[i*6+1] = y; sb[i*6+2] = z;
-          sb[i*6+3] = x0+dx; sb[i*6+4] = y; sb[i*6+5] = z;
+          const z  = camZ - 60 - Math.random() * 520;
+          if (inPort) {
+            // Vertical streaks — reinforce lateral X movement
+            const x  = camX + (Math.random() - 0.5) * GATE_W;
+            const y0 = FLOOR_Y + Math.random() * (CEIL_Y - FLOOR_Y);
+            const dy = (40 + Math.random() * 140) * (Math.random() > 0.5 ? 1 : -1);
+            sb[i*6]   = x; sb[i*6+1] = y0;    sb[i*6+2] = z;
+            sb[i*6+3] = x; sb[i*6+4] = y0+dy; sb[i*6+5] = z;
+          } else {
+            // Horizontal streaks — forward Z transition
+            const y  = FLOOR_Y + Math.random() * (CEIL_Y - FLOOR_Y);
+            const x0 = camX + (Math.random() - 0.5) * GATE_W;
+            const dx = (60 + Math.random() * 180) * (Math.random() > 0.5 ? 1 : -1);
+            sb[i*6]   = x0;    sb[i*6+1] = y; sb[i*6+2] = z;
+            sb[i*6+3] = x0+dx; sb[i*6+4] = y; sb[i*6+5] = z;
+          }
         }
         (streakGeo.attributes['position'] as THREE.BufferAttribute).needsUpdate = true;
       } else {

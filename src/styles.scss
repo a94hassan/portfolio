@@ -623,17 +623,6 @@ h2 {
   @include sectionHeading();
 }
 
-// Critical fix: When writeIn() splits text into characters with data-char attributes,
-// ensure they have solid color for visibility in 3D-transformed contexts.
-// This overrides parent gradient clipping which doesn't work reliably in 3D transforms.
-[data-char] {
-  color: var(--fg) !important;
-  -webkit-text-fill-color: var(--fg) !important;
-  background: none !important;
-  -webkit-background-clip: unset !important;
-  background-clip: unset !important;
-}
-
 // ─── Journey / Stage ──────────────────────────────────────────────────────────
 
 #journey {
