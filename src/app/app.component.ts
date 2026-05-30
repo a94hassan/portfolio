@@ -5,7 +5,7 @@ import { ThemeService } from './shared/services/theme.service';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
-import * as THREE from 'three';
+import type * as THREE from 'three';
 import Lenis from 'lenis';
 
 @Component({
@@ -447,9 +447,11 @@ export class AppComponent implements OnInit, OnDestroy {
   // camera approaches, creating an "entering a new room" spatial narrative.
   // On section transitions: speed streaks flash + camera Z velocity spikes.
 
-  private initGlobalThreeJS() {
+  private async initGlobalThreeJS() {
     const canvas = document.querySelector('#global-canvas') as HTMLCanvasElement;
     if (!canvas) return;
+
+    const THREE = await import('three');
 
     let w = window.innerWidth, h = window.innerHeight;
 
