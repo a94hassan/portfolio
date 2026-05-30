@@ -182,10 +182,10 @@ section {
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    // Vignette Fix: matches exact --bg dark tone (#070608)
+    // Vignette Fix: matches exact --bg dark tone (#0a0a0a)
     background: radial-gradient(ellipse 82% 82% at 50% 50%,
         transparent 40%,
-        rgba(7, 6, 8, 0.20) 100%);
+        rgba(10, 10, 10, 0.20) 100%);
     pointer-events: none;
     z-index: 1;
 
