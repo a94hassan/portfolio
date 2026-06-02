@@ -1,5 +1,38 @@
 <section id="my_skills_section">
-  <div class="skills-mobile-btn">
+  <div class="skills-text-container">
+    <div class="skills-text">
+      <div class="section-heading">
+        <h1 [class.german]="isGerman">{{'my_skills_h1' | translate}}</h1>
+      </div>
+      <p class="skills-description">{{'my_skills_p' | translate}}</p>
+    </div>
+  </div>
+
+  <!-- Horizontal Drag-and-Scroll Ribbon Track -->
+  <div class="skills-ribbon-wrapper">
+    <div class="skills-ribbon-track">
+      <!-- Original items -->
+      @for (skill of skillsService.skills; track $index) {
+        <div class="skill-item">
+          <div class="skill-icon-3d">
+            <img src="./../../../assets/img/3_my_skills_section/{{skill.icon}}" alt="{{skill.name}} icon" loading="lazy">
+          </div>
+          <span>{{skill.name}}</span>
+        </div>
+      }
+      <!-- Duplicate items for seamless continuous looping -->
+      @for (skill of skillsService.skills; track $index + '_dup') {
+        <div class="skill-item">
+          <div class="skill-icon-3d">
+            <img src="./../../../assets/img/3_my_skills_section/{{skill.icon}}" alt="{{skill.name}} icon" loading="lazy">
+          </div>
+          <span>{{skill.name}}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="skills-cta-container">
     <a href="#contact_section">
       <button>
         <span>{{'my_skills_button' | translate}}</span>
@@ -8,29 +41,5 @@
         </svg>
       </button>
     </a>
-  </div>
-  <div class="skills-grid">
-    @for (skill of skillsService.skills; track $index) {
-      <div class="skill-item">
-        <img src="./../../../assets/img/3_my_skills_section/{{skill.icon}}" alt="{{skill.name}} icon" loading="lazy">
-        <span>{{skill.name}}</span>
-      </div>
-    }
-  </div>
-  <div class="skills-text">
-    <div class="section-heading">
-      <h1 [class.german]="isGerman">{{'my_skills_h1' | translate}}</h1>
-    </div>
-    <p>{{'my_skills_p' | translate}}</p>
-    <div>
-      <a href="#contact_section">
-      <button>
-        <span>{{'my_skills_button' | translate}}</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M5 12h14M13 5l7 7-7 7"/>
-        </svg>
-      </button>
-    </a>
-    </div>
   </div>
 </section>
