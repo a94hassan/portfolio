@@ -13,15 +13,15 @@
   position: fixed;
   left: 0;
   top: 0;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.40);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   pointer-events: none;
-  z-index: 9999;
+  z-index: 10000;
   opacity: 0;
-  // Only transition border-color for smooth theme switch — NOT transform/scale
-  // (those are owned by GSAP to avoid fighting the cursor animation)
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.08);
+  // Transition border-color only; background and shadow are animated by GSAP
   transition: border-color 0.25s ease;
 }
 
@@ -29,23 +29,26 @@
   position: fixed;
   left: 0;
   top: 0;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
   pointer-events: none;
-  z-index: 9999;
+  z-index: 10001;
   opacity: 0;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
   transition: background 0.25s ease;
 }
 
-// Light mode — invert cursor to dark on warm-ivory background
+// Light mode — invert cursor to dark on white background
 html.light #cursor-ring {
   border-color: rgba(28, 26, 24, 0.32);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.04);
 }
 
 html.light #cursor-dot {
   background: rgba(28, 26, 24, 0.82);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.12);
 }
 
 // ─── Bokeh layer — near out-of-focus particles for spatial 3D depth ───────────
@@ -54,6 +57,7 @@ html.light #cursor-dot {
 // Dark mode: white blobs | Light mode: dark blobs (via html.light override)
 
 #bokeh-layer {
+  display: none !important;
   position: fixed;
   inset: 0;
   pointer-events: none;

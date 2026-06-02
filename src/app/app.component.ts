@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, NgZone, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone, inject, afterNextRender } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { ThemeService } from './shared/services/theme.service';
@@ -7,11 +7,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import type * as THREE from 'three';
 import Lenis from 'lenis';
+import { AiChatComponent } from './shared/components/ai-chat/ai-chat.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent],
+  imports: [RouterOutlet, HeaderComponent, AiChatComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -21,28 +22,35 @@ export class AppComponent implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
   private animId       = 0;
   private lenis?: Lenis;
-  private threeCleanup?: () => void;
-  private cursorCleanup?: () => void;
-  private scrollCleanup?: () => void;
+  private threeCleanup?:    () => void;
+  private cursorCleanup?:   () => void;
+  private feedbackCleanup?: () => void;
+  private scrollCleanup?:   () => void;
+
+  constructor() {
+    afterNextRender(() => {
+      this.zone.runOutsideAngular(() => {
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!reducedMotion) {
+          if (!this.isMobile) this.initGlobalThreeJS();
+          this.initLenis();
+        }
+        this.initCustomCursor();
+        if (!this.isMobile && !reducedMotion) {
+          this.initButtonFeedback();
+        }
+        this.initScrollSystem();
+      });
+    });
+  }
 
   ngOnInit() {
     gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
     this.themeService.init();
 
+    // Header entrance
     gsap.set('app-header', { y: -72, opacity: 0 });
     gsap.to('app-header',  { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.2 });
-
-    this.zone.runOutsideAngular(() => {
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!reducedMotion) {
-        if (!this.isMobile) this.initGlobalThreeJS();
-        this.initLenis();
-      }
-      this.initCustomCursor();
-      if (!this.isMobile && !reducedMotion) this.initElementTilt();
-    });
-
-    setTimeout(() => this.initJourney(), 500);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -50,7 +58,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // ════════════════════════════════════════════════════════════════════════════
 
   private get isMobile(): boolean {
-    return window.innerWidth <= 768; // simple, standard screen width check (bypasses touch false-positives)
+    return window.innerWidth <= 768;
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -59,165 +67,88 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private initLenis() {
     this.lenis = new Lenis({
-      duration:            1.3,
-      easing:              (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation:         'vertical',
-      gestureOrientation:  'vertical',
-      smoothWheel:         true,
-      wheelMultiplier:     1.0,
-      touchMultiplier:     2.0,
-      infinite:            false,
+      duration:           1.2,
+      easing:             (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation:        'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel:        true,
+      wheelMultiplier:    0.9,
+      touchMultiplier:    2.0,
+      infinite:           false,
     });
 
-    // Sync Lenis scroll events → GSAP ScrollTrigger updates
     this.lenis.on('scroll', () => ScrollTrigger.update());
-
-    // Drive Lenis via GSAP ticker so both share the same RAF loop
     gsap.ticker.add((time) => { this.lenis!.raf(time * 1000); });
     gsap.ticker.lagSmoothing(0);
+    // Expose for cross-component access (e.g. project.component navigate())
+    window.__lenis = this.lenis;
   }
 
-
-
   // ════════════════════════════════════════════════════════════════════════════
-  // JOURNEY — 6-beat pinned scroll, single unified depth transition
+  // SCROLL SYSTEM — natural document scroll with section reveal animations
   // ════════════════════════════════════════════════════════════════════════════
 
-  private initJourney() {
-    const stages = gsap.utils.toArray<HTMLElement>('.stage');
-    if (stages.length < 6) {
-      // Retry robustly in case Angular router has not settled/rendered the default route yet
-      setTimeout(() => this.initJourney(), 100);
-      return;
-    }
-
-    if (this.isMobile) { this.initMobileScroll(); return; }
-
-    // ── Unified "forward through space" transition DNA ───────────────────────
-    // Identical parameters for EVERY beat: outgoing recedes, incoming emerges.
-    // Z_OFF / SC_OFF are intentionally subtle — the depth shift is felt, not seen.
-
-    const Z_OFF   = -200;       // reduced: was -350 (too aggressive, caused flash)
-    const SC_OFF  = 0.93;       // near-1: barely visible scale — depth cue
-    const BLUR_OFF = 'blur(6px)';  // cinematic out-of-focus on departing section
-
-    // Hero (stage 0) starts in focus; others start behind, blurred, hidden
-    // Note: no filter set on stage[0] — setting filter:blur(0px) creates a stacking context
-    // that breaks background-clip:text on descendant headings. Stage[0] is already in focus.
-    const initialOut = { z: Z_OFF, scale: SC_OFF, opacity: 0, filter: BLUR_OFF };
-    gsap.set(stages[1], initialOut);
-    gsap.set(stages[2], initialOut);
-    gsap.set(stages[3], initialOut);
-    gsap.set(stages[4], initialOut);
-    gsap.set(stages[5], initialOut);
-
-    // ── Master timeline: OUT/IN share identical parameters ───────────────────
-    const OUT = { z: Z_OFF, scale: SC_OFF, opacity: 0, filter: BLUR_OFF,    duration: 1, ease: 'power2.inOut' } as const;
-    const IN  = { z: 0,     scale: 1,      opacity: 1, filter: 'blur(0px)', duration: 1, ease: 'power2.out'  } as const;
-
-    const tl = gsap.timeline()
-      // Beat 0→1: Hero → About
-      .to(stages[0], { ...OUT }, 0)
-      .to(stages[1], { ...IN  }, 0.06)
-      // Beat 1→2: About → Skills
-      .to(stages[1], { ...OUT }, 1)
-      .to(stages[2], { ...IN  }, 1.06)
-      // Beat 2→3: Skills → Portfolio
-      .to(stages[2], { ...OUT }, 2)
-      .to(stages[3], { ...IN  }, 2.06)
-      // Beat 3→4: Portfolio card 1 → 2
-      .to('.projects-track', { xPercent: -33.333, duration: 1, ease: 'power2.inOut' }, 3)
-      // Beat 4→5: Portfolio card 2 → 3
-      .to('.projects-track', { xPercent: -66.667, duration: 1, ease: 'power2.inOut' }, 4)
-      // Beat 5→6: Portfolio → Contact
-      .to(stages[3], { ...OUT }, 5)
-      .to(stages[4], { ...IN  }, 5.06)
-      // Beat 6→7: Contact → Footer
-      .to(stages[4], { ...OUT }, 6)
-      .to(stages[5], { ...IN  }, 6.06);
-
-    // ── ScrollTrigger: responsive scrub + eager entrance reveal ──────────────
-    // scrub: 0.22 → minimal lag, standard-feeling scroll with light smoothness.
-    // snap.delay: 0.38 → snaps quickly after user stops (not sluggish).
-    // fireEntrance fires on EVERY beat change via onUpdate — content reveals
-    // as soon as the user scrolls halfway to the next section, no waiting for
-    // onSnapComplete. This fixes about/skills/contact staying invisible.
-    let rawF = 0;
-    let lastBeat = -1;
-
-    const fireBeat = (beat: number, seek = false) => {
-      if (beat === lastBeat) return;
-      lastBeat = beat;
-      if (seek) tl.seek(beat / 7 * tl.duration());
-      (window as any).__beatPulse?.();
+  private initScrollSystem() {
+    // Three.js camera progress: normalize window.scrollY to [0, 1]
+    window.__journeyProgress = () => {
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      return maxScroll > 0 ? Math.min(1, window.scrollY / maxScroll) : 0;
     };
-
-    const st = ScrollTrigger.create({
-      trigger: '#journey',
-      start: 'top top',
-      end: 'bottom bottom',
-      // With Lenis providing smooth scroll, scrub can be very tight (near-instant).
-      // Lenis handles all the easing — GSAP just needs to track the position.
-      scrub: 0.06,
-      animation: tl,
-      snap: {
-        snapTo:   1 / 7,
-        duration: { min: 0.42, max: 0.75 },   // more cinematic snap
-        delay:    0.18,                         // quicker to commit after release
-        ease:     'power3.inOut',               // sharper in, softer out = cinematic
-      },
-      onUpdate:       (self) => { rawF = self.progress; fireBeat(Math.round(self.progress * 7)); },
-      onSnapComplete: (self) => { fireBeat(Math.round(self.progress * 7), true); },
-    });
 
     // ── Section link navigation ──────────────────────────────────────────────
-    const BEAT: Record<string, number> = {
-      above_the_fold_section: 0,
-      about_me_section:       1,
-      my_skills_section:      2,
-      portfolio_section:      3,
-      contact_section:        6,
-    };
-    const scrollMax = () => {
-      const j = document.querySelector('#journey') as HTMLElement;
-      return j ? j.scrollHeight - window.innerHeight : 0;
-    };
     const onLinkClick = (e: MouseEvent) => {
       const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
       if (!a) return;
       const id = a.getAttribute('href')!.slice(1);
-      if (id in BEAT) {
-        e.preventDefault();
-        const target = (BEAT[id] / 7) * scrollMax();
-        // Prefer Lenis scrollTo (smooth, consistent with scroll easing)
-        if (this.lenis) {
-          this.lenis.scrollTo(target, { duration: 1.6, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
+      const target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+
+      let top = 0;
+      if (window.innerWidth > 768) {
+        const wh = window.innerHeight;
+        if (id === 'about_me_section') {
+          top = wh;
+        } else if (id === 'my_skills_section') {
+          top = wh * 2;
+        } else if (id === 'portfolio_section') {
+          top = wh * 3;
+        } else if (id === 'contact_section') {
+          top = wh * 6;
         } else {
-          gsap.to(window, { scrollTo: target, duration: 1.4, ease: 'power3.inOut' });
+          top = 0;
         }
+      } else {
+        const headerH = 80;
+        top = target.getBoundingClientRect().top + window.scrollY - headerH;
+      }
+
+      if (this.lenis) {
+        this.lenis.scrollTo(top, { duration: 1.4, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
+      } else {
+        gsap.to(window, { scrollTo: top, duration: 1.4, ease: 'power3.inOut' });
       }
     };
     document.addEventListener('click', onLinkClick);
 
-    (window as any).__journeyProgress = () => rawF;
     this.scrollCleanup = () => {
-      st.kill();
       document.removeEventListener('click', onLinkClick);
+      ScrollTrigger.getAll().forEach(t => t.kill());
     };
-    lastBeat = 0;
+
     this.scheduleLoaderHide(120);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // LOADER — fades out once page is ready + fonts loaded
+  // LOADER
   // ════════════════════════════════════════════════════════════════════════════
 
   private scheduleLoaderHide(extraDelay = 0) {
     const fire = () => setTimeout(() => this.hideLoader(), extraDelay);
-    if ('fonts' in document && (document as any).fonts?.ready) {
-      (document as any).fonts.ready.then(fire).catch(fire);
+    if ('fonts' in document && document.fonts?.ready) {
+      document.fonts.ready.then(fire).catch(fire);
     } else {
-      setTimeout(fire, 400); // legacy browsers
+      setTimeout(fire, 400);
     }
   }
 
@@ -225,308 +156,544 @@ export class AppComponent implements OnInit, OnDestroy {
     const loader = document.getElementById('app-loader');
     if (!loader) return;
     loader.classList.add('hidden');
-    // Remove fully after the CSS transition completes (matches 800ms duration)
     setTimeout(() => loader.remove(), 900);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // MOBILE SCROLL
+  // THREE.JS — Stellar nebula: open particle field with mouse force + scroll drift
   // ════════════════════════════════════════════════════════════════════════════
-
-  private initMobileScroll() {
-    gsap.from(['.hero-name', '.hero-text'], {
-      opacity: 0, y: 24, duration: 0.65, stagger: 0.12,
-      ease: 'power2.out', delay: 0.3, clearProps: 'opacity,transform',
-    });
-
-    const groups: Array<[string, string[]]> = [
-      ['.about-content',   ['.about-photo-wrap', '.about-content']],
-      ['.skills-grid',     ['.skills-grid', '.skills-text']],
-      ['.contact-heading', ['.contact-heading', '.contact-columns']],
-    ];
-
-    groups.forEach(([trigger, targets]) => {
-      const t = document.querySelector(trigger);
-      if (!t) return;
-      targets.forEach((sel, i) => {
-        const el = document.querySelector(sel);
-        if (!el) return;
-        gsap.from(el, {
-          scrollTrigger: { trigger: t, start: 'top 88%', once: true },
-          opacity: 0, y: 22, duration: 0.62, ease: 'power2.out',
-          delay: i * 0.11, clearProps: 'opacity,transform',
-        });
-      });
-    });
-
-    gsap.utils.toArray<HTMLElement>('.project-panel').forEach(panel => {
-      gsap.from(panel, {
-        scrollTrigger: { trigger: panel, start: 'top 90%', once: true },
-        opacity: 0, y: 28, duration: 0.68, ease: 'power2.out',
-        clearProps: 'opacity,transform',
-      });
-    });
-
-    const onMobileLinkClick = (e: MouseEvent) => {
-      const a = (e.target as Element).closest('a[href^="#"]') as HTMLAnchorElement | null;
-      if (!a) return;
-      const id = a.getAttribute('href')!.slice(1);
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      e.preventDefault();
-    };
-    document.addEventListener('click', onMobileLinkClick);
-
-    (window as any).__journeyProgress = () => 0;
-    this.scrollCleanup = () => {
-      document.removeEventListener('click', onMobileLinkClick);
-    };
-    this.scheduleLoaderHide(120);
-  }
-
-  // ════════════════════════════════════════════════════════════════════════════
-  // THREE.JS — Spatial Corridor: architectural grid chamber the camera flies through
-  // ════════════════════════════════════════════════════════════════════════════
-  //
-  // Concept: Apple Vision Pro / Apple Silicon aesthetic.
-  // The camera moves forward along a Z tunnel as the user scrolls.
-  // A perspective grid (floor + ceiling) creates infinite depth sensation.
-  // Rectangular gate frames mark each section boundary — they glow as the
-  // camera approaches, creating an "entering a new room" spatial narrative.
-  // On section transitions: speed streaks flash + camera Z velocity spikes.
 
   private async initGlobalThreeJS() {
     const canvas = document.querySelector('#global-canvas') as HTMLCanvasElement;
     if (!canvas) return;
 
     const THREE = await import('three');
+    const { CSS3DRenderer, CSS3DObject } = await import('three/examples/jsm/renderers/CSS3DRenderer.js');
+
+    const cssContainer = document.querySelector('#css3d-container') as HTMLElement;
+    if (!cssContainer) return;
 
     let w = window.innerWidth, h = window.innerHeight;
+    const isLight = () => document.documentElement.classList.contains('light');
+    const bgColor = () => {
+      const v = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+      return v || (isLight() ? '#ffffff' : '#050505');
+    };
 
-    const getCSSColor = (v: string, fb: string): string =>
-      getComputedStyle(document.documentElement).getPropertyValue(v).trim() || fb;
+    const scene  = new THREE.Scene();
+    scene.fog    = new THREE.FogExp2(new THREE.Color(bgColor()).getHex(), 0.00035);
+    const camera = new THREE.PerspectiveCamera(60, w / h, 120, 5000);
+    camera.position.set(0, 0, 750);
 
-    const light = () => document.documentElement.classList.contains('light');
-    const lineCol   = () => new THREE.Color(light() ? 0x1c1c1e : 0xe0e0e4);
-    const fogColStr = () => getCSSColor('--bg', light() ? '#f5f5f7' : '#0a0a0a');
+    // Add Lights for 3D meshes (Refined & Minimalist)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.12);
+    scene.add(ambientLight);
 
-    const scene    = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(new THREE.Color(fogColStr()).getHex(), 0.00020);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.35);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
 
-    const camera   = new THREE.PerspectiveCamera(60, w / h, 1, 6000);
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
+    const pointLight = new THREE.PointLight(0xffffff, 0.40, 1500);
+    pointLight.position.set(0, 200, 400);
+    scene.add(pointLight);
+
+    // 1. WebGL Renderer (Stardust Nebula)
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // ── Corridor geometry constants ──────────────────────────────────────────
-    const TUNNEL_Z   = 2600;   // total Z depth of the journey
-    const RAIL_W     =  600;   // half-width of corridor
-    const FLOOR_Y    = -220;   // floor plane Y
-    const CEIL_Y     =  180;   // ceiling plane Y
-    const GRID_Z_FAR = 6500;   // grid extends this far back
-    const GRID_X_ST  =  240;   // lateral line spacing
-    const GRID_Z_ST  =  190;   // depth ring spacing
+    // 2. CSS3D Renderer (HTML Panels)
+    const cssRenderer = new CSS3DRenderer();
+    cssRenderer.setSize(w, h);
+    cssRenderer.domElement.style.position = 'absolute';
+    cssRenderer.domElement.style.top = '0';
+    cssRenderer.domElement.style.left = '0';
+    cssRenderer.domElement.style.width = '100%';
+    cssRenderer.domElement.style.height = '100%';
+    cssRenderer.domElement.style.pointerEvents = 'none';
+    cssContainer.appendChild(cssRenderer.domElement);
 
-    // ── Grid builder — floor or ceiling plane ────────────────────────────────
-    const makeGrid = (yPos: number, opacity: number) => {
-      const verts: number[] = [];
-      for (let x = -RAIL_W; x <= RAIL_W; x += GRID_X_ST) {
-        verts.push(x, yPos, 80,  x, yPos, -GRID_Z_FAR);
-      }
-      for (let z = 0; z >= -GRID_Z_FAR; z -= GRID_Z_ST) {
-        verts.push(-RAIL_W, yPos, z,  RAIL_W, yPos, z);
-      }
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-      const mat = new THREE.LineBasicMaterial({ color: lineCol(), transparent: true, opacity, depthWrite: false });
-      return { mesh: new THREE.LineSegments(geo, mat), mat };
-    };
+    // High-end soft-glow sprite for stardust
+    const sc = document.createElement('canvas');
+    sc.width = sc.height = 64;
+    const sctx = sc.getContext('2d')!;
+    const sg = sctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    sg.addColorStop(0,    'rgba(255,255,255,1.0)');
+    sg.addColorStop(0.20, 'rgba(255,255,255,0.85)');
+    sg.addColorStop(0.50, 'rgba(255,255,255,0.25)');
+    sg.addColorStop(0.80, 'rgba(255,255,255,0.05)');
+    sg.addColorStop(1,    'rgba(255,255,255,0)');
+    sctx.fillStyle = sg;
+    sctx.fillRect(0, 0, 64, 64);
+    const sprite = new THREE.CanvasTexture(sc);
 
-    const { mesh: floorMesh, mat: floorMat } = makeGrid(FLOOR_Y, 0.055);
-    const { mesh: ceilMesh,  mat: ceilMat  } = makeGrid(CEIL_Y,  0.038);
-    scene.add(floorMesh, ceilMesh);
+    // Volumetric 3D Starfield - 180 particles spanning the entire hallway (reduced for clean minimalism)
+    const N = 180;
+    const buf = new Float32Array(N * 3);
+    const origBuf = new Float32Array(N * 3);
+    const phase = new Float32Array(N);
+    const speed = new Float32Array(N);
+    const colors = new Float32Array(N * 3);
 
-    // ── Wall rails — left and right vertical planes ──────────────────────────
-    const makeWall = (xPos: number) => {
-      const verts: number[] = [];
-      for (let y = FLOOR_Y; y <= CEIL_Y; y += 100) {
-        verts.push(xPos, y, 80,  xPos, y, -GRID_Z_FAR);
-      }
-      for (let z = 0; z >= -GRID_Z_FAR; z -= GRID_Z_ST) {
-        verts.push(xPos, FLOOR_Y, z,  xPos, CEIL_Y, z);
-      }
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-      const mat = new THREE.LineBasicMaterial({ color: lineCol(), transparent: true, opacity: 0.028, depthWrite: false });
-      return { mesh: new THREE.LineSegments(geo, mat), mat };
-    };
+    const color1 = new THREE.Color(isLight() ? 0x8a8884 : 0xa6a8ac); // silver-grey
+    const color2 = new THREE.Color(isLight() ? 0x5c5a56 : 0xffffff); // white/dark-grey
 
-    const { mesh: leftWall,  mat: leftMat  } = makeWall(-RAIL_W);
-    const { mesh: rightWall, mat: rightMat } = makeWall( RAIL_W);
-    scene.add(leftWall, rightWall);
+    for (let i = 0; i < N; i++) {
+      const rx = (Math.random() - 0.5) * 2000;
+      const ry = (Math.random() - 0.5) * 1200;
+      const rz = Math.random() * -3300 + 800;
 
-    // ── Section gate frames — one per section boundary ───────────────────────
-    const GATE_N  = 7;
-    const GATE_W  = RAIL_W * 2.3;
-    const GATE_H  = (CEIL_Y - FLOOR_Y) * 1.28;
-    const midY    = (FLOOR_Y + CEIL_Y) / 2;
+      buf[i * 3]     = rx;
+      buf[i * 3 + 1] = ry;
+      buf[i * 3 + 2] = rz;
 
-    type GateEntry = { mesh: THREE.LineSegments; mat: THREE.LineBasicMaterial; z: number };
-    const gates: GateEntry[] = [];
+      origBuf[i * 3]     = rx;
+      origBuf[i * 3 + 1] = ry;
+      origBuf[i * 3 + 2] = rz;
 
-    for (let g = 0; g < GATE_N; g++) {
-      const z  = -((g + 1) * TUNNEL_Z / (GATE_N + 1));
-      const hw = GATE_W / 2, hh = GATE_H / 2;
-      const v  = [
-        -hw, midY-hh, z,   hw, midY-hh, z,
-         hw, midY-hh, z,   hw, midY+hh, z,
-         hw, midY+hh, z,  -hw, midY+hh, z,
-        -hw, midY+hh, z,  -hw, midY-hh, z,
-      ];
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
-      const mat = new THREE.LineBasicMaterial({ color: lineCol(), transparent: true, opacity: 0.09, depthWrite: false });
-      const mesh = new THREE.LineSegments(geo, mat);
-      scene.add(mesh);
-      gates.push({ mesh, mat, z });
+      phase[i] = Math.random() * Math.PI * 2;
+      speed[i] = 10 + Math.random() * 25;
+
+      // Color interpolation: mix 65% silver and 35% white/dark-grey for monochrome nebula
+      const t = Math.random();
+      const mixedColor = new THREE.Color().copy(color1).lerp(color2, t * 0.35);
+      colors[i * 3]     = mixedColor.r;
+      colors[i * 3 + 1] = mixedColor.g;
+      colors[i * 3 + 2] = mixedColor.b;
     }
 
-    // ── Speed streaks — flash on section beat change ─────────────────────────
-    const STREAK_N = 16;
-    const streakBuf = new Float32Array(STREAK_N * 6);
-    const streakGeo = new THREE.BufferGeometry();
-    streakGeo.setAttribute('position', new THREE.Float32BufferAttribute(streakBuf, 3));
-    streakGeo.setDrawRange(0, 0);
-    const streakMat = new THREE.LineBasicMaterial({ color: lineCol(), transparent: true, opacity: 0, depthWrite: false });
-    scene.add(new THREE.LineSegments(streakGeo, streakMat));
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(buf, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-    // ── Camera state ─────────────────────────────────────────────────────────
+    const mat = new THREE.PointsMaterial({
+      map:             sprite,
+      vertexColors:    true,
+      size:            1.2,
+      sizeAttenuation: true,
+      transparent:     true,
+      opacity:         isLight() ? 0.08 : 0.14,
+      depthWrite:      false,
+      blending:        isLight() ? THREE.NormalBlending : THREE.AdditiveBlending,
+      alphaTest:       0.001,
+    });
+    scene.add(new THREE.Points(geo, mat));
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // FLOATING 3D MESHES (HERO & ABOUT ME)
+    // ════════════════════════════════════════════════════════════════════════════
+
+    // Glass Crystal Torus Knot for Hero
+    const heroGeom = new THREE.TorusKnotGeometry(48, 14, 128, 16);
+    const heroMat = new THREE.MeshPhysicalMaterial(
+      isLight() ? {
+        color:        0x7a736b,
+        metalness:    0.1,
+        roughness:    0.2,
+        transmission: 0.95,
+        thickness:    1.5,
+        transparent:  true,
+        opacity:      0.18,
+        side:         THREE.DoubleSide
+      } : {
+        color:        0xffffff, // pearlescent white
+        metalness:    0.95,
+        roughness:    0.05,
+        transmission: 0.95,
+        thickness:    2.0,
+        emissive:     new THREE.Color(0x111111), // clean silver glow
+        transparent:  true,
+        opacity:      0.18,
+        side:         THREE.DoubleSide
+      }
+    );
+    const heroMesh = new THREE.Mesh(heroGeom, heroMat);
+    heroMesh.position.set(380, 110, 350);
+    scene.add(heroMesh);
+
+    // Icosahedron for About Me
+    const aboutGeom = new THREE.IcosahedronGeometry(55, 1);
+    const aboutMat = new THREE.MeshPhysicalMaterial(
+      isLight() ? {
+        color:        0x8a8884,
+        metalness:    0.1,
+        roughness:    0.25,
+        transmission: 0.95,
+        thickness:    1.5,
+        transparent:  true,
+        opacity:      0.18,
+        side:         THREE.DoubleSide
+      } : {
+        color:        0xffffff,
+        metalness:    0.9,
+        roughness:    0.08,
+        transmission: 0.95,
+        thickness:    1.5,
+        emissive:     new THREE.Color(0x111111),
+        transparent:  true,
+        opacity:      0.18,
+        side:         THREE.DoubleSide
+      }
+    );
+    const aboutMesh = new THREE.Mesh(aboutGeom, aboutMat);
+    aboutMesh.position.set(-340, -120, -150);
+    scene.add(aboutMesh);
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // 3D SPATIAL EXHIBIT STATION COORDINATES
+    // ════════════════════════════════════════════════════════════════════════════
+
+    const p1 = new THREE.Vector3(0, 0, 1200);
+    const p2 = new THREE.Vector3(0, 0, 400);
+    const p3 = new THREE.Vector3(0, 0, -400);
+    const p4 = new THREE.Vector3(0, 0, -1200);
+    const pProject0 = new THREE.Vector3(-550, 0, -2000);
+    const pProject1 = new THREE.Vector3(550, 0, -2800);
+    const pProject2 = new THREE.Vector3(-550, 0, -3600);
+    const p5 = new THREE.Vector3(0, 50, -4400);
+    const pFooter = new THREE.Vector3(0, -600, -4400);
+
+    const r1 = new THREE.Euler(0, 0, 0);
+    const r2 = new THREE.Euler(0, 0, 0);
+    const r3 = new THREE.Euler(0, 0, 0);
+    const r4 = new THREE.Euler(0, 0, 0);
+    const rProject0 = new THREE.Euler(0, Math.PI / 8, 0);
+    const rProject1 = new THREE.Euler(0, -Math.PI / 8, 0);
+    const rProject2 = new THREE.Euler(0, Math.PI / 8, 0);
+    const r5 = new THREE.Euler(0, 0, 0);
+    const rFooter = new THREE.Euler(0, 0, 0);
+
+    const createC3D = (id: string, pos: THREE.Vector3, rot: THREE.Euler, scale = 0.35) => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const obj = new CSS3DObject(el);
+      obj.position.copy(pos);
+      obj.rotation.copy(rot);
+      obj.scale.set(scale, scale, scale);
+      scene.add(obj);
+      return obj;
+    };
+
+    createC3D('c3d-above-the-fold', p1, r1);
+    createC3D('c3d-about-me', p2, r2);
+    createC3D('c3d-my-skills', p3, r3);
+    const c3dIntro = createC3D('c3d-portfolio-intro', p4, r4);
+    
+    // Individual project cards as separate exhibits
+    const c3dProj0 = createC3D('c3d-project-0', pProject0, rProject0);
+    const c3dProj1 = createC3D('c3d-project-1', pProject1, rProject1);
+    const c3dProj2 = createC3D('c3d-project-2', pProject2, rProject2);
+    
+    createC3D('c3d-contact', p5, r5);
+    createC3D('c3d-footer', pFooter, rFooter);
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // DYNAMIC FLIGHT HALLWAY SPLINES
+    // ════════════════════════════════════════════════════════════════════════════
+
+    const cameraPoints = [
+      new THREE.Vector3(0, 0, 1600),          // Hero camera
+      new THREE.Vector3(0, 0, 800),           // About Me camera
+      new THREE.Vector3(0, 0, 0),             // My Skills camera
+      new THREE.Vector3(0, 0, -800),          // Portfolio Intro camera
+      new THREE.Vector3(-150, 0, -1600),      // Project 1 Exhibit pass
+      new THREE.Vector3(150, 0, -2400),       // Project 2 Exhibit pass
+      new THREE.Vector3(-150, 0, -3200),      // Project 3 Exhibit pass
+      new THREE.Vector3(0, 50, -4000),        // Contact camera
+    ];
+    const cameraSpline = new THREE.CatmullRomCurve3(cameraPoints);
+
+    const targetPoints = [
+      new THREE.Vector3(0, 0, 1200),          // Look at Hero
+      new THREE.Vector3(0, 0, 400),           // Look at About Me
+      new THREE.Vector3(0, 0, -400),          // Look at Skills
+      new THREE.Vector3(0, 0, -1200),         // Look at Portfolio Intro
+      new THREE.Vector3(-550, 0, -2000),      // Look left at Project 1
+      new THREE.Vector3(550, 0, -2800),       // Look right at Project 2
+      new THREE.Vector3(-550, 0, -3600),      // Look left at Project 3
+      new THREE.Vector3(0, 50, -4400),        // Look at Contact
+    ];
+    const targetSpline = new THREE.CatmullRomCurve3(targetPoints);
+
+    // ════════════════════════════════════════════════════════════════════════════
+    // CLICK ZOOM INTERACTIVITY
+    // ════════════════════════════════════════════════════════════════════════════
+
+    let zoomedIndex = -1;
+    const targetZoomPos = new THREE.Vector3();
+    const targetZoomLookAt = new THREE.Vector3();
+
+    const zoomToProject = (idx: number, pos: THREE.Vector3, rot: THREE.Euler) => {
+      if (zoomedIndex === idx) {
+        zoomedIndex = -1;
+      } else {
+        zoomedIndex = idx;
+        // Position camera directly in front of the card based on rotation
+        const offsetDist = 380;
+        const offsetX = Math.sin(rot.y) * offsetDist;
+        const offsetZ = Math.cos(rot.y) * offsetDist;
+        
+        targetZoomPos.set(pos.x + offsetX, pos.y, pos.z + offsetZ);
+        targetZoomLookAt.copy(pos);
+        window.__beatPulse?.();
+      }
+    };
+
+    const setupClickZoom = (id: string, idx: number, pos: THREE.Vector3, rot: THREE.Euler) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        // Only zoom if they didn't click a link or button directly
+        if (target.closest('a, button, input, textarea')) return;
+        
+        this.zone.run(() => {
+          zoomToProject(idx, pos, rot);
+        });
+      });
+    };
+
+    setupClickZoom('c3d-project-0', 0, pProject0, rProject0);
+    setupClickZoom('c3d-project-1', 1, pProject1, rProject1);
+    setupClickZoom('c3d-project-2', 2, pProject2, rProject2);
+
+    // Scroll releases zoom immediately
+    const onScrollResetZoom = () => {
+      if (zoomedIndex !== -1) {
+        this.zone.run(() => { zoomedIndex = -1; });
+      }
+    };
+    window.addEventListener('scroll', onScrollResetZoom, { passive: true });
+
     let mNX = 0, mNY = 0, smX = 0, smY = 0;
-    let camZ = 50, camZVel = 0, camX = 0;
-    let time = 0, pulseStart = -10;
-    const PULSE_DUR = 0.52;
+    let camX = 0, camY = 0, camZ = 750;
+    let time = 0, lastFrameTime = performance.now();
 
-    (window as any).__beatPulse = () => { pulseStart = time; };
+    let beatTime = -10;
+    window.__beatPulse = () => {
+      beatTime = time;
+    };
 
     const onMouseMove = (e: MouseEvent) => {
       mNX = (e.clientX / w - 0.5) * 2;
       mNY = -((e.clientY / h) - 0.5) * 2;
     };
 
-    let lastRender = 0;
-    const FRAME_MS = 1000 / 30;
+    // Helper for distance-based card fading
+    const updateCardFade = (obj: any, pos: THREE.Vector3, range = 500) => {
+      if (!obj || !obj.element) return;
+      const el = obj.element;
+      const distZ = Math.abs(camera.position.z - pos.z);
+      
+      let opacity = 0;
+      if (distZ < range) {
+        const rawOpacity = 1 - (distZ / range);
+        opacity = Math.sin(rawOpacity * Math.PI / 2); // smooth ease
+      }
+
+      el.style.opacity = opacity.toFixed(3);
+      if (opacity < 0.05) {
+        el.style.pointerEvents = 'none';
+        el.style.visibility = 'hidden';
+      } else {
+        el.style.pointerEvents = 'auto';
+        el.style.visibility = 'visible';
+      }
+    };
 
     const animate = (now: number) => {
       if (document.hidden) { this.animId = 0; return; }
       this.animId = requestAnimationFrame(animate);
-      if (now - lastRender < FRAME_MS) return;
-      lastRender = now;
-      time += 0.014;
+      const dt = Math.min((now - lastFrameTime) / 1000, 0.05);
+      lastFrameTime = now;
+      time += dt;
 
-      smX += (mNX - smX) * 0.042;
-      smY += (mNY - smY) * 0.042;
+      const mLerp = 1 - Math.exp(-5 * dt);
+      const zLerp = 1 - Math.exp((zoomedIndex !== -1 ? -6 : -3.5) * dt);
+      
+      smX += (mNX - smX) * mLerp;
+      smY += (mNY - smY) * mLerp;
 
-      const rawF = (window as any).__journeyProgress?.() ?? 0;
-
-      // Beat pulse: Z velocity burst — camera lunges forward on section change
-      const pElapsed = time - pulseStart;
-      if (pElapsed < PULSE_DUR) {
-        camZVel += Math.pow(1 - pElapsed / PULSE_DUR, 2.4) * 4.5;
-      }
-      camZVel *= 0.84;
-
-      // Portfolio (beats 3-5, rawF 3/7→6/7): camera slides X to mirror card track.
-      // Z is locked at portfolio entry depth — no forward movement during card swipes.
-      const PORT_START  = 3 / 7;
-      const PORT_END    = 6 / 7;
-      const PORT_X_SPAN = 480;
-
-      let targetZ    = -(rawF * TUNNEL_Z * 0.97) + 50;
-      let targetCamX = smX * 42;
-
-      if (rawF >= PORT_START && rawF <= PORT_END) {
-        targetZ = -(PORT_START * TUNNEL_Z * 0.97) + 50;
-        const portFrac = (rawF - PORT_START) / (PORT_END - PORT_START);
-        targetCamX = smX * 42 - portFrac * PORT_X_SPAN;
+      const rawF = window.__journeyProgress?.() ?? 0;
+      
+      // Update mid-flight pointer states
+      const cssContainerEl = document.getElementById('css3d-container');
+      if (cssContainerEl) {
+        const stations = [0, 0.143, 0.286, 0.429, 1.0];
+        const isAtStation = stations.some(s => Math.abs(rawF - s) < 0.025);
+        // During the projects flight, pointer events are allowed since cards fade dynamically
+        const isProjectRange = rawF > 0.429 && rawF < 0.90;
+        if (isAtStation || isProjectRange || zoomedIndex !== -1) {
+          cssContainerEl.classList.remove('mid-flight');
+        } else {
+          cssContainerEl.classList.add('mid-flight');
+        }
       }
 
-      camZ += (targetZ - camZ) * 0.044 + camZVel * 0.48;
-      camX += (targetCamX - camX) * 0.055;
+      // Camera coordinates target interpolation (support Zoom and Hallway flyby)
+      const targetPos = new THREE.Vector3();
+      const targetLook = new THREE.Vector3();
 
-      // Camera: Z tunnel + portfolio X slide + mouse parallax + gentle organic breathe
+      if (zoomedIndex !== -1) {
+        targetPos.copy(targetZoomPos);
+        targetLook.copy(targetZoomLookAt);
+      } else {
+        targetPos.copy(cameraSpline.getPointAt(rawF));
+        targetLook.copy(targetSpline.getPointAt(rawF));
+      }
+
+      camX += (targetPos.x - camX) * zLerp;
+      camY += (targetPos.y - camY) * zLerp;
+      camZ += (targetPos.z - camZ) * zLerp;
+
       camera.position.set(
-        camX,
-        -45 + smY * 22 + Math.sin(time * 0.30) * 5,
+        camX + smX * 45,
+        camY + smY * 35,
         camZ,
       );
-      camera.lookAt(camX * 0.55, -88 + smY * 10, camZ - 750);
-      camera.up.set(smX * 0.03, 1, 0).normalize();
+      camera.lookAt(
+        targetLook.x + smX * 15,
+        targetLook.y,
+        targetLook.z
+      );
 
-      // Gate glow: approach glow in Z tunnel; during portfolio: all gates subtle
-      const inPort = rawF >= PORT_START && rawF <= PORT_END;
-      for (const { mat, z } of gates) {
-        if (inPort) {
-          mat.opacity = 0.06;
-        } else {
-          const dz   = Math.abs(camZ - z);
-          const prox = Math.max(0, 1 - dz / 380);
-          mat.opacity = 0.07 + prox * 0.34;
-        }
+      // Rotate and float 3D Meshes
+      if (heroMesh) {
+        heroMesh.rotation.x += 0.006;
+        heroMesh.rotation.y += 0.009;
+        heroMesh.position.y = 110 + Math.sin(time * 0.9) * 14;
+      }
+      if (aboutMesh) {
+        aboutMesh.rotation.x += 0.004;
+        aboutMesh.rotation.y += 0.007;
+        aboutMesh.position.y = -120 + Math.cos(time * 0.75) * 10;
       }
 
-      // Speed streaks: Z-transition = forward horizontal streaks,
-      // Portfolio = vertical streaks (matching the lateral X slide direction)
-      if (pElapsed < PULSE_DUR * 1.5) {
-        const str = Math.max(0, 1 - pElapsed / (PULSE_DUR * 1.5));
-        streakMat.opacity = str * 0.26;
-        streakGeo.setDrawRange(0, STREAK_N * 2);
-        const sb = streakGeo.attributes['position'].array as Float32Array;
-        for (let i = 0; i < STREAK_N; i++) {
-          const z  = camZ - 60 - Math.random() * 520;
-          if (inPort) {
-            // Vertical streaks — reinforce lateral X movement
-            const x  = camX + (Math.random() - 0.5) * GATE_W;
-            const y0 = FLOOR_Y + Math.random() * (CEIL_Y - FLOOR_Y);
-            const dy = (40 + Math.random() * 140) * (Math.random() > 0.5 ? 1 : -1);
-            sb[i*6]   = x; sb[i*6+1] = y0;    sb[i*6+2] = z;
-            sb[i*6+3] = x; sb[i*6+4] = y0+dy; sb[i*6+5] = z;
-          } else {
-            // Horizontal streaks — forward Z transition
-            const y  = FLOOR_Y + Math.random() * (CEIL_Y - FLOOR_Y);
-            const x0 = camX + (Math.random() - 0.5) * GATE_W;
-            const dx = (60 + Math.random() * 180) * (Math.random() > 0.5 ? 1 : -1);
-            sb[i*6]   = x0;    sb[i*6+1] = y; sb[i*6+2] = z;
-            sb[i*6+3] = x0+dx; sb[i*6+4] = y; sb[i*6+5] = z;
+      // Dynamically fade CSS3D project and intro cards based on proximity (adjusted for expanded layout)
+      updateCardFade(c3dIntro, p4, 900);
+      updateCardFade(c3dProj0, pProject0, 1100);
+      updateCardFade(c3dProj1, pProject1, 1100);
+      updateCardFade(c3dProj2, pProject2, 1100);
+
+      // Interactive volumetric stardust flow field drift, mouse repulsion & restoring spring
+      const influenceX = smX * 300 + camera.position.x;
+      const influenceY = smY * 200 + camera.position.y;
+      const influenceZ = camera.position.z - 250; 
+
+      const bAge   = time - beatTime;
+      const rippleAmp = bAge < 1.8 ? Math.sin((1 - bAge / 1.8) * Math.PI) * Math.exp(-bAge * 1.6) * 75 : 0;
+
+      const pos = geo.attributes['position'].array as Float32Array;
+      for (let i = 0; i < N; i++) {
+        const i3 = i * 3;
+        const px = pos[i3];
+        const py = pos[i3 + 1];
+        const pz = pos[i3 + 2];
+
+        const ox = origBuf[i3];
+        const oy = origBuf[i3 + 1];
+        const oz = origBuf[i3 + 2];
+
+        // 1. Organic multi-octave flow field drift
+        pos[i3]     += (Math.sin(time * 0.15 + phase[i]) * 0.35 + Math.cos(time * 0.45 + phase[i] * 1.5) * 0.12) * dt * 30;
+        pos[i3 + 1] += (Math.cos(time * 0.18 + phase[i]) * 0.35 + Math.sin(time * 0.35 + phase[i] * 2.0) * 0.12) * dt * 30;
+        pos[i3 + 2] += (Math.sin(time * 0.10 + phase[i] * 2.5) * 0.25) * dt * 30;
+
+        // 2. Spring restoring force to origin
+        pos[i3]     += (ox - px) * 0.065 * dt;
+        pos[i3 + 1] += (oy - py) * 0.065 * dt;
+        pos[i3 + 2] += (oz - pz) * 0.065 * dt;
+
+        // 3. Mouse cursor repulsion force (Warp tunnel)
+        const dx = px - influenceX;
+        const dy = py - influenceY;
+        const dz = pz - influenceZ;
+        const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        if (d < 320) {
+          const force = (1.0 - d / 320) * 22;
+          pos[i3]     += (dx / d) * force * dt * 45;
+          pos[i3 + 1] += (dy / d) * force * dt * 45;
+          pos[i3 + 2] += (dz / d) * force * dt * 30;
+        }
+
+        // 4. Project beat pulse (ripple)
+        if (rippleAmp > 0) {
+          const distToCenter = Math.sqrt(px * px + pz * pz);
+          const rippleSpeed = 800;
+          const targetDist = bAge * rippleSpeed;
+          const distDiff = Math.abs(distToCenter - targetDist);
+          if (distDiff < 180) {
+            const rippleForce = Math.sin((1 - distDiff / 180) * Math.PI) * rippleAmp * 0.08;
+            pos[i3]     += (px / distToCenter) * rippleForce;
+            pos[i3 + 2]     += (pz / distToCenter) * rippleForce;
           }
         }
-        (streakGeo.attributes['position'] as THREE.BufferAttribute).needsUpdate = true;
-      } else {
-        streakMat.opacity = 0;
-        streakGeo.setDrawRange(0, 0);
       }
+      (geo.attributes['position'] as THREE.BufferAttribute).needsUpdate = true;
 
       renderer.render(scene, camera);
+      cssRenderer.render(scene, camera);
     };
 
     const updateThemeColors = () => {
-      const col = lineCol();
-      const fog = fogColStr();
-      floorMat.color.copy(col);  ceilMat.color.copy(col);
-      leftMat.color.copy(col);   rightMat.color.copy(col);
-      streakMat.color.copy(col);
-      gates.forEach(({ mat }) => mat.color.copy(col));
-      (scene.fog as THREE.FogExp2).color.set(fog);
+      const isL = isLight();
+      if (isL) {
+        mat.color.set(0x8a8884); mat.opacity = 0.08;
+        mat.blending = THREE.NormalBlending; mat.size = 1.2;
+
+        heroMat.color.set(0x7a736b);
+        heroMat.metalness = 0.1;
+        heroMat.roughness = 0.2;
+        heroMat.transmission = 0.95;
+        heroMat.opacity = 0.18;
+        heroMat.emissive.set(0x000000);
+
+        aboutMat.color.set(0x8a8884);
+        aboutMat.metalness = 0.1;
+        aboutMat.roughness = 0.25;
+        aboutMat.transmission = 0.95;
+        aboutMat.opacity = 0.18;
+        aboutMat.emissive.set(0x000000);
+      } else {
+        mat.color.set(0xffffff); mat.opacity = 0.14;
+        mat.blending = THREE.AdditiveBlending; mat.size = 1.2;
+
+        heroMat.color.set(0xffffff);
+        heroMat.metalness = 0.95;
+        heroMat.roughness = 0.05;
+        heroMat.transmission = 0.95;
+        heroMat.opacity = 0.18;
+        heroMat.emissive.set(0x111111);
+
+        aboutMat.color.set(0xffffff);
+        aboutMat.metalness = 0.9;
+        aboutMat.roughness = 0.08;
+        aboutMat.transmission = 0.95;
+        aboutMat.opacity = 0.18;
+        aboutMat.emissive.set(0x111111);
+      }
+      mat.needsUpdate = true;
+      heroMat.needsUpdate = true;
+      aboutMat.needsUpdate = true;
+      (scene.fog as THREE.FogExp2).color.set(bgColor());
     };
 
     const onResize = () => {
       w = window.innerWidth; h = window.innerHeight;
       camera.aspect = w / h; camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      cssRenderer.setSize(w, h);
     };
-    const onVis = () => { if (!document.hidden && this.animId === 0) animate(performance.now()); };
+    const onVis = () => {
+      if (!document.hidden && this.animId === 0) {
+        lastFrameTime = performance.now();
+        animate(performance.now());
+      }
+    };
 
-    window.addEventListener('mousemove',    onMouseMove);
-    window.addEventListener('resize',       onResize);
-    window.addEventListener('themeChange',  updateThemeColors);
+    window.addEventListener('mousemove',   onMouseMove);
+    window.addEventListener('resize',      onResize);
+    window.addEventListener('themeChange', updateThemeColors);
     document.addEventListener('visibilitychange', onVis);
     animate(performance.now());
 
@@ -536,61 +703,17 @@ export class AppComponent implements OnInit, OnDestroy {
       window.removeEventListener('resize',      onResize);
       window.removeEventListener('themeChange', updateThemeColors);
       document.removeEventListener('visibilitychange', onVis);
-      delete (window as any).__beatPulse;
-      renderer.dispose();
-      [floorMesh, ceilMesh, leftWall, rightWall].forEach(m => {
-        m.geometry.dispose(); (m.material as THREE.Material).dispose();
-      });
-      gates.forEach(({ mesh, mat }) => { mesh.geometry.dispose(); mat.dispose(); });
-      streakGeo.dispose(); streakMat.dispose();
+      delete window.__beatPulse;
+
+      // Dispose added 3D resources
+      heroGeom.dispose();
+      heroMat.dispose();
+      aboutGeom.dispose();
+      aboutMat.dispose();
+
+      geo.dispose(); mat.dispose(); sprite.dispose(); renderer.dispose();
+      cssRenderer.domElement.remove();
     };
-  }
-
-  // ════════════════════════════════════════════════════════════════════════════
-  // 3D TILT — premium card behaviour on skill items + project cards
-  // Mouse position drives rotateX/rotateY around the card centre. Damped via
-  // GSAP power2.out for smooth follow; elastic ease-out on leave for "snap back"
-  // feel. Max ±9° tilt with 700px perspective = subtle but distinctly 3D.
-  // ════════════════════════════════════════════════════════════════════════════
-
-  private initElementTilt() {
-    const attachTilt = () => {
-      const targets = document.querySelectorAll<HTMLElement>('.skill-item, .project-info');
-      targets.forEach((el) => {
-        if (el.dataset['tiltBound']) return;          // idempotent — don't double-bind
-        el.dataset['tiltBound'] = '1';
-        let rect: DOMRect | null = null;
-
-        el.addEventListener('mouseenter', () => { rect = el.getBoundingClientRect(); });
-        el.addEventListener('mousemove', (e) => {
-          if (!rect) rect = el.getBoundingClientRect();
-          const px = ((e.clientX - rect.left) / rect.width  - 0.5) * 2;   // -1 .. 1
-          const py = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
-          gsap.to(el, {
-            rotateY: px *  9,
-            rotateX: py * -9,
-            transformPerspective: 700,
-            transformOrigin: '50% 50%',
-            duration: 0.35,
-            ease: 'power2.out',
-            overwrite: 'auto',
-          });
-        });
-        el.addEventListener('mouseleave', () => {
-          rect = null;
-          gsap.to(el, {
-            rotateX: 0, rotateY: 0,
-            duration: 0.85,
-            ease: 'elastic.out(1, 0.55)',
-            overwrite: 'auto',
-          });
-        });
-      });
-    };
-
-    // Skill items render via @for from a service — wait for the DOM to settle.
-    // 950ms aligns with the custom cursor's spotlight-binding delay.
-    setTimeout(attachTilt, 950);
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -614,7 +737,8 @@ export class AppComponent implements OnInit, OnDestroy {
     const SEL = 'app-header,.skill-item,button,a,input,textarea';
     let spotEls: HTMLElement[] = [], rects: DOMRect[] = [];
     const refresh = () => { rects = spotEls.map(el => el.getBoundingClientRect()); };
-    setTimeout(() => { spotEls = Array.from(document.querySelectorAll(SEL)); refresh(); }, 900);
+    spotEls = Array.from(document.querySelectorAll(SEL));
+    refresh();
 
     const onMove = (e: MouseEvent) => {
       if (!appeared) { gsap.to([ring, dot], { opacity: 1, duration: 0.4 }); appeared = true; }
@@ -626,15 +750,41 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     };
     const onOver  = (e: MouseEvent) => {
-      if ((e.target as Element).closest('a,button,input,textarea'))
-        gsap.to(ring, { scale: 1.7, borderColor: ringHover(), duration: 0.22 });
+      if ((e.target as Element).closest('a,button,input,textarea')) {
+        gsap.to(ring, {
+          scale: 1.8,
+          borderColor: ringHover(),
+          backgroundColor: isLight() ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.07)',
+          boxShadow: isLight() ? '0 0 16px rgba(0, 0, 0, 0.12)' : '0 0 16px rgba(255, 255, 255, 0.22)',
+          duration: 0.25,
+          ease: 'power2.out'
+        });
+        gsap.to(dot, { scale: 1.5, duration: 0.25 });
+      }
     };
     const onOut   = (e: MouseEvent) => {
-      if ((e.target as Element).closest('a,button,input,textarea'))
-        gsap.to(ring, { scale: 1, borderColor: ringBase(), duration: 0.22 });
+      if ((e.target as Element).closest('a,button,input,textarea')) {
+        gsap.to(ring, {
+          scale: 1,
+          borderColor: ringBase(),
+          backgroundColor: 'rgba(255, 255, 255, 0)',
+          boxShadow: 'none',
+          duration: 0.25,
+          ease: 'power2.out'
+        });
+        gsap.to(dot, { scale: 1, duration: 0.25 });
+      }
     };
     const onLeave = () => gsap.to([ring, dot], { opacity: 0, duration: 0.3 });
     const onEnter = () => { if (appeared) gsap.to([ring, dot], { opacity: 1, duration: 0.3 }); };
+    const onClick = () => {
+      if (!appeared) return;
+      gsap.fromTo(ring,
+        { scale: 1, opacity: 1 },
+        { scale: 2.8, opacity: 0, duration: 0.44, ease: 'power2.out',
+          onComplete: () => gsap.set(ring, { scale: 1, opacity: 1 }) }
+      );
+    };
 
     window.addEventListener('mousemove',   onMove,  { passive: true });
     window.addEventListener('scroll',      refresh, { passive: true });
@@ -643,6 +793,7 @@ export class AppComponent implements OnInit, OnDestroy {
     document.addEventListener('mouseout',   onOut);
     document.addEventListener('mouseleave', onLeave);
     document.addEventListener('mouseenter', onEnter);
+    document.addEventListener('click',      onClick);
 
     this.cursorCleanup = () => {
       window.removeEventListener('mousemove', onMove);
@@ -652,15 +803,52 @@ export class AppComponent implements OnInit, OnDestroy {
       document.removeEventListener('mouseout',   onOut);
       document.removeEventListener('mouseleave', onLeave);
       document.removeEventListener('mouseenter', onEnter);
+      document.removeEventListener('click',      onClick);
     };
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // BUTTON FEEDBACK — elastic click punch + magnetic hover on nav/CTAs
+  // ════════════════════════════════════════════════════════════════════════════
+
+  private initButtonFeedback() {
+    const onGlobalClick = (e: MouseEvent) => {
+      const el = (e.target as Element).closest<HTMLElement>('button, a');
+      if (!el || el.closest('.skill-item, .project-info')) return;
+      gsap.fromTo(el,
+        { scale: 0.93 },
+        { scale: 1, duration: 0.55, ease: 'elastic.out(1.1, 0.5)', overwrite: 'auto' }
+      );
+    };
+    document.addEventListener('click', onGlobalClick);
+
+    const attachMagnetic = () => {
+      document.querySelectorAll<HTMLElement>('nav a, .nav-link, .btn-primary, .cta-btn').forEach(el => {
+        if (el.dataset['magBound']) return;
+        el.dataset['magBound'] = '1';
+        el.addEventListener('mousemove', (e: MouseEvent) => {
+          const r  = el.getBoundingClientRect();
+          const px = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+          const py = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+          gsap.to(el, { x: px * 7, y: py * 3.5, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
+        });
+        el.addEventListener('mouseleave', () => {
+          gsap.to(el, { x: 0, y: 0, duration: 0.55, ease: 'elastic.out(1, 0.4)', overwrite: 'auto' });
+        });
+      });
+    };
+    attachMagnetic();
+
+    this.feedbackCleanup = () => document.removeEventListener('click', onGlobalClick);
   }
 
   ngOnDestroy() {
     this.threeCleanup?.();
     this.cursorCleanup?.();
+    this.feedbackCleanup?.();
     this.scrollCleanup?.();
     this.lenis?.destroy();
-    ScrollTrigger.getAll().forEach(t => t.kill());
+    delete window.__lenis;
     gsap.killTweensOf(window);
   }
 }

@@ -8,8 +8,8 @@
   // Accent "red thread": warm copper extracted from hero photo skin tones
   // → rgba(200, 124, 70, α)  =  hsl(25°, 68%, 53%)
 
-  --bg: #0a0a0a; // Space Black — neutral near-black, no tint (Apple aesthetic)
-  --bg-nav: rgba(10, 10, 10, 0.86);
+  --bg: #050505; // Deep pure OLED Black
+  --bg-nav: rgba(5, 5, 5, 0.86);
   --fg: #ede9e3;
   --fg-55: rgba(226, 232, 240, 0.55);
   --fg-48: rgba(226, 232, 240, 0.48);
@@ -103,9 +103,9 @@
 html.light {
   color-scheme: light;
 
-  // Apple-standard neutral grey — cooler, cleaner than warm ivory
-  --bg: #f5f5f7;
-  --bg-nav: rgba(245, 245, 247, 0.88);
+  // Crisp pure White background
+  --bg: #ffffff;
+  --bg-nav: rgba(255, 255, 255, 0.88);
 
   // Slightly warm near-black text — softer than #111
   --fg: #1c1a18;
@@ -142,23 +142,22 @@ html.light {
   --sb-thumb: #c4c2be;
   --sb-thumb-h: #a6a4a0;
 
-  // Solid button: muted warm grey instead of near-black — softer light-mode contrast
-  --btn-solid-from: #7a736b;
-  --btn-solid-to: #5e5751;
-  --btn-solid-border: rgba(0, 0, 0, 0.12);
-  --btn-solid-color: #f6f4f1;
-  --btn-solid-sh: 0 1px 0 rgba(255, 255, 255, 0.14) inset, 0 4px 16px rgba(60, 50, 40, 0.14);
-  --btn-solid-sh-h: 0 1px 0 rgba(255, 255, 255, 0.16) inset, 0 10px 26px rgba(60, 50, 40, 0.20);
+  // Solid button: clean black/dark grey
+  --btn-solid-from: #222222;
+  --btn-solid-to: #050505;
+  --btn-solid-border: rgba(0, 0, 0, 0.15);
+  --btn-solid-color: #ffffff;
+  --btn-solid-sh: 0 1px 0 rgba(255, 255, 255, 0.14) inset, 0 4px 16px rgba(0, 0, 0, 0.06);
+  --btn-solid-sh-h: 0 1px 0 rgba(255, 255, 255, 0.16) inset, 0 10px 26px rgba(0, 0, 0, 0.10);
 
-  // Light-mode shadows: warm-tinted, ~3-4× softer than dark mode's hard blacks
-  // Pure black on ivory bg reads as a "dirty smudge" — warm soft shadows blend.
-  --shadow-photo: rgba(60, 50, 40, 0.16);
-  --shadow-photo-md: rgba(60, 50, 40, 0.12);
-  --shadow-card-lg: rgba(60, 50, 40, 0.14);
-  --shadow-card: rgba(60, 50, 40, 0.08);
-  --shadow-form: rgba(60, 50, 40, 0.06);
-  --shadow-tile: rgba(60, 50, 40, 0.06);
-  --shadow-tile-h: rgba(60, 50, 40, 0.10);
+  // Modern, clean, minimalist cool shadows
+  --shadow-photo: rgba(0, 0, 0, 0.06);
+  --shadow-photo-md: rgba(0, 0, 0, 0.04);
+  --shadow-card-lg: rgba(0, 0, 0, 0.05);
+  --shadow-card: rgba(0, 0, 0, 0.03);
+  --shadow-form: rgba(0, 0, 0, 0.03);
+  --shadow-tile: rgba(0, 0, 0, 0.02);
+  --shadow-tile-h: rgba(0, 0, 0, 0.04);
 
   // ── Image Filters / Color Grading (Light Mode) ────────────────────────
   // Light mode: reduce saturation, warm tint, slightly lower brightness for harmony
@@ -354,12 +353,7 @@ app-root {
   background: transparent !important;
 }
 
-// ── GSAP-controlled elements: no CSS transitions, stable GPU layer ────────────
-// transition:none prevents CSS fighting GSAP.
-// translateZ(0) forces a persistent GPU compositor layer — prevents the
-// "blit artifact" that appears when GSAP opacity animations end and the
-// browser demotes the temporary GPU layer back to the main surface.
-.stage,
+// ── GSAP-animated elements: no CSS transitions, stable GPU layer ──────────────
 .hero-text,
 .hero-photo-wrapper,
 .about-content,
@@ -369,8 +363,8 @@ app-root {
 .contact-heading,
 .contact-columns {
   transition: none !important;
-  transform: translateZ(0); // persistent GPU layer — no blit on animation end
-  backface-visibility: hidden; // disables subpixel AA on this layer (matches font fix)
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 // ── Images: stable GPU layer — translateZ(0) only ────────────────────────────
@@ -395,7 +389,7 @@ router-outlet {
   display: block;
 }
 
-// ─── Spotlight border (pearl shimmer) ────────────────────────────────────────
+// ─── Spotlight border & glows (Refined & Subtle) ─────────────────────────────
 
 .skill-item,
 .project-info,
@@ -411,13 +405,11 @@ form {
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    // Pearlescent: pure white centre → barely-tinted pastels → transparent
-    // Resembles thin-film iridescence / nacre shimmer
-    background: radial-gradient(180px circle at var(--mx, -400px) var(--my, -400px),
-        rgba(255, 255, 255, 0.40),
-        rgba(255, 255, 255, 0.16),
-        rgba(255, 255, 255, 0.05),
-        transparent 62%);
+    // Faint pearlescent border glow (max opacity 0.08, smaller circle 120px)
+    background: radial-gradient(120px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(255, 255, 255, 0.08),
+        rgba(255, 255, 255, 0.03),
+        transparent 65%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: destination-out;
     mask-composite: subtract;
@@ -431,13 +423,12 @@ form {
     position: absolute;
     inset: 0;
     border-radius: inherit;
+    // Extremely subtle mouse-following surface glow (max opacity 0.012, smaller circle 100px)
     background:
-      // Permanent corner light reflection — top-left edge catches ambient light
-      linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, transparent 42%),
-      // Mouse-following surface glow — inner radiance where cursor hovers
-      radial-gradient(160px circle at var(--mx, -400px) var(--my, -400px),
-        rgba(255, 255, 255, 0.055) 0%,
-        transparent 72%);
+      linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 40%),
+      radial-gradient(100px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(255, 255, 255, 0.012) 0%,
+        transparent 75%);
     pointer-events: none;
     z-index: 1;
     transition: none;
@@ -450,10 +441,10 @@ button::before {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: radial-gradient(120px circle at var(--mx, -400px) var(--my, -400px),
-      rgba(255, 255, 255, 0.32),
-      rgba(255, 255, 255, 0.12),
-      transparent 62%);
+  background: radial-gradient(80px circle at var(--mx, -400px) var(--my, -400px),
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.02),
+      transparent 65%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: destination-out;
   mask-composite: subtract;
@@ -464,20 +455,18 @@ button::before {
 
 // Light mode spotlight — dark mirror / obsidian reflection
 html.light {
-
   .skill-item::before,
   .project-info::before,
   .project-img-wrap::before,
   .about-icon::before,
   .social-icon-link::before,
   form::before {
-    background: radial-gradient(180px circle at var(--mx, -400px) var(--my, -400px),
-        rgba(8, 8, 12, 0.42),
-        rgba(20, 20, 30, 0.20),
+    background: radial-gradient(120px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(8, 8, 12, 0.08),
+        rgba(20, 20, 30, 0.03),
         transparent 65%);
   }
 
-  // Surface glow also needs to be dark in light mode
   .skill-item::after,
   .project-info::after,
   .project-img-wrap::after,
@@ -485,16 +474,16 @@ html.light {
   .social-icon-link::after,
   form::after {
     background:
-      linear-gradient(135deg, rgba(8, 8, 12, 0.04) 0%, transparent 42%),
-      radial-gradient(90px circle at var(--mx, -400px) var(--my, -400px),
-        rgba(8, 8, 12, 0.018) 0%,
+      linear-gradient(135deg, rgba(8, 8, 12, 0.01) 0%, transparent 40%),
+      radial-gradient(100px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(8, 8, 12, 0.008) 0%,
         transparent 75%);
   }
 
   button::before {
-    background: radial-gradient(90px circle at var(--mx, -400px) var(--my, -400px),
-        rgba(8, 8, 12, 0.28),
-        rgba(20, 20, 30, 0.12),
+    background: radial-gradient(80px circle at var(--mx, -400px) var(--my, -400px),
+        rgba(8, 8, 12, 0.06),
+        rgba(20, 20, 30, 0.02),
         transparent 65%);
   }
 }
@@ -551,14 +540,10 @@ h2 {
   font-style: normal;
   font-weight: 500;
   letter-spacing: -0.02em;
-  line-height: 0.96;
+  line-height: 1.1;
   // Ensure text remains visible during opacity/transform animations
   will-change: opacity, transform;
   backface-visibility: visible;
-  // Architectural fade: heading dissolves toward bottom — adds spatial depth
-  // Works on all children including [data-char] spans from writeIn animation.
-  -webkit-mask-image: linear-gradient(to bottom, black 52%, rgba(0, 0, 0, 0.38) 100%);
-  mask-image: linear-gradient(to bottom, black 52%, rgba(0, 0, 0, 0.38) 100%);
 }
 
 // ─── Unified section heading sizes ────────────────────────────────────────────
@@ -623,71 +608,10 @@ h2 {
   @include sectionHeading();
 }
 
-// ─── Journey / Stage ──────────────────────────────────────────────────────────
+// ─── Main scroll container ────────────────────────────────────────────────────
 
-#journey {
-  height: 800vh;
+app-main-content {
+  display: block;
   position: relative;
-}
-
-#stages {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100svh;
-  overflow: hidden;
-  perspective: 1200px;
-  perspective-origin: 50% 50%;
   z-index: 1;
-  // Force GPU compositing layer — eliminates subpixel jitter from perspective
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-}
-
-.stage {
-  position: absolute;
-  inset: 0;
-  will-change: transform, opacity;
-  // preserve-3d required: stages use z-axis 3D transforms (z: -350 → 0).
-  // Without this, child elements don't participate in the 3D context and the
-  // z value is ignored, making all transitions flat (no depth).
-  transform-style: preserve-3d;
-
-  // Angular host component fills the stage
-  >* {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-  }
-}
-
-// ─── Mobile: disable pinned journey → native scroll ───────────────────────────
-// On touch/small screens the 700vh pinned scroll causes jank. Switch to
-// natural document flow: stages stack vertically, native scroll handles momentum.
-
-@media (max-width: 900px),
-(hover: none) {
-  #journey {
-    height: auto !important;
-  }
-
-  #stages {
-    position: relative !important;
-    height: auto !important;
-    overflow: visible !important;
-    perspective: none !important;
-    transform: none !important;
-    -webkit-transform: none !important;
-  }
-
-  .stage {
-    position: relative !important;
-    inset: auto !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 100svh;
-    transform: none !important;
-    opacity: 1 !important;
-    will-change: auto !important;
-  }
 }
