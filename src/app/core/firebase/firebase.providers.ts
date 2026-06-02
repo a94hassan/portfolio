@@ -1,6 +1,6 @@
-import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
-import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { EnvironmentProviders, importProvidersFrom } from '@angular/core';
+import { provideFirebaseApp, initializeApp, getApp } from '@angular/fire/app';
+import { provideFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from '@angular/fire/firestore';
 import { provideStorage, getStorage } from '@angular/fire/storage';
 
 import { firebaseConfig } from './firebase.config';
@@ -30,9 +30,16 @@ function assertValidFirebaseConfig(): void {
 export function provideFirebase(): EnvironmentProviders {
   assertValidFirebaseConfig();
 
-  return makeEnvironmentProviders([
+  return importProvidersFrom(
     provideFirebaseApp(() => initializeApp(firebaseConfig)),
-    provideFirestore(() => getFirestore()),
-    provideStorage(() => getStorage()),
-  ]);
+    provideFirestore(() => {
+      const app = getApp();
+      return initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      });
+    }),
+    provideStorage(() => getStorage())
+  );
 }

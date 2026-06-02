@@ -1,0 +1,81 @@
+<div class="chat-container" [class.open]="isOpen()">
+  <!-- Floating Trigger Icon (visible when chat is closed or open) -->
+  <button class="chat-trigger" (click)="toggleChat()" aria-label="AI Assistent öffnen">
+    <svg *ngIf="!isOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <svg *ngIf="isOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Chat Box -->
+  <div class="chat-box glass-layer-strong" *ngIf="isOpen()">
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="chat-title">
+        <span class="online-indicator"></span>
+        <span>Gemini AI Assistant</span>
+      </div>
+      <div class="chat-header-actions">
+        <button (click)="toggleSettings()" class="header-action-btn" aria-label="Einstellungen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+        <button (click)="toggleChat()" class="header-action-btn" aria-label="Schließen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="chat-settings glass-layer" *ngIf="showSettings()">
+      <p>Hinterlege deinen eigenen <strong>Gemini API-Key</strong>, um den Chat live mit Google AI zu verbinden. Der Key wird nur lokal im Browser gespeichert.</p>
+      <div class="api-key-input-row">
+        <input type="password" [(ngModel)]="customApiKey" placeholder="AIzaSy..." class="api-key-input">
+        <button (click)="saveApiKey()" class="save-key-btn">Save</button>
+      </div>
+      <p *ngIf="hasCustomKey()" class="api-key-active-msg">Aktiver Status: Custom API-Key aktiv.</p>
+    </div>
+
+    <!-- History -->
+    <div class="chat-history" #chatHistory>
+      <div *ngFor="let msg of messages()" class="chat-message-row" [class.user-row]="msg.sender === 'user'">
+        <div class="chat-bubble" [class.user-bubble]="msg.sender === 'user'" [innerHTML]="formatMessage(msg.text)">
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="chat-message-row" *ngIf="isTyping()">
+        <div class="chat-bubble bot-bubble typing-bubble">
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggested prompts (only visible when not typing) -->
+    <div class="suggested-prompts" *ngIf="!isTyping()">
+      <button *ngFor="let p of suggestedPrompts" (click)="sendMessage(p.text)" class="prompt-chip">
+        {{ p.label }}
+      </button>
+    </div>
+
+    <!-- Input Row -->
+    <form (ngSubmit)="sendMessage()" class="chat-input-row">
+      <input type="text" name="chatInput" [(ngModel)]="userInput" placeholder="Frage zu Hassan..." autocomplete="off">
+      <button type="submit" [disabled]="!userInput.trim()" aria-label="Nachricht senden">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>
