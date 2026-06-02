@@ -3,35 +3,102 @@
 :host {
   display: block;
   width: 100%;
-  height: 100%;
-  overflow: hidden;
+}
+
+// ─── Scroll driver ────────────────────────────────────────────────────────────
+.portfolio-scroll {
   position: relative;
+  width: 100%;
 }
 
-.projects-track {
+// ─── Sticky viewport ──────────────────────────────────────────────────────────
+.portfolio-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+// ─── Progress dots (right rail) ───────────────────────────────────────────────
+.portfolio-progress {
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
   display: flex;
-  flex-wrap: nowrap;
-  width: 300%;    // 3 projects × 100vw
-  height: 100%;
-  will-change: transform;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  @media (min-width: 768px) { right: 36px; }
 }
 
-.project-panel {
-  flex: 0 0 33.333%;
+.progress-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fg-18);
+  border: 1px solid var(--glass-border);
+  transition: background 0.3s ease, transform 0.3s ease;
+
+  &.active {
+    background: var(--fg-55);
+    transform: scale(1.5);
+  }
+}
+
+// ─── Cards track ──────────────────────────────────────────────────────────────
+// Desktop: absolute, full height, flex row — GSAP moves via x transform.
+// Width is auto (grows to hold N cards side-by-side).
+
+.cards-track {
+  position: absolute;
+  left: 0;
+  top: 0;
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 56px;
-  padding: 24px $paddingLR;
+  gap: 4vw;
+  will-change: transform;
 }
 
-// ─── Image ──────────────────────────────────────────────────────────────────
+// ─── Project cards ────────────────────────────────────────────────────────────
+// Desktop: width + height set by GSAP; scale/opacity driven by onUpdate.
+// Mobile: falls back to vertical stack via overrides below.
 
+.project-card {
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  padding: 0 $paddingLR500;
+  will-change: transform, opacity;
+  transform-style: preserve-3d;
+
+  @media (min-width: 768px) {
+    padding: 0 $paddingLR1000;
+    gap: 44px;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 64px;
+    padding: 0 $paddingLR;
+  }
+
+  @media (min-width: 1280px) {
+    gap: 80px;
+  }
+}
+
+// ─── Image wrap ───────────────────────────────────────────────────────────────
 .project-img-wrap {
   flex: 1;
   min-width: 0;
-  max-height: 58vh;
+  max-height: 62vh;
   border-radius: var(--r-xl);
   overflow: hidden;
   border: 1px solid var(--glass-border);
@@ -41,18 +108,15 @@
     0 32px 80px var(--shadow-card-lg),
     0 0 60px var(--fg-04);
   position: relative;
+  transform-style: preserve-3d;
+  transform: translateZ(25px);
 
-  // Subtle vignette edge — cinematic depth
   &::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: radial-gradient(
-      ellipse 85% 85% at 50% 50%,
-      transparent 55%,
-      rgba(0,0,0,0.30) 100%
-    );
+    background: radial-gradient(ellipse 85% 85% at 50% 50%, transparent 55%, rgba(0,0,0,0.28) 100%);
     pointer-events: none;
     z-index: 1;
   }
@@ -62,28 +126,32 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.75s cubic-bezier(0.4,0,0.2,1);
-    transform-origin: center center;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  &:hover img { transform: scale(1.05); }
+
+  &:hover img { transform: scale(1.04); }
 }
 
-// ─── Info card ──────────────────────────────────────────────────────────────
-
+// ─── Info card ────────────────────────────────────────────────────────────────
 .project-info {
-  flex: 0 0 420px;
+  flex: 0 0 400px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-xl);
-  padding: 38px 34px;
+  padding: 36px 32px;
   backdrop-filter: var(--glass-blur-strong) saturate(1.6);
   -webkit-backdrop-filter: var(--glass-blur-strong) saturate(1.6);
   box-shadow:
     0 1px 0 var(--glass-border-hi) inset,
     0 24px 64px var(--shadow-card);
+  transform-style: preserve-3d;
+  transform: translateZ(10px);
+
+  @media (min-width: 1024px) { flex: 0 0 440px; }
+  @media (min-width: 1280px) { flex: 0 0 480px; }
 }
 
 .project-meta {
@@ -102,27 +170,23 @@
 }
 
 .project-tech {
-  font-family: 'Inter', sans-serif;
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--fg-40);
   padding: 5px 13px;
   border: 1px solid var(--glass-border);
-  border-radius: 100px;  // pill shape
+  border-radius: var(--r-pill);
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur-medium);
 }
 
 h4 {
   font-family: 'Unbounded', sans-serif;
-  font-style: normal;
   font-weight: 500;
-  font-size: clamp(20px, 2.2vw, 30px);
+  font-size: clamp(18px, 2vw, 28px);
   letter-spacing: -0.02em;
   line-height: 1.1;
-  // Solid colour — works reliably inside 3D-transformed cards
   color: var(--fg);
   margin: 0;
 }
@@ -138,50 +202,114 @@ p {
 .project-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   padding-top: 6px;
+
   a:first-child button { @include button($switchColors: true); }
   a:last-child  button { @include button(); }
 }
 
-// ─── Responsive ─────────────────────────────────────────────────────────────
-
-@media (max-width: 1200px) {
-  .project-panel { gap: 36px; padding: 20px $paddingLR1000; }
-  .project-info  { flex: 0 0 360px; }
+// ─── Navigation (prev / counter / next) ───────────────────────────────────────
+.carousel-nav {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-@media (max-width: 900px) {
-  .project-panel { flex-direction: column; gap: 20px; padding: 24px $paddingLR1000; }
-  .project-img-wrap { max-height: 35vh; width: 100%; }
-  .project-info { flex: none; width: 100%; }
+.nav-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border-hi);
+  background: var(--glass-bg-hi);
+  color: var(--fg-48);
+  backdrop-filter: var(--glass-blur-medium);
+  -webkit-backdrop-filter: var(--glass-blur-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+
+  svg { width: 16px; height: 16px; }
+
+  &:hover {
+    background: var(--surface-hi);
+    border-color: var(--glass-border-hi);
+    color: var(--fg);
+  }
+
+  &:disabled {
+    opacity: 0.30;
+    pointer-events: none;
+  }
 }
 
-@media (max-width: 500px) {
-  .project-panel { padding: 16px $paddingLR500; }
+.nav-counter {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--fg-35);
+  min-width: 36px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+// ─── Mobile / touch: simple vertical stack ────────────────────────────────────
+@media (max-width: 768px), (hover: none) {
+
+  .portfolio-scroll { height: auto !important; }
+
+  .portfolio-sticky {
+    position: relative !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .portfolio-progress { display: none; }
+
+  .cards-track {
+    position: relative !important;
+    height: auto !important;
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 32px !important;
+    // GSAP sets x transform on desktop — negate it on mobile
+    transform: none !important;
+    padding: 16px $paddingLR500 48px;
+  }
+
+  .project-card {
+    width: 100% !important;
+    height: auto !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+    padding: 0 !important;
+    // Reset GSAP scale/opacity
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .project-img-wrap {
+    max-height: 36vh;
+    width: 100%;
+  }
+
+  .project-info {
+    flex: none !important;
+    width: 100%;
+    padding: 24px 20px;
+  }
+
   .project-actions {
     a:first-child button { @include button($switchColors: true, $mobile: true); }
     a:last-child  button { @include button($mobile: true); }
   }
-}
 
-// Mobile: stack panels vertically — no horizontal GSAP slide
-@media (max-width: 900px), (hover: none) {
-  :host {
-    overflow: visible;
-    height: auto;
-  }
-
-  .projects-track {
-    width: 100% !important;
-    flex-direction: column !important;
-    height: auto !important;
-    transform: none !important;
-  }
-
-  .project-panel {
-    height: auto !important;
-    min-height: auto;
-    padding-bottom: 48px;
-  }
+  .carousel-nav { display: none; }
 }

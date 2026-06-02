@@ -2,13 +2,10 @@
 
 :host {
   width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
 
-  // ── Uniform atmosphere — same as all other sections ─────────────────────
   &::before {
     content: '';
     position: absolute;
@@ -21,58 +18,61 @@
 
 section {
   width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
   z-index: 2;
 }
 
-// ─── Heading ───────────────────────────────────────────────────────────────
-// .section-heading from styles.scss provides the editorial mark + h1 size.
-// Here we only override padding to position it on the section.
+// ─── Heading — sits above the stacking card viewport ──────────────────────────
 
 .portfolio-heading {
-  padding: 90px $paddingLR 16px;
+  padding: 80px $paddingLR 14px;
   flex-shrink: 0;
+
+  @media (max-width: 1000px) { padding: 72px $paddingLR1000 12px; }
+  @media (max-width: 500px)  { padding: 64px $paddingLR500 10px; }
 }
 
 .portfolio-sub {
   font-size: 13px;
   color: var(--fg-40);
-  text-align: left;
-  padding: 0 $paddingLR 14px;
+  padding: 0 $paddingLR 20px;
   flex-shrink: 0;
   line-height: 1.65;
-}
 
-// ─── Project component fills remaining space ────────────────────────────────
+  @media (max-width: 1000px) { padding: 0 $paddingLR1000 16px; }
+  @media (max-width: 500px)  { padding: 0 $paddingLR500 12px; font-size: 12px; }
+}
 
 app-project {
-  flex: 1;
-  min-height: 0;
   display: block;
-  overflow: hidden;
+  width: 100%;
 }
 
-// ─── Responsive ────────────────────────────────────────────────────────────
+@media (min-width: 769px) {
+  app-project {
+    display: none !important;
+  }
 
-@media (max-width: 1000px) {
-  .portfolio-heading { padding: 72px $paddingLR1000 14px; }
-  .portfolio-sub { padding: 0 $paddingLR1000 12px; }
-}
-
-@media (max-width: 500px) {
-  .portfolio-heading { padding: 56px $paddingLR500 10px; }
-  .portfolio-sub { padding: 0 $paddingLR500 8px; font-size: 12px; }
-}
-
-// Mobile: section height auto — panels stack naturally
-@media (max-width: 900px), (hover: none) {
   section {
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 60px;
-    padding-bottom: 40px;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .portfolio-heading {
+    padding: 0 0 24px;
+    justify-content: center;
+  }
+
+  .portfolio-sub {
+    padding: 0;
+    max-width: 600px;
+    font-size: 16px;
+    line-height: 1.8;
   }
 }

@@ -15,7 +15,7 @@ export class ProjectsService {
       description: 'join_description',
       link: 'https://join.hassan-ammar.com',
       github: 'https://github.com/a94hassan/join',
-      img: 'join.png'
+      img: 'join.webp'
     },
     {
       name: 'El Pollo Loco',
@@ -23,7 +23,7 @@ export class ProjectsService {
       description: 'el_pollo_loco_description',
       link: 'https://el-pollo-loco.hassan-ammar.com',
       github: 'https://github.com/a94hassan/el_pollo_loco',
-      img: 'el_pollo_loco.png'
+      img: 'el_pollo_loco.webp'
     },
     {
       name: 'Pokedex',
@@ -31,7 +31,7 @@ export class ProjectsService {
       description: 'pokedex_description',
       link: 'https://pokedex.hassan-ammar.com',
       github: 'https://github.com/a94hassan/pokedex',
-      img: 'pokedex.png'
+      img: 'pokedex.webp'
     }
   ]
 }
