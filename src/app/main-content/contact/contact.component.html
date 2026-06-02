@@ -12,23 +12,51 @@
     </div>
 
     <div class="contact-form-wrap">
-      <form class="contact-form" (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">
+
+      @if (submitSuccess) {
+        <div class="form-success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <span>{{'user_feedback5' | translate}}</span>
+        </div>
+      }
+
+      <form class="contact-form" [class.hidden]="submitSuccess"
+            (ngSubmit)="onSubmit(contactForm)" #contactForm="ngForm">
         <div class="form-fields">
           <div class="form-field">
-            <input [(ngModel)]="contactData.name" [ngClass]="{'invalid': name.invalid && name.touched || name.invalid && contactForm.submitted, 'valid': name.valid && name.touched}" name="name" type="text" placeholder="{{'placeholder1' | translate}}" #name="ngModel" required>
-            @if (name.invalid && name.touched || name.invalid && contactForm.submitted) {
+            <input [(ngModel)]="contactData.name"
+                   [ngClass]="{'invalid': name.invalid && (name.touched || contactForm.submitted), 'valid': name.valid && name.touched}"
+                   name="name" type="text"
+                   placeholder="{{'placeholder1' | translate}}"
+                   #name="ngModel" required>
+            @if (name.invalid && (name.touched || contactForm.submitted)) {
               <span class="field-error">{{'user_feedback1' | translate}}</span>
             }
           </div>
+
           <div class="form-field">
-            <input [(ngModel)]="contactData.email" [ngClass]="{'invalid': email.invalid && email.touched || email.invalid && contactForm.submitted, 'valid': email.valid && email.touched}" name="email" type="email" placeholder="{{'placeholder2' | translate}}" #email="ngModel" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required>
-            @if (email.invalid && email.touched || email.invalid && contactForm.submitted) {
+            <input [(ngModel)]="contactData.email"
+                   [ngClass]="{'invalid': email.invalid && (email.touched || contactForm.submitted), 'valid': email.valid && email.touched}"
+                   name="email" type="email"
+                   placeholder="{{'placeholder2' | translate}}"
+                   #email="ngModel"
+                   pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" required>
+            @if (email.invalid && (email.touched || contactForm.submitted)) {
               <span class="field-error">{{'user_feedback2' | translate}}</span>
             }
           </div>
+
           <div class="form-field">
-            <textarea [(ngModel)]="contactData.message" [ngClass]="{'invalid': message.invalid && message.touched || message.invalid && contactForm.submitted, 'valid': message.valid && message.touched}" name="message" placeholder="{{'placeholder3' | translate}}" #message="ngModel" required></textarea>
-            @if (message.invalid && message.touched || message.invalid && contactForm.submitted) {
+            <textarea [(ngModel)]="contactData.message"
+                      [ngClass]="{'invalid': message.invalid && (message.touched || contactForm.submitted), 'valid': message.valid && message.touched}"
+                      name="message"
+                      placeholder="{{'placeholder3' | translate}}"
+                      #message="ngModel" required></textarea>
+            @if (message.invalid && (message.touched || contactForm.submitted)) {
               <span class="field-error">{{'user_feedback3' | translate}}</span>
             }
           </div>
@@ -36,7 +64,8 @@
 
         <div class="form-privacy">
           <div class="privacy-row">
-            <input type="checkbox" [ngModel] name="checkbox" #checkbox="ngModel" required>
+            <input type="checkbox" [(ngModel)]="acceptedPrivacy" name="checkbox"
+                   #checkbox="ngModel" required>
             <span>{{'checkbox1' | translate}}<a href="privacy_policy">{{'contact_privacy_policy' | translate}}</a>{{'checkbox2' | translate}}</span>
           </div>
           @if (checkbox.invalid && contactForm.submitted) {
@@ -44,24 +73,35 @@
           }
         </div>
 
-        <button [disabled]="!checkbox" [ngClass]="{'disabled': name.invalid || email.invalid || message.invalid || checkbox.invalid}">
-          <span>{{'contact_button' | translate}}</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-          </svg>
+        @if (submitError) {
+          <p class="form-submit-error">Etwas ist schiefgelaufen. Bitte versuche es erneut oder schreib mir direkt an <a href="mailto:contact@hassan-ammar.com">contact&#64;hassan-ammar.com</a></p>
+        }
+
+        <button type="submit"
+                [disabled]="isSubmitting"
+                [class.disabled]="isSubmitting || name.invalid || email.invalid || message.invalid || checkbox.invalid">
+          @if (isSubmitting) {
+            <span class="btn-spinner"></span>
+            <span>Wird gesendet…</span>
+          } @else {
+            <span>{{'contact_button' | translate}}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+          }
         </button>
       </form>
 
       <div class="contact-back-top">
         <a href="#above_the_fold_section" aria-label="Zurück nach oben">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 19V5M5 12l7-7 7 7"/>
+          </svg>
         </a>
       </div>
     </div>
   </div>
 
 </section>
-
-<div id="feedback">
-  <span>{{'user_feedback5' | translate}}</span>
-</div>

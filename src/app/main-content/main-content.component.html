@@ -1,10 +1,40 @@
-<div id="journey">
-  <div id="stages">
-    <div class="stage stage--hero"      data-stage="0"><app-above-the-fold></app-above-the-fold></div>
-    <div class="stage stage--about"     data-stage="1"><app-about-me></app-about-me></div>
-    <div class="stage stage--skills"    data-stage="2"><app-my-skills></app-my-skills></div>
-    <div class="stage stage--portfolio" data-stage="3"><app-portfolio></app-portfolio></div>
-    <div class="stage stage--contact"   data-stage="4"><app-contact></app-contact></div>
-    <div class="stage stage--footer" data-stage="5"><app-footer></app-footer></div>
+<div class="spatial-scroll-wrapper">
+  <div class="spatial-viewport">
+    <!-- WebGL Canvas for the particle system -->
+    <canvas id="global-canvas"></canvas>
+    
+    <!-- CSS3D Container for the 3D-positioned Angular components -->
+    <div id="css3d-container"></div>
+  </div>
+</div>
+
+<!-- Source elements to be extracted and turned into 3D objects -->
+<div id="css3d-source-elements">
+  <div id="c3d-above-the-fold" class="c3d-card">
+    <app-above-the-fold></app-above-the-fold>
+  </div>
+  <div id="c3d-about-me" class="c3d-card">
+    <app-about-me></app-about-me>
+  </div>
+  <div id="c3d-my-skills" class="c3d-card">
+    <app-my-skills></app-my-skills>
+  </div>
+  <div id="c3d-portfolio-intro" class="c3d-card">
+    <app-portfolio></app-portfolio>
+  </div>
+  <div id="c3d-project-0" class="c3d-card project-3d-card">
+    <app-project [projectIndex]="0"></app-project>
+  </div>
+  <div id="c3d-project-1" class="c3d-card project-3d-card">
+    <app-project [projectIndex]="1"></app-project>
+  </div>
+  <div id="c3d-project-2" class="c3d-card project-3d-card">
+    <app-project [projectIndex]="2"></app-project>
+  </div>
+  <div id="c3d-contact" class="c3d-card">
+    <app-contact></app-contact>
+  </div>
+  <div id="c3d-footer" class="c3d-footer-card">
+    <app-footer></app-footer>
   </div>
 </div>

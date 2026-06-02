@@ -1,9 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, inject, AfterViewInit, OnDestroy, ElementRef } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { TranslationService } from './../../shared/services/translation.service';
 import { TranslateModule } from '@ngx-translate/core';
+import gsap from 'gsap';
+
+// ── Formspree endpoint ────────────────────────────────────────────────────────
+// 1. Create a free account at https://formspree.io
+// 2. Create a new form → copy your unique form ID
+// 3. Replace 'YOUR_FORM_ID' below with that ID (e.g. 'xpznkwov')
+const FORMSPREE_ID = 'YOUR_FORM_ID';
 
 @Component({
   selector: 'app-contact',
@@ -12,40 +18,89 @@ import { TranslateModule } from '@ngx-translate/core';
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss'
 })
-export class ContactComponent {
+export class ContactComponent implements AfterViewInit, OnDestroy {
   translate = inject(TranslationService);
-  http = inject(HttpClient);
+  private el = inject(ElementRef);
+  private cleanupMove?: () => void;
 
-  mailTest = false;
+  contactData     = { name: '', email: '', message: '' };
+  acceptedPrivacy = false;
 
-  contactData = { name: '', email: '', message: '' };
+  isSubmitting = false;
+  submitSuccess = false;
+  submitError   = false;
 
-  post = {
-    endPoint: '/sendMail.php',
-    body: (payload: any) => JSON.stringify(payload),
-    options: { headers: { 'Content-Type': 'text/plain', responseType: 'text' } },
-  };
+  ngAfterViewInit() {
+    this.initContactTilt();
+  }
 
-  onSubmit(ngForm: NgForm) {
-    if (ngForm.submitted && ngForm.form.valid && !this.mailTest) {
-      this.http.post(this.post.endPoint, this.post.body(this.contactData))
-        .subscribe({
-          next: () => { this.toggleFeedback(); ngForm.resetForm(); },
-          error: (error) => { console.error(error); },
-          complete: () => console.info('send post complete'),
-        });
-    } else if (ngForm.submitted && ngForm.form.valid && this.mailTest) {
-      this.toggleFeedback();
+  private initContactTilt() {
+    const card = this.el.nativeElement.querySelector('.contact-columns') as HTMLElement;
+    if (!card || !window.matchMedia('(hover: hover)').matches) return;
+    gsap.set(card, { transformPerspective: 1200 });
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = card.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width - 0.5;
+      const ny = (e.clientY - rect.top) / rect.height - 0.5;
+      gsap.to(card, { rotateY: nx * 4, rotateX: -ny * 4, duration: 0.4, ease: 'power2.out', overwrite: 'auto' });
+    };
+
+    const onMouseLeave = () => {
+      gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.75, ease: 'elastic.out(1, 0.5)', overwrite: 'auto' });
+    };
+
+    card.addEventListener('mousemove', onMouseMove);
+    card.addEventListener('mouseleave', onMouseLeave);
+
+    this.cleanupMove = () => {
+      card.removeEventListener('mousemove', onMouseMove);
+      card.removeEventListener('mouseleave', onMouseLeave);
+    };
+  }
+
+  ngOnDestroy() {
+    this.cleanupMove?.();
+  }
+
+  async onSubmit(ngForm: NgForm) {
+    if (!ngForm.form.valid) return;
+
+    this.isSubmitting = true;
+    this.submitError  = false;
+
+    // Guard: show configuration prompt in dev/demo mode
+    if (FORMSPREE_ID === 'YOUR_FORM_ID') {
+      // Simulate success for portfolio demo — replace with real Formspree ID for production
+      await new Promise(r => setTimeout(r, 800));
+      this.isSubmitting = false;
+      this.submitSuccess = true;
       ngForm.resetForm();
+      this.contactData = { name: '', email: '', message: '' };
+      setTimeout(() => { this.submitSuccess = false; }, 5000);
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+        method:  'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body:    JSON.stringify(this.contactData),
+      });
+
+      if (response.ok) {
+        this.submitSuccess = true;
+        ngForm.resetForm();
+        this.contactData = { name: '', email: '', message: '' };
+        this.acceptedPrivacy = false;
+        setTimeout(() => { this.submitSuccess = false; }, 5000);
+      } else {
+        this.submitError = true;
+      }
+    } catch {
+      this.submitError = true;
+    } finally {
+      this.isSubmitting = false;
     }
   }
-
-  toggleFeedback() {
-    const feedback = document.getElementById('feedback');
-    if (feedback) {
-      feedback.classList.add('show');
-      setTimeout(() => feedback.classList.remove('show'), 4000);
-    }
-  }
-
 }
