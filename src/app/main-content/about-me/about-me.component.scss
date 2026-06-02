@@ -2,29 +2,22 @@
 
 :host {
   width: 100%;
-  height: 100%;
+  min-height: 100svh;
   @include flexBox($fd: column);
   position: relative;
 
   // ── Uniform atmosphere ──────────────────────────────────────────────────
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse 90% 70% at 50% 50%, var(--fg-04) 0%, transparent 68%);
-    pointer-events: none;
-    z-index: 0;
-  }
+  // &::before REMOVED
 }
 
 section {
   position: relative;
   z-index: 2;
-  height: 100%;
+  min-height: 100svh;
   @include sectionPadding();
   @include contentWidth();
   @include flexBox($ai: stretch);
-  contain: layout paint;
+  contain: layout;
   content-visibility: auto;
   contain-intrinsic-size: 0 600px;
 }
@@ -33,13 +26,14 @@ section {
 
 .about-section {
   width: 100%;
-  height: 100%;
+  flex: 1;
   // Mobile: single column, photo centered above text
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
   padding: 0 $paddingLR500;
+  transform-style: preserve-3d;
 
   @media (min-width: 768px) {
     flex-direction: row;
@@ -67,6 +61,8 @@ section {
   display: flex;
   flex-direction: column;
   gap: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(10px);
 
   @media (min-width: 768px) {
     max-width: 520px;
@@ -142,6 +138,8 @@ section {
     0 0 0 1px var(--fg-03),
     0 32px 80px var(--shadow-photo-md);
   position: relative;
+  transform-style: preserve-3d;
+  transform: translateZ(20px);
 
   @media (min-width: 768px) {
     // Desktop: responsive width within column
