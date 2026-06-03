@@ -8,14 +8,14 @@
   top: 0;
   left: 0;
   background-size: 240%;
-  background-position: center bottom;
+  background-position: bottom right;
   background-repeat: no-repeat;
   background-attachment: fixed;
   will-change: filter;
   transition: filter 0.3s ease;
   filter: sepia(0.28) saturate(1.1) contrast(1.05) brightness(1.02);
   object-fit: cover;
-  object-position: center bottom;
+  object-position: bottom right;
 }
 
 // Light mode — invert frame colors for white theme and apply warm ivory color grading
