@@ -22,6 +22,29 @@ canvas {
   .cinema-loader { display: none; }
 }
 
+// ── Cinematic gradient overlay ──────────────────────────────────────────────────
+// Full-screen, fills solid black at the bottom and fades to transparent toward
+// the top — frames the subject and grounds the text at every resolution.
+
+.cinema-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  will-change: opacity;
+  background: linear-gradient(to top,
+    #000            0%,
+    rgba(0, 0, 0, 0.92) 18%,
+    rgba(0, 0, 0, 0.62) 42%,
+    rgba(0, 0, 0, 0.30) 64%,
+    rgba(0, 0, 0, 0.08) 84%,
+    rgba(0, 0, 0, 0)   100%);
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
 // ── Loading overlay ────────────────────────────────────────────────────────────
 
 .cinema-loader {

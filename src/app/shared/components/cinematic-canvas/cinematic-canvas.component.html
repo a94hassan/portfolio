@@ -1,5 +1,9 @@
 <canvas #canvas></canvas>
 
+<!-- Full-bleed black overlay: opaque at the bottom, fading to transparent toward
+     the top at every resolution. Fades out together with the video. -->
+<div #overlay class="cinema-overlay" aria-hidden="true"></div>
+
 <div #loader class="cinema-loader">
   <div class="cinema-loader-bar">
     <div class="cinema-loader-fill" [style.width.%]="loadPct"></div>

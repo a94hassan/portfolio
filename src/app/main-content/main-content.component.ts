@@ -66,9 +66,10 @@ export class MainContentComponent implements OnDestroy {
 
       // Create main ScrollTrigger timeline
       // 3D station map (app.component.ts spline): Hero=0.0, About=0.143, Skills=0.286
-      // Video plays start→finish across Hero+About, last frame reached just
-      // before Skills (0.270) and fully faded exactly as Skills arrives (0.286).
-      const CINEMA_END   = 0.270; // frame 151 reached at this scroll progress
+      // Video plays start→finish across Hero+About (frames done at 0.220, just
+      // past About), then fades smoothly over a long 0.066 window so the exit
+      // into Skills is gradual, fully transparent exactly at the Skills station.
+      const CINEMA_END   = 0.220; // frame 151 reached at this scroll progress
       const CINEMA_FADE  = 0.286; // fully transparent by the Skills station
 
       const master = gsap.timeline({
@@ -88,10 +89,12 @@ export class MainContentComponent implements OnDestroy {
             const frameP = Math.min(1, p / CINEMA_END);
             c.setProgress(frameP);
 
-            // Continuous opacity: full during cinema, linear fade after
-            const opacity = p <= CINEMA_END
-              ? 1
-              : Math.max(0, 1 - (p - CINEMA_END) / (CINEMA_FADE - CINEMA_END));
+            // Continuous opacity: full during cinema, smoothstep ease-out after
+            let opacity = 1;
+            if (p > CINEMA_END) {
+              const t = Math.min(1, (p - CINEMA_END) / (CINEMA_FADE - CINEMA_END));
+              opacity = 1 - t * t * (3 - 2 * t); // smoothstep — gentle in/out
+            }
             c.setOpacity(opacity);
           }
         }

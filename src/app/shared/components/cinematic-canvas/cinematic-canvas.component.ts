@@ -10,6 +10,7 @@ import gsap from 'gsap';
 })
 export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('overlay') overlayRef!: ElementRef<HTMLElement>;
   @ViewChild('loader') loaderRef!: ElementRef<HTMLElement>;
 
   loadPct = 0;
@@ -19,12 +20,17 @@ export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
   private ctx!: CanvasRenderingContext2D;
   private currentFrameIndex = 0;
   private readonly TOTAL_FRAMES = 151;
-  // Source frames are 1172×1764 portrait; the subject's face sits high in the
-  // frame. FOCUS_Y = which vertical fraction of the source is anchored to the
-  // canvas centre (0.20 ≈ the face). ZOOM gives headroom so no black bars show
-  // and crops the baked-in KlingAI watermark at the bottom.
+  // Source frames are 1172×1764 portrait; the subject (Hassan) stands centred on
+  // a black backdrop, face high in the frame.
+  //   FOCUS_Y   = source vertical fraction anchored to canvas centre (≈ the face)
+  //   SUBJECT_X = subject's horizontal centre within the source
+  //   SLOT_X    = where to place the subject on screen (0.5=centre, >0.5=right)
+  // ZOOM gives headroom so the subject sits right-of-centre without black bars and
+  // crops the baked-in KlingAI watermark at the bottom.
   private readonly FOCUS_Y = 0.17;
-  private readonly ZOOM_FACTOR = 1.22;
+  private readonly SUBJECT_X = 0.48;
+  private readonly SLOT_X = 0.70;
+  private readonly ZOOM_FACTOR = 1.35;
   private cleanup: Array<() => void> = [];
   private zone = inject(NgZone);
 
@@ -94,9 +100,10 @@ export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
     const scale = Math.max(cw / iw, ch / ih) * this.ZOOM_FACTOR;
     const sw = iw * scale;
     const sh = ih * scale;
-    const ox = (cw - sw) / 2;
-    // Anchor FOCUS_Y of the source to the canvas centre, then clamp so the
-    // image edges never reveal black bars.
+    // Horizontal: push the subject toward SLOT_X, clamp so no black bar appears.
+    let ox = this.SLOT_X * cw - this.SUBJECT_X * sw;
+    ox = Math.min(0, Math.max(cw - sw, ox));
+    // Vertical: anchor FOCUS_Y of the source to the canvas centre, then clamp.
     let oy = ch / 2 - this.FOCUS_Y * sh;
     oy = Math.min(0, Math.max(ch - sh, oy));
 
@@ -112,9 +119,10 @@ export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** Directly set canvas opacity — called on every scrub tick, no tween needed */
+  /** Directly set video + overlay opacity — called on every scrub tick */
   setOpacity(v: number) {
-    gsap.set(this.canvasRef.nativeElement, { opacity: Math.max(0, Math.min(1, v)) });
+    const o = Math.max(0, Math.min(1, v));
+    gsap.set([this.canvasRef.nativeElement, this.overlayRef.nativeElement], { opacity: o });
   }
 
   private resizeCanvas() {
