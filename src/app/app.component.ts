@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, NgZone, inject, afterNextRender } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
+import { CinematicCanvasComponent } from './shared/components/cinematic-canvas/cinematic-canvas.component';
 import { ThemeService } from './shared/services/theme.service';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -12,7 +13,7 @@ import { AiChatComponent } from './shared/components/ai-chat/ai-chat.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, AiChatComponent],
+  imports: [RouterOutlet, HeaderComponent, AiChatComponent, CinematicCanvasComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

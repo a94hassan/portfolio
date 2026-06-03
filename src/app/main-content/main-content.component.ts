@@ -65,6 +65,11 @@ export class MainContentComponent implements OnDestroy {
       gsap.set('.contact-form-wrap', { y: 30, opacity: 0 });
 
       // Create main ScrollTrigger timeline
+      // 3D station map (app.component.ts spline): Hero=0.0, About=0.143, Skills=0.286
+      // Canvas covers Hero+About Me (0→0.230), fades to black by 0.270
+      const CINEMA_END   = 0.230; // last frame at this scroll progress
+      const CINEMA_FADE  = 0.270; // fully transparent by this point
+
       const master = gsap.timeline({
         scrollTrigger: {
           trigger: '.spatial-scroll-wrapper',
@@ -72,7 +77,22 @@ export class MainContentComponent implements OnDestroy {
           end: 'bottom bottom',
           scrub: 1.2,
           pin: '.spatial-viewport',
-          anticipatePin: 1
+          anticipatePin: 1,
+          onUpdate: (self) => {
+            const p = self.progress;
+            const c = (window as any).__cinema;
+            if (!c) return;
+
+            // Map scroll 0→CINEMA_END onto frame 0→1
+            const frameP = Math.min(1, p / CINEMA_END);
+            c.setProgress(frameP);
+
+            // Continuous opacity: full during cinema, linear fade after
+            const opacity = p <= CINEMA_END
+              ? 1
+              : Math.max(0, 1 - (p - CINEMA_END) / (CINEMA_FADE - CINEMA_END));
+            c.setOpacity(opacity);
+          }
         }
       });
 

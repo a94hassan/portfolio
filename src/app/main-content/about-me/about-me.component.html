@@ -1,40 +1,46 @@
 <section id="about_me_section">
+
+  <!-- Cinematic gradient — keeps text readable over canvas frames -->
+  <div class="about-vignette" aria-hidden="true"></div>
+
   <div class="about-section">
 
-    <div class="about-content">
-      <div class="section-heading">
-        <h1 class="about-heading">{{'about_me_h1' | translate}}</h1>
-      </div>
-      <p class="about-body">{{'about_me_p1' | translate}}</p>
+    <div class="about-glass-card">
 
-      <div class="about-trait">
-        <div class="about-icon">
-          <!-- Code2 — frontend tech stack / capable developer -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m18 16 4-4-4-4"/>
-            <path d="m6 8-4 4 4 4"/>
-            <path d="m14.5 4-5 16"/>
-          </svg>
+      <div class="about-content">
+        <div class="section-heading">
+          <h1 class="about-heading">{{'about_me_h1' | translate}}</h1>
         </div>
-        <p>{{'about_me_p2' | translate}}</p>
-      </div>
+        <p class="about-body">{{'about_me_p1' | translate}}</p>
 
-      <div class="about-trait">
-        <div class="about-icon">
-          <!-- Award — Developer Akademie certification / job-ready -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="8" r="6"/>
-            <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>
-          </svg>
+        <div class="about-trait">
+          <div class="about-icon">
+            <!-- Code2 — frontend tech -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m18 16 4-4-4-4"/>
+              <path d="m6 8-4 4 4 4"/>
+              <path d="m14.5 4-5 16"/>
+            </svg>
+          </div>
+          <p>{{'about_me_p2' | translate}}</p>
         </div>
-        <p>{{'about_me_p3' | translate}}</p>
-      </div>
-    </div>
 
-    <div class="about-photo-wrap">
-      <img class="about-photo-img--dark" src="./../../../assets/img/2_about_me_section/photo_about_me.webp" alt="Hassan Ammar" loading="lazy">
-      <img class="about-photo-img--light" src="./../../../assets/img/2_about_me_section/photo_about_me_light.webp" alt="Hassan Ammar" loading="lazy">
-    </div>
+        <div class="about-trait">
+          <div class="about-icon">
+            <!-- Award — certification -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="6"/>
+              <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>
+            </svg>
+          </div>
+          <p>{{'about_me_p3' | translate}}</p>
+        </div>
+      </div>
+
+    </div><!-- /about-glass-card -->
 
   </div>
+
 </section>

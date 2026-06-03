@@ -1,0 +1,53 @@
+:host {
+  display: contents;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background: #000;
+  will-change: transform, opacity;
+}
+
+// ── Loading overlay ────────────────────────────────────────────────────────────
+
+.cinema-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  pointer-events: none;
+}
+
+.cinema-loader-bar {
+  width: 200px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.cinema-loader-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.50);
+  transition: width 0.12s linear;
+}
+
+.cinema-loader-pct {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.20em;
+  color: rgba(255, 255, 255, 0.30);
+  text-transform: uppercase;
+}

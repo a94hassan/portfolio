@@ -20,7 +20,7 @@ export class AboutMeComponent implements AfterViewInit, OnDestroy {
   }
 
   private initAboutTilt() {
-    const card = this.el.nativeElement.querySelector('.about-section') as HTMLElement;
+    const card = this.el.nativeElement.querySelector('.about-glass-card') as HTMLElement;
     if (!card || !window.matchMedia('(hover: hover)').matches) return;
     gsap.set(card, { transformPerspective: 1200 });
 
