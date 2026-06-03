@@ -140,11 +140,11 @@ header {
 }
 
 .logo-fn {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--font-display);
   font-style: normal;
-  font-weight: 500;
-  font-size: 13px;
-  letter-spacing: -0.01em;
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: 0;
   line-height: 1;
   color: var(--fg);
   transition: opacity 0.25s ease;

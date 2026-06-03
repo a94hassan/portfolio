@@ -18,9 +18,13 @@ export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
   private frames: HTMLImageElement[] = [];
   private ctx!: CanvasRenderingContext2D;
   private currentFrameIndex = 0;
-  private currentlyVisible = true;
   private readonly TOTAL_FRAMES = 151;
-  private readonly ZOOM_FACTOR = 1.08;
+  // Source frames are 1172×1764 portrait; the subject's face sits high in the
+  // frame. FOCUS_Y = which vertical fraction of the source is anchored to the
+  // canvas centre (0.20 ≈ the face). ZOOM gives headroom so no black bars show
+  // and crops the baked-in KlingAI watermark at the bottom.
+  private readonly FOCUS_Y = 0.17;
+  private readonly ZOOM_FACTOR = 1.22;
   private cleanup: Array<() => void> = [];
   private zone = inject(NgZone);
 
@@ -40,8 +44,7 @@ export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
 
       (window as any).__cinema = {
         setProgress: (p: number) => this.setProgress(p),
-        setOpacity:  (v: number) => this.setOpacity(v),
-        setVisible:  (v: boolean) => this.setVisible(v)
+        setOpacity:  (v: number) => this.setOpacity(v)
       };
     });
   }
@@ -92,7 +95,10 @@ export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
     const sw = iw * scale;
     const sh = ih * scale;
     const ox = (cw - sw) / 2;
-    const oy = (ch - sh) / 2;
+    // Anchor FOCUS_Y of the source to the canvas centre, then clamp so the
+    // image edges never reveal black bars.
+    let oy = ch / 2 - this.FOCUS_Y * sh;
+    oy = Math.min(0, Math.max(ch - sh, oy));
 
     this.ctx.clearRect(0, 0, cw, ch);
     this.ctx.drawImage(img, ox, oy, sw, sh);
@@ -111,20 +117,15 @@ export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
     gsap.set(this.canvasRef.nativeElement, { opacity: Math.max(0, Math.min(1, v)) });
   }
 
-  setVisible(visible: boolean) {
-    if (visible === this.currentlyVisible) return;
-    this.currentlyVisible = visible;
-    gsap.to(this.canvasRef.nativeElement, {
-      opacity: visible ? 1 : 0,
-      duration: 0.55,
-      ease: 'power2.inOut'
-    });
-  }
-
   private resizeCanvas() {
     const canvas = this.canvasRef.nativeElement;
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Render at device-pixel resolution for crisp frames on HiDPI/Retina
+    // displays — the CSS box stays 100%×100% while the backing store scales up.
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width  = Math.round(window.innerWidth  * dpr);
+    canvas.height = Math.round(window.innerHeight * dpr);
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
     this.drawFrame(this.currentFrameIndex);
   }
 

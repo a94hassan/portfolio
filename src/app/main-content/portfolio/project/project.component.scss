@@ -161,7 +161,8 @@
 }
 
 .project-num {
-  font-family: 'Unbounded', sans-serif;
+  // Small uppercase tracking label → Inter, not the display serif
+  font-family: 'Inter', sans-serif;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.32em;
@@ -182,11 +183,11 @@
 }
 
 h4 {
-  font-family: 'Unbounded', sans-serif;
-  font-weight: 500;
-  font-size: clamp(18px, 2vw, 28px);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(22px, 2.6vw, 36px);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
   color: var(--fg);
   margin: 0;
 }

@@ -71,7 +71,7 @@
   --btn-solid-color: #0a0a0a;
   --btn-solid-sh: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 4px 20px rgba(0, 0, 0, 0.35);
   --btn-solid-sh-h: 0 1px 0 rgba(255, 255, 255, 0.90) inset, 0 10px 32px rgba(0, 0, 0, 0.45);
-  --font-display: 'Unbounded', sans-serif;
+  --font-display: 'Instrument Serif', Georgia, serif;
 
   // ── Border-radius scale ─────────────────────────────────────────────────────
   // Single source of truth — every rounded element references this scale.
@@ -528,19 +528,18 @@ html.light {
 // frontier apps (Linear, Vercel, Raycast, Claude.ai). Critters will inline the
 // @font-face declarations at build time → zero extra network round-trip.
 
-// ─── Display typography — Unbounded + Inter ───────────────────────────────────
-// h1/h2: Unbounded 500/600 — ultra-wide expanded geometric. No serif, no italic.
-//        Wide letterforms create architectural presence; rare in dev portfolios.
-//        Sizes ~40% smaller than narrow fonts — the width does the work.
-// Body:  Inter — optical-size humanist, zero noise. Together: max contrast.
+// ─── Display typography — Instrument Serif + Inter ────────────────────────────
+// h1/h2: Instrument Serif 400 — cinematic high-contrast serif. Elegant, editorial,
+//        pairs with the scroll-driven hero video. Single weight (400) by design;
+//        never fake-bold it. Body: Inter — optical-size humanist, zero noise.
 
 h1,
 h2 {
-  font-family: 'Unbounded', sans-serif;
+  font-family: var(--font-display);
   font-style: normal;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
   // Ensure text remains visible during opacity/transform animations
   will-change: opacity, transform;
   backface-visibility: visible;
@@ -552,14 +551,16 @@ h2 {
 // section title.
 
 @mixin headingSize() {
-  font-size: clamp(28px, 5vw, 52px);
+  // Instrument Serif carries more presence at larger sizes than the old
+  // geometric sans — sizes bumped up accordingly.
+  font-size: clamp(36px, 6.5vw, 64px);
 
   @media (min-width: 768px) {
-    font-size: clamp(32px, 4.6vw, 56px);
+    font-size: clamp(44px, 6vw, 72px);
   }
 
   @media (min-width: 1024px) {
-    font-size: clamp(36px, 4.4vw, 60px);
+    font-size: clamp(48px, 5.5vw, 80px);
   }
 }
 

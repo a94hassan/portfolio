@@ -186,18 +186,6 @@ export class AppComponent implements OnInit, OnDestroy {
     const camera = new THREE.PerspectiveCamera(60, w / h, 120, 5000);
     camera.position.set(0, 0, 750);
 
-    // Add Lights for 3D meshes (Refined & Minimalist)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.12);
-    scene.add(ambientLight);
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.35);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
-
-    const pointLight = new THREE.PointLight(0xffffff, 0.40, 1500);
-    pointLight.position.set(0, 200, 400);
-    scene.add(pointLight);
-
     // 1. WebGL Renderer (Stardust Nebula)
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setSize(w, h);
@@ -281,64 +269,29 @@ export class AppComponent implements OnInit, OnDestroy {
     scene.add(new THREE.Points(geo, mat));
 
     // ════════════════════════════════════════════════════════════════════════════
-    // FLOATING 3D MESHES (HERO & ABOUT ME)
+    // MINIMAL AMBIENT GEOMETRY — oversized, faint, slow-drifting rings
     // ════════════════════════════════════════════════════════════════════════════
+    // Replaces the old glass torus-knot / icosahedron. One huge ultra-thin ring
+    // per focal station: large presence, near-invisible opacity, calm rotation —
+    // a quiet halo behind the cinematic video instead of busy floating crystals.
 
-    // Glass Crystal Torus Knot for Hero
-    const heroGeom = new THREE.TorusKnotGeometry(48, 14, 128, 16);
-    const heroMat = new THREE.MeshPhysicalMaterial(
-      isLight() ? {
-        color:        0x7a736b,
-        metalness:    0.1,
-        roughness:    0.2,
-        transmission: 0.95,
-        thickness:    1.5,
-        transparent:  true,
-        opacity:      0.18,
-        side:         THREE.DoubleSide
-      } : {
-        color:        0xffffff, // pearlescent white
-        metalness:    0.95,
-        roughness:    0.05,
-        transmission: 0.95,
-        thickness:    2.0,
-        emissive:     new THREE.Color(0x111111), // clean silver glow
-        transparent:  true,
-        opacity:      0.18,
-        side:         THREE.DoubleSide
-      }
-    );
-    const heroMesh = new THREE.Mesh(heroGeom, heroMat);
-    heroMesh.position.set(380, 110, 350);
-    scene.add(heroMesh);
+    const makeRing = (radius: number, z: number, opacity: number, tilt: number) => {
+      const g = new THREE.TorusGeometry(radius, 0.7, 3, 220);
+      const m = new THREE.MeshBasicMaterial({
+        color:       isLight() ? 0x1c1a18 : 0xffffff,
+        transparent: true,
+        opacity,
+      });
+      const mesh = new THREE.Mesh(g, m);
+      mesh.position.set(0, 0, z);
+      mesh.rotation.x = tilt;
+      scene.add(mesh);
+      return mesh;
+    };
 
-    // Icosahedron for About Me
-    const aboutGeom = new THREE.IcosahedronGeometry(55, 1);
-    const aboutMat = new THREE.MeshPhysicalMaterial(
-      isLight() ? {
-        color:        0x8a8884,
-        metalness:    0.1,
-        roughness:    0.25,
-        transmission: 0.95,
-        thickness:    1.5,
-        transparent:  true,
-        opacity:      0.18,
-        side:         THREE.DoubleSide
-      } : {
-        color:        0xffffff,
-        metalness:    0.9,
-        roughness:    0.08,
-        transmission: 0.95,
-        thickness:    1.5,
-        emissive:     new THREE.Color(0x111111),
-        transparent:  true,
-        opacity:      0.18,
-        side:         THREE.DoubleSide
-      }
-    );
-    const aboutMesh = new THREE.Mesh(aboutGeom, aboutMat);
-    aboutMesh.position.set(-340, -120, -150);
-    scene.add(aboutMesh);
+    // Hero station (camera looks at z≈1200) + About station (z≈400)
+    const heroRing  = makeRing(560, 1150, isLight() ? 0.05 : 0.06, 0.42);
+    const aboutRing = makeRing(470, 350,  isLight() ? 0.04 : 0.05, -0.5);
 
     // ════════════════════════════════════════════════════════════════════════════
     // 3D SPATIAL EXHIBIT STATION COORDINATES
@@ -558,17 +511,9 @@ export class AppComponent implements OnInit, OnDestroy {
         targetLook.z
       );
 
-      // Rotate and float 3D Meshes
-      if (heroMesh) {
-        heroMesh.rotation.x += 0.006;
-        heroMesh.rotation.y += 0.009;
-        heroMesh.position.y = 110 + Math.sin(time * 0.9) * 14;
-      }
-      if (aboutMesh) {
-        aboutMesh.rotation.x += 0.004;
-        aboutMesh.rotation.y += 0.007;
-        aboutMesh.position.y = -120 + Math.cos(time * 0.75) * 10;
-      }
+      // Slowly rotate the ambient rings — barely-perceptible calm drift
+      if (heroRing)  heroRing.rotation.z  += 0.0010;
+      if (aboutRing) aboutRing.rotation.z -= 0.0008;
 
       // Dynamically fade CSS3D project and intro cards based on proximity (adjusted for expanded layout)
       updateCardFade(c3dIntro, p4, 900);
@@ -642,40 +587,16 @@ export class AppComponent implements OnInit, OnDestroy {
         mat.color.set(0x8a8884); mat.opacity = 0.08;
         mat.blending = THREE.NormalBlending; mat.size = 1.2;
 
-        heroMat.color.set(0x7a736b);
-        heroMat.metalness = 0.1;
-        heroMat.roughness = 0.2;
-        heroMat.transmission = 0.95;
-        heroMat.opacity = 0.18;
-        heroMat.emissive.set(0x000000);
-
-        aboutMat.color.set(0x8a8884);
-        aboutMat.metalness = 0.1;
-        aboutMat.roughness = 0.25;
-        aboutMat.transmission = 0.95;
-        aboutMat.opacity = 0.18;
-        aboutMat.emissive.set(0x000000);
+        (heroRing.material  as THREE.MeshBasicMaterial).color.set(0x1c1a18);
+        (aboutRing.material as THREE.MeshBasicMaterial).color.set(0x1c1a18);
       } else {
         mat.color.set(0xffffff); mat.opacity = 0.14;
         mat.blending = THREE.AdditiveBlending; mat.size = 1.2;
 
-        heroMat.color.set(0xffffff);
-        heroMat.metalness = 0.95;
-        heroMat.roughness = 0.05;
-        heroMat.transmission = 0.95;
-        heroMat.opacity = 0.18;
-        heroMat.emissive.set(0x111111);
-
-        aboutMat.color.set(0xffffff);
-        aboutMat.metalness = 0.9;
-        aboutMat.roughness = 0.08;
-        aboutMat.transmission = 0.95;
-        aboutMat.opacity = 0.18;
-        aboutMat.emissive.set(0x111111);
+        (heroRing.material  as THREE.MeshBasicMaterial).color.set(0xffffff);
+        (aboutRing.material as THREE.MeshBasicMaterial).color.set(0xffffff);
       }
       mat.needsUpdate = true;
-      heroMat.needsUpdate = true;
-      aboutMat.needsUpdate = true;
       (scene.fog as THREE.FogExp2).color.set(bgColor());
     };
 
@@ -707,10 +628,10 @@ export class AppComponent implements OnInit, OnDestroy {
       delete window.__beatPulse;
 
       // Dispose added 3D resources
-      heroGeom.dispose();
-      heroMat.dispose();
-      aboutGeom.dispose();
-      aboutMat.dispose();
+      heroRing.geometry.dispose();
+      (heroRing.material  as THREE.Material).dispose();
+      aboutRing.geometry.dispose();
+      (aboutRing.material as THREE.Material).dispose();
 
       geo.dispose(); mat.dispose(); sprite.dispose(); renderer.dispose();
       cssRenderer.domElement.remove();

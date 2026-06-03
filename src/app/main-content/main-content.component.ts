@@ -66,9 +66,10 @@ export class MainContentComponent implements OnDestroy {
 
       // Create main ScrollTrigger timeline
       // 3D station map (app.component.ts spline): Hero=0.0, About=0.143, Skills=0.286
-      // Canvas covers Hero+About Me (0→0.230), fades to black by 0.270
-      const CINEMA_END   = 0.230; // last frame at this scroll progress
-      const CINEMA_FADE  = 0.270; // fully transparent by this point
+      // Video plays start→finish across Hero+About, last frame reached just
+      // before Skills (0.270) and fully faded exactly as Skills arrives (0.286).
+      const CINEMA_END   = 0.270; // frame 151 reached at this scroll progress
+      const CINEMA_FADE  = 0.286; // fully transparent by the Skills station
 
       const master = gsap.timeline({
         scrollTrigger: {
