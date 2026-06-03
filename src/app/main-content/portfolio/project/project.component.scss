@@ -134,12 +134,13 @@
 
 // ─── Info card ────────────────────────────────────────────────────────────────
 .project-info {
+  @include liquidRim(var(--r-xl));
   flex: 0 0 400px;
   display: flex;
   flex-direction: column;
   gap: 20px;
   background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  border: none;
   border-radius: var(--r-xl);
   padding: 36px 32px;
   backdrop-filter: var(--glass-blur-strong) saturate(1.6);

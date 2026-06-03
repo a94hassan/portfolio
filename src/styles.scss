@@ -33,6 +33,16 @@
   --glass-border: rgba(255, 255, 255, 0.080);
   --glass-border-hi: rgba(255, 255, 255, 0.130);
 
+  // ── Liquid-glass rim (Velorah) — bright gradient edge, top + bottom only ──
+  --lg-bg: rgba(255, 255, 255, 0.045);
+  --lg-rim: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.50) 0%,
+    rgba(255, 255, 255, 0.16) 20%,
+    rgba(255, 255, 255, 0)    42%,
+    rgba(255, 255, 255, 0)    58%,
+    rgba(255, 255, 255, 0.16) 80%,
+    rgba(255, 255, 255, 0.48) 100%);
+
   // ── Glass Backdrop Blur Scale ──────────────────────────────────────────
   --glass-blur-soft: blur(8px);
   --glass-blur-medium: blur(16px);
@@ -132,6 +142,16 @@ html.light {
   --glass-bg-hi: rgba(0, 0, 0, 0.038);
   --glass-border: rgba(0, 0, 0, 0.070);
   --glass-border-hi: rgba(0, 0, 0, 0.130);
+
+  // Liquid-glass rim — dark edge on light backgrounds
+  --lg-bg: rgba(0, 0, 0, 0.025);
+  --lg-rim: linear-gradient(180deg,
+    rgba(0, 0, 0, 0.16) 0%,
+    rgba(0, 0, 0, 0.05) 20%,
+    rgba(0, 0, 0, 0)    42%,
+    rgba(0, 0, 0, 0)    58%,
+    rgba(0, 0, 0, 0.05) 80%,
+    rgba(0, 0, 0, 0.15) 100%);
 
   // ── Glass Backdrop Blur Scale (Light Mode) ────────────────────────────
   --glass-blur-soft:   blur(6px);
@@ -270,22 +290,49 @@ $transition: color 150ms ease-in-out, background-color 150ms ease-in-out,
   }
 
   @else {
-    // Ghost — very thin border, minimal fill, almost invisible
-    background: transparent;
-    border: 1px solid var(--glass-border);
+    // Ghost — liquid glass: frosted fill + gradient rim, no hard border
+    @include liquidRim(var(--r-pill));
+    background: var(--glass-bg-hi);
+    border: none;
     color: var(--fg-55);
+    backdrop-filter: var(--glass-blur-soft);
+    -webkit-backdrop-filter: var(--glass-blur-soft);
 
     &:hover {
       transform: translateY(-1px);
-      border-color: var(--glass-border-hi);
       color: var(--fg);
-      background: var(--glass-bg);
+      background: var(--surface-hi);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
     }
 
     &:active {
       transform: translateY(0);
     }
+  }
+}
+
+// ─── Liquid glass rim ─────────────────────────────────────────────────────────
+// Adds the Velorah-style bright gradient edge (brightest at top + bottom) to any
+// element that already has a frosted fill + backdrop-blur. Implemented as a
+// masked pseudo-element so it reads as a thin rim-light, not a flat border.
+// Uses ::after — host must not already use ::after. Pass the host's radius.
+
+@mixin liquidRim($radius: var(--r-xl)) {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: $radius;
+    padding: 1.4px;
+    background: var(--lg-rim);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    z-index: 3;
   }
 }
 

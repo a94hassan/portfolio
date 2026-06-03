@@ -178,11 +178,12 @@ section {
 // ─── Form ─────────────────────────────────────────────────────────────────────
 
 .contact-form {
+  @include liquidRim(var(--r-xl));
   display: flex;
   flex-direction: column;
   width: 100%;
   background: linear-gradient(155deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
-  border: 1px solid var(--glass-border);
+  border: none;
   border-radius: var(--r-xl);
   padding: 26px 20px;
   backdrop-filter: var(--glass-blur-strong);

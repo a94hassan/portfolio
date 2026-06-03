@@ -18,10 +18,6 @@ export class MySkillsComponent implements AfterViewInit, OnDestroy {
   private el    = inject(ElementRef);
   private tiltCleanups: (() => void)[] = [];
 
-  get isGerman(): boolean {
-    return localStorage.getItem('selectedLanguage') === 'de';
-  }
-
   ngAfterViewInit() {
     this.initSkillTilt();
     this.initDragAndAutoScroll();

@@ -51,11 +51,10 @@ section {
   align-items: center;
   gap: 16px;
 
+  // Heading size comes from the global .section-heading mixin → identical to
+  // every other section. Only the alignment is overridden here.
   .section-heading {
     justify-content: center;
-    h1 {
-      font-size: clamp(32px, 4vw, 56px);
-    }
   }
 
   .skills-description {
@@ -92,12 +91,13 @@ section {
 
 // ─── Skill Item Cards ────────────────────────────────────────────────────────
 .skill-item {
+  @include liquidRim(var(--r-lg));
   width: 165px;
   height: 195px;
   padding: 28px 18px;
   box-sizing: border-box;
   background: linear-gradient(160deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
-  border: 1px solid var(--glass-border);
+  border: none;
   border-radius: var(--r-lg);
   box-shadow:
     0 1px 0 var(--glass-border-hi) inset,
@@ -191,11 +191,6 @@ section {
   button {
     @include button();
   }
-}
-
-// German heading adjustments
-.german {
-  font-size: clamp(26px, 3.8vw, 50px) !important;
 }
 
 // ─── Light mode overrides ────────────────────────────────────────────────────
