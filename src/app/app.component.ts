@@ -1,13 +1,14 @@
-import { Component, OnInit, OnDestroy, NgZone, inject, afterNextRender } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, afterNextRender, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import gsap from 'gsap';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
+import type * as THREE from 'three';
+import { FrameParallaxService } from './core/services/frame-parallax.service';
+import { AiChatComponent } from './shared/components/ai-chat/ai-chat.component';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { ThemeService } from './shared/services/theme.service';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
-import type * as THREE from 'three';
-import Lenis from 'lenis';
-import { AiChatComponent } from './shared/components/ai-chat/ai-chat.component';
 
 @Component({
   selector: 'app-root',
@@ -18,14 +19,15 @@ import { AiChatComponent } from './shared/components/ai-chat/ai-chat.component';
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'portfolio';
-  private zone         = inject(NgZone);
+  private zone = inject(NgZone);
   private themeService = inject(ThemeService);
-  private animId       = 0;
+  private frameService = inject(FrameParallaxService);
+  private animId = 0;
   private lenis?: Lenis;
-  private threeCleanup?:    () => void;
-  private cursorCleanup?:   () => void;
+  private threeCleanup?: () => void;
+  private cursorCleanup?: () => void;
   private feedbackCleanup?: () => void;
-  private scrollCleanup?:   () => void;
+  private scrollCleanup?: () => void;
 
   constructor() {
     afterNextRender(() => {
@@ -50,7 +52,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Header entrance
     gsap.set('app-header', { y: -72, opacity: 0 });
-    gsap.to('app-header',  { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.2 });
+    gsap.to('app-header', { y: 0, opacity: 1, duration: 0.75, ease: 'power3.out', delay: 0.2 });
   }
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -67,14 +69,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private initLenis() {
     this.lenis = new Lenis({
-      duration:           1.2,
-      easing:             (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation:        'vertical',
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
       gestureOrientation: 'vertical',
-      smoothWheel:        true,
-      wheelMultiplier:    0.9,
-      touchMultiplier:    2.0,
-      infinite:           false,
+      smoothWheel: true,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 2.0,
+      infinite: false,
     });
 
     this.lenis.on('scroll', () => ScrollTrigger.update());
@@ -180,8 +182,8 @@ export class AppComponent implements OnInit, OnDestroy {
       return v || (isLight() ? '#ffffff' : '#050505');
     };
 
-    const scene  = new THREE.Scene();
-    scene.fog    = new THREE.FogExp2(new THREE.Color(bgColor()).getHex(), 0.00035);
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(new THREE.Color(bgColor()).getHex(), 0.00035);
     const camera = new THREE.PerspectiveCamera(60, w / h, 120, 5000);
     camera.position.set(0, 0, 750);
 
@@ -218,11 +220,11 @@ export class AppComponent implements OnInit, OnDestroy {
     sc.width = sc.height = 64;
     const sctx = sc.getContext('2d')!;
     const sg = sctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    sg.addColorStop(0,    'rgba(255,255,255,1.0)');
+    sg.addColorStop(0, 'rgba(255,255,255,1.0)');
     sg.addColorStop(0.20, 'rgba(255,255,255,0.85)');
     sg.addColorStop(0.50, 'rgba(255,255,255,0.25)');
     sg.addColorStop(0.80, 'rgba(255,255,255,0.05)');
-    sg.addColorStop(1,    'rgba(255,255,255,0)');
+    sg.addColorStop(1, 'rgba(255,255,255,0)');
     sctx.fillStyle = sg;
     sctx.fillRect(0, 0, 64, 64);
     const sprite = new THREE.CanvasTexture(sc);
@@ -243,11 +245,11 @@ export class AppComponent implements OnInit, OnDestroy {
       const ry = (Math.random() - 0.5) * 1200;
       const rz = Math.random() * -3300 + 800;
 
-      buf[i * 3]     = rx;
+      buf[i * 3] = rx;
       buf[i * 3 + 1] = ry;
       buf[i * 3 + 2] = rz;
 
-      origBuf[i * 3]     = rx;
+      origBuf[i * 3] = rx;
       origBuf[i * 3 + 1] = ry;
       origBuf[i * 3 + 2] = rz;
 
@@ -257,7 +259,7 @@ export class AppComponent implements OnInit, OnDestroy {
       // Color interpolation: mix 65% silver and 35% white/dark-grey for monochrome nebula
       const t = Math.random();
       const mixedColor = new THREE.Color().copy(color1).lerp(color2, t * 0.35);
-      colors[i * 3]     = mixedColor.r;
+      colors[i * 3] = mixedColor.r;
       colors[i * 3 + 1] = mixedColor.g;
       colors[i * 3 + 2] = mixedColor.b;
     }
@@ -267,15 +269,15 @@ export class AppComponent implements OnInit, OnDestroy {
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const mat = new THREE.PointsMaterial({
-      map:             sprite,
-      vertexColors:    true,
-      size:            1.2,
+      map: sprite,
+      vertexColors: true,
+      size: 1.2,
       sizeAttenuation: true,
-      transparent:     true,
-      opacity:         isLight() ? 0.08 : 0.14,
-      depthWrite:      false,
-      blending:        isLight() ? THREE.NormalBlending : THREE.AdditiveBlending,
-      alphaTest:       0.001,
+      transparent: true,
+      opacity: isLight() ? 0.08 : 0.14,
+      depthWrite: false,
+      blending: isLight() ? THREE.NormalBlending : THREE.AdditiveBlending,
+      alphaTest: 0.001,
     });
     scene.add(new THREE.Points(geo, mat));
 
@@ -287,24 +289,24 @@ export class AppComponent implements OnInit, OnDestroy {
     const heroGeom = new THREE.TorusKnotGeometry(48, 14, 128, 16);
     const heroMat = new THREE.MeshPhysicalMaterial(
       isLight() ? {
-        color:        0x7a736b,
-        metalness:    0.1,
-        roughness:    0.2,
+        color: 0x7a736b,
+        metalness: 0.1,
+        roughness: 0.2,
         transmission: 0.95,
-        thickness:    1.5,
-        transparent:  true,
-        opacity:      0.18,
-        side:         THREE.DoubleSide
+        thickness: 1.5,
+        transparent: true,
+        opacity: 0.18,
+        side: THREE.DoubleSide
       } : {
-        color:        0xffffff, // pearlescent white
-        metalness:    0.95,
-        roughness:    0.05,
+        color: 0xffffff, // pearlescent white
+        metalness: 0.95,
+        roughness: 0.05,
         transmission: 0.95,
-        thickness:    2.0,
-        emissive:     new THREE.Color(0x111111), // clean silver glow
-        transparent:  true,
-        opacity:      0.18,
-        side:         THREE.DoubleSide
+        thickness: 2.0,
+        emissive: new THREE.Color(0x111111), // clean silver glow
+        transparent: true,
+        opacity: 0.18,
+        side: THREE.DoubleSide
       }
     );
     const heroMesh = new THREE.Mesh(heroGeom, heroMat);
@@ -315,24 +317,24 @@ export class AppComponent implements OnInit, OnDestroy {
     const aboutGeom = new THREE.IcosahedronGeometry(55, 1);
     const aboutMat = new THREE.MeshPhysicalMaterial(
       isLight() ? {
-        color:        0x8a8884,
-        metalness:    0.1,
-        roughness:    0.25,
+        color: 0x8a8884,
+        metalness: 0.1,
+        roughness: 0.25,
         transmission: 0.95,
-        thickness:    1.5,
-        transparent:  true,
-        opacity:      0.18,
-        side:         THREE.DoubleSide
+        thickness: 1.5,
+        transparent: true,
+        opacity: 0.18,
+        side: THREE.DoubleSide
       } : {
-        color:        0xffffff,
-        metalness:    0.9,
-        roughness:    0.08,
+        color: 0xffffff,
+        metalness: 0.9,
+        roughness: 0.08,
         transmission: 0.95,
-        thickness:    1.5,
-        emissive:     new THREE.Color(0x111111),
-        transparent:  true,
-        opacity:      0.18,
-        side:         THREE.DoubleSide
+        thickness: 1.5,
+        emissive: new THREE.Color(0x111111),
+        transparent: true,
+        opacity: 0.18,
+        side: THREE.DoubleSide
       }
     );
     const aboutMesh = new THREE.Mesh(aboutGeom, aboutMat);
@@ -378,12 +380,12 @@ export class AppComponent implements OnInit, OnDestroy {
     createC3D('c3d-about-me', p2, r2);
     createC3D('c3d-my-skills', p3, r3);
     const c3dIntro = createC3D('c3d-portfolio-intro', p4, r4);
-    
+
     // Individual project cards as separate exhibits
     const c3dProj0 = createC3D('c3d-project-0', pProject0, rProject0);
     const c3dProj1 = createC3D('c3d-project-1', pProject1, rProject1);
     const c3dProj2 = createC3D('c3d-project-2', pProject2, rProject2);
-    
+
     createC3D('c3d-contact', p5, r5);
     createC3D('c3d-footer', pFooter, rFooter);
 
@@ -432,7 +434,7 @@ export class AppComponent implements OnInit, OnDestroy {
         const offsetDist = 380;
         const offsetX = Math.sin(rot.y) * offsetDist;
         const offsetZ = Math.cos(rot.y) * offsetDist;
-        
+
         targetZoomPos.set(pos.x + offsetX, pos.y, pos.z + offsetZ);
         targetZoomLookAt.copy(pos);
         window.__beatPulse?.();
@@ -446,7 +448,7 @@ export class AppComponent implements OnInit, OnDestroy {
         const target = e.target as HTMLElement;
         // Only zoom if they didn't click a link or button directly
         if (target.closest('a, button, input, textarea')) return;
-        
+
         this.zone.run(() => {
           zoomToProject(idx, pos, rot);
         });
@@ -484,7 +486,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (!obj || !obj.element) return;
       const el = obj.element;
       const distZ = Math.abs(camera.position.z - pos.z);
-      
+
       let opacity = 0;
       if (distZ < range) {
         const rawOpacity = 1 - (distZ / range);
@@ -510,12 +512,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
       const mLerp = 1 - Math.exp(-5 * dt);
       const zLerp = 1 - Math.exp((zoomedIndex !== -1 ? -6 : -3.5) * dt);
-      
+
       smX += (mNX - smX) * mLerp;
       smY += (mNY - smY) * mLerp;
 
       const rawF = window.__journeyProgress?.() ?? 0;
-      
+
       // Update mid-flight pointer states
       const cssContainerEl = document.getElementById('css3d-container');
       if (cssContainerEl) {
@@ -578,9 +580,9 @@ export class AppComponent implements OnInit, OnDestroy {
       // Interactive volumetric stardust flow field drift, mouse repulsion & restoring spring
       const influenceX = smX * 300 + camera.position.x;
       const influenceY = smY * 200 + camera.position.y;
-      const influenceZ = camera.position.z - 250; 
+      const influenceZ = camera.position.z - 250;
 
-      const bAge   = time - beatTime;
+      const bAge = time - beatTime;
       const rippleAmp = bAge < 1.8 ? Math.sin((1 - bAge / 1.8) * Math.PI) * Math.exp(-bAge * 1.6) * 75 : 0;
 
       const pos = geo.attributes['position'].array as Float32Array;
@@ -595,12 +597,12 @@ export class AppComponent implements OnInit, OnDestroy {
         const oz = origBuf[i3 + 2];
 
         // 1. Organic multi-octave flow field drift
-        pos[i3]     += (Math.sin(time * 0.15 + phase[i]) * 0.35 + Math.cos(time * 0.45 + phase[i] * 1.5) * 0.12) * dt * 30;
+        pos[i3] += (Math.sin(time * 0.15 + phase[i]) * 0.35 + Math.cos(time * 0.45 + phase[i] * 1.5) * 0.12) * dt * 30;
         pos[i3 + 1] += (Math.cos(time * 0.18 + phase[i]) * 0.35 + Math.sin(time * 0.35 + phase[i] * 2.0) * 0.12) * dt * 30;
         pos[i3 + 2] += (Math.sin(time * 0.10 + phase[i] * 2.5) * 0.25) * dt * 30;
 
         // 2. Spring restoring force to origin
-        pos[i3]     += (ox - px) * 0.065 * dt;
+        pos[i3] += (ox - px) * 0.065 * dt;
         pos[i3 + 1] += (oy - py) * 0.065 * dt;
         pos[i3 + 2] += (oz - pz) * 0.065 * dt;
 
@@ -608,10 +610,10 @@ export class AppComponent implements OnInit, OnDestroy {
         const dx = px - influenceX;
         const dy = py - influenceY;
         const dz = pz - influenceZ;
-        const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (d < 320) {
           const force = (1.0 - d / 320) * 22;
-          pos[i3]     += (dx / d) * force * dt * 45;
+          pos[i3] += (dx / d) * force * dt * 45;
           pos[i3 + 1] += (dy / d) * force * dt * 45;
           pos[i3 + 2] += (dz / d) * force * dt * 30;
         }
@@ -624,8 +626,8 @@ export class AppComponent implements OnInit, OnDestroy {
           const distDiff = Math.abs(distToCenter - targetDist);
           if (distDiff < 180) {
             const rippleForce = Math.sin((1 - distDiff / 180) * Math.PI) * rippleAmp * 0.08;
-            pos[i3]     += (px / distToCenter) * rippleForce;
-            pos[i3 + 2]     += (pz / distToCenter) * rippleForce;
+            pos[i3] += (px / distToCenter) * rippleForce;
+            pos[i3 + 2] += (pz / distToCenter) * rippleForce;
           }
         }
       }
@@ -691,16 +693,16 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     };
 
-    window.addEventListener('mousemove',   onMouseMove);
-    window.addEventListener('resize',      onResize);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('resize', onResize);
     window.addEventListener('themeChange', updateThemeColors);
     document.addEventListener('visibilitychange', onVis);
     animate(performance.now());
 
     this.threeCleanup = () => {
       cancelAnimationFrame(this.animId);
-      window.removeEventListener('mousemove',   onMouseMove);
-      window.removeEventListener('resize',      onResize);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('resize', onResize);
       window.removeEventListener('themeChange', updateThemeColors);
       document.removeEventListener('visibilitychange', onVis);
       delete window.__beatPulse;
@@ -723,15 +725,15 @@ export class AppComponent implements OnInit, OnDestroy {
   private initCustomCursor() {
     if (!window.matchMedia('(hover: hover)').matches) return;
     const ring = document.getElementById('cursor-ring');
-    const dot  = document.getElementById('cursor-dot');
+    const dot = document.getElementById('cursor-dot');
     if (!ring || !dot) return;
 
     gsap.set(ring, { xPercent: -50, yPercent: -50 });
-    gsap.set(dot,  { xPercent: -50, yPercent: -50 });
+    gsap.set(dot, { xPercent: -50, yPercent: -50 });
 
-    const isLight   = () => document.documentElement.classList.contains('light');
-    const ringBase  = () => isLight() ? 'rgba(17,17,17,0.32)'  : 'rgba(255,255,255,0.40)';
-    const ringHover = () => isLight() ? 'rgba(17,17,17,0.72)'  : 'rgba(255,255,255,0.75)';
+    const isLight = () => document.documentElement.classList.contains('light');
+    const ringBase = () => isLight() ? 'rgba(17,17,17,0.32)' : 'rgba(255,255,255,0.40)';
+    const ringHover = () => isLight() ? 'rgba(17,17,17,0.72)' : 'rgba(255,255,255,0.75)';
 
     let appeared = false;
     const SEL = 'app-header,.skill-item,button,a,input,textarea';
@@ -742,14 +744,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const onMove = (e: MouseEvent) => {
       if (!appeared) { gsap.to([ring, dot], { opacity: 1, duration: 0.4 }); appeared = true; }
-      gsap.to(dot,  { x: e.clientX, y: e.clientY, duration: 0 });
+      gsap.to(dot, { x: e.clientX, y: e.clientY, duration: 0 });
       gsap.to(ring, { x: e.clientX, y: e.clientY, duration: 0.18, ease: 'power2.out' });
       rects.forEach((r, i) => {
         spotEls[i]?.style.setProperty('--mx', `${e.clientX - r.left}px`);
         spotEls[i]?.style.setProperty('--my', `${e.clientY - r.top}px`);
       });
     };
-    const onOver  = (e: MouseEvent) => {
+    const onOver = (e: MouseEvent) => {
       if ((e.target as Element).closest('a,button,input,textarea')) {
         gsap.to(ring, {
           scale: 1.8,
@@ -762,7 +764,7 @@ export class AppComponent implements OnInit, OnDestroy {
         gsap.to(dot, { scale: 1.5, duration: 0.25 });
       }
     };
-    const onOut   = (e: MouseEvent) => {
+    const onOut = (e: MouseEvent) => {
       if ((e.target as Element).closest('a,button,input,textarea')) {
         gsap.to(ring, {
           scale: 1,
@@ -781,29 +783,31 @@ export class AppComponent implements OnInit, OnDestroy {
       if (!appeared) return;
       gsap.fromTo(ring,
         { scale: 1, opacity: 1 },
-        { scale: 2.8, opacity: 0, duration: 0.44, ease: 'power2.out',
-          onComplete: () => gsap.set(ring, { scale: 1, opacity: 1 }) }
+        {
+          scale: 2.8, opacity: 0, duration: 0.44, ease: 'power2.out',
+          onComplete: () => gsap.set(ring, { scale: 1, opacity: 1 })
+        }
       );
     };
 
-    window.addEventListener('mousemove',   onMove,  { passive: true });
-    window.addEventListener('scroll',      refresh, { passive: true });
-    window.addEventListener('resize',      refresh, { passive: true });
-    document.addEventListener('mouseover',  onOver);
-    document.addEventListener('mouseout',   onOut);
+    window.addEventListener('mousemove', onMove, { passive: true });
+    window.addEventListener('scroll', refresh, { passive: true });
+    window.addEventListener('resize', refresh, { passive: true });
+    document.addEventListener('mouseover', onOver);
+    document.addEventListener('mouseout', onOut);
     document.addEventListener('mouseleave', onLeave);
     document.addEventListener('mouseenter', onEnter);
-    document.addEventListener('click',      onClick);
+    document.addEventListener('click', onClick);
 
     this.cursorCleanup = () => {
       window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('scroll',    refresh);
-      window.removeEventListener('resize',    refresh);
-      document.removeEventListener('mouseover',  onOver);
-      document.removeEventListener('mouseout',   onOut);
+      window.removeEventListener('scroll', refresh);
+      window.removeEventListener('resize', refresh);
+      document.removeEventListener('mouseover', onOver);
+      document.removeEventListener('mouseout', onOut);
       document.removeEventListener('mouseleave', onLeave);
       document.removeEventListener('mouseenter', onEnter);
-      document.removeEventListener('click',      onClick);
+      document.removeEventListener('click', onClick);
     };
   }
 
@@ -827,9 +831,9 @@ export class AppComponent implements OnInit, OnDestroy {
         if (el.dataset['magBound']) return;
         el.dataset['magBound'] = '1';
         el.addEventListener('mousemove', (e: MouseEvent) => {
-          const r  = el.getBoundingClientRect();
-          const px = ((e.clientX - r.left) / r.width  - 0.5) * 2;
-          const py = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+          const r = el.getBoundingClientRect();
+          const px = ((e.clientX - r.left) / r.width - 0.5) * 2;
+          const py = ((e.clientY - r.top) / r.height - 0.5) * 2;
           gsap.to(el, { x: px * 7, y: py * 3.5, duration: 0.25, ease: 'power2.out', overwrite: 'auto' });
         });
         el.addEventListener('mouseleave', () => {
