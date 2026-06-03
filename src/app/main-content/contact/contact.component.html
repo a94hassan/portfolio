@@ -66,7 +66,7 @@
           <div class="privacy-row">
             <input type="checkbox" [(ngModel)]="acceptedPrivacy" name="checkbox"
                    #checkbox="ngModel" required>
-            <span>{{'checkbox1' | translate}}<a href="privacy_policy">{{'contact_privacy_policy' | translate}}</a>{{'checkbox2' | translate}}</span>
+            <span>{{'checkbox1' | translate}}<a routerLink="/privacy_policy">{{'contact_privacy_policy' | translate}}</a>{{'checkbox2' | translate}}</span>
           </div>
           @if (checkbox.invalid && contactForm.submitted) {
             <span class="field-error">{{'user_feedback4' | translate}}</span>

@@ -41,10 +41,11 @@ export class MySkillsComponent implements AfterViewInit, OnDestroy {
     let lastTime = 0;
     let rafId = 0;
     let scrollLeftVal = wrapper.scrollLeft;
-    const autoScrollSpeed = 0.65; // speed of auto-scroll in pixels per frame
+    const autoScrollSpeed = 0.45; // Slower, premium auto-scroll speed
 
     const tick = () => {
-      if (!isHovered && !isDragging) {
+      // Only auto-scroll when not dragging, not hovered, and not currently flinging with GSAP
+      if (!isHovered && !isDragging && !gsap.isTweening(wrapper)) {
         scrollLeftVal += autoScrollSpeed;
         const half = wrapper.scrollWidth / 2;
         if (scrollLeftVal >= half) {
@@ -62,6 +63,7 @@ export class MySkillsComponent implements AfterViewInit, OnDestroy {
     const onMouseDown = (e: MouseEvent) => {
       isDragging = true;
       wrapper.classList.add('dragging');
+      gsap.killTweensOf(wrapper); // stop any active momentum glide immediately
       startX = e.pageX - wrapper.offsetLeft;
       scrollLeft = wrapper.scrollLeft;
       velocity = 0;
@@ -96,25 +98,28 @@ export class MySkillsComponent implements AfterViewInit, OnDestroy {
       isDragging = false;
       wrapper.classList.remove('dragging');
 
-      const step = () => {
-        if (isDragging || Math.abs(velocity) < 0.05) return;
-        scrollLeftVal -= velocity * 14;
-        velocity *= 0.92;
-
-        const half = wrapper.scrollWidth / 2;
-        if (scrollLeftVal < 0) scrollLeftVal += half;
-        if (scrollLeftVal >= half) scrollLeftVal -= half;
-
-        wrapper.scrollLeft = scrollLeftVal;
-        rafId = requestAnimationFrame(step);
-      };
-      rafId = requestAnimationFrame(step);
+      if (Math.abs(velocity) > 0.05) {
+        // Smooth momentum glide using GSAP
+        const targetScroll = wrapper.scrollLeft - velocity * 180;
+        gsap.to(wrapper, {
+          scrollLeft: targetScroll,
+          duration: 0.8,
+          ease: 'power3.out',
+          overwrite: 'auto',
+          onUpdate: () => {
+            const half = wrapper.scrollWidth / 2;
+            if (wrapper.scrollLeft < 0) wrapper.scrollLeft += half;
+            if (wrapper.scrollLeft >= half) wrapper.scrollLeft -= half;
+          }
+        });
+      }
     };
 
     // Horizontal mousewheel scrolling
     const onWheel = (e: WheelEvent) => {
       if (e.deltaY !== 0) {
         e.preventDefault();
+        gsap.killTweensOf(wrapper);
         scrollLeftVal += e.deltaY * 0.7;
         const half = wrapper.scrollWidth / 2;
         if (scrollLeftVal < 0) scrollLeftVal += half;
@@ -131,7 +136,10 @@ export class MySkillsComponent implements AfterViewInit, OnDestroy {
     };
 
     // Touch events
-    const onTouchStart = () => isDragging = true;
+    const onTouchStart = () => {
+      isDragging = true;
+      gsap.killTweensOf(wrapper);
+    };
     const onTouchEnd = () => isDragging = false;
 
     wrapper.addEventListener('mousedown', onMouseDown);

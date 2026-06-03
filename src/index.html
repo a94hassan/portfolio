@@ -92,32 +92,31 @@
     }
     html.light .loader-ln { color: rgba(28,26,24,0.38); }
     .loader-line {
-      width: 88px; height: 1px;
+      width: 140px; height: 2px;
       background: rgba(226,232,240,0.09);
       overflow: hidden; position: relative;
+      border-radius: 1px;
     }
     html.light .loader-line { background: rgba(28,26,24,0.09); }
-    .loader-line::after {
-      content: '';
+    .loader-progress-bar {
       position: absolute; inset: 0;
       background: rgba(226,232,240,0.55);
-      animation: loaderFill 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-      transform: scaleX(0);
+      width: 0%;
+      transition: width 0.15s ease-out;
       transform-origin: left center;
     }
-    html.light .loader-line::after { background: rgba(28,26,24,0.55); }
-    @keyframes loaderFill {
-      0%   { transform: scaleX(0); transform-origin: left center; }
-      45%  { transform: scaleX(1); transform-origin: left center; }
-      55%  { transform: scaleX(1); transform-origin: right center; }
-      100% { transform: scaleX(0); transform-origin: right center; }
+    html.light .loader-progress-bar { background: rgba(28,26,24,0.55); }
+    #loader-percentage {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      color: rgba(226, 232, 240, 0.48);
+      margin-top: -6px;
+      transition: color 0.3s ease;
     }
-    @media (prefers-reduced-motion: reduce) {
-      .loader-line::after {
-        animation: none;
-        transform: scaleX(0.4);
-        opacity: 0.6;
-      }
+    html.light #loader-percentage {
+      color: rgba(28, 26, 24, 0.48);
     }
   </style>
 
@@ -144,7 +143,10 @@
       <span class="loader-fn">Hassan</span>
       <span class="loader-ln">Ammar</span>
     </div>
-    <div class="loader-line" aria-hidden="true"></div>
+    <div class="loader-line" aria-hidden="true">
+      <div id="loader-progress-bar" class="loader-progress-bar"></div>
+    </div>
+    <div id="loader-percentage">0%</div>
   </div>
   <app-root></app-root>
 </body>

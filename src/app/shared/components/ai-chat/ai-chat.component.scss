@@ -50,11 +50,21 @@
   overflow: hidden;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
   animation: slideUp 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  background: rgba(15, 15, 18, 0.90) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   
   @media (max-width: 480px) {
     width: calc(100vw - 32px);
     right: -8px;
     height: 70vh;
+  }
+
+  html.light & {
+    background: rgba(255, 255, 255, 0.94) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -72,9 +82,14 @@
 // ── Header ───────────────────────────────────────────────────────────────────
 .chat-header {
   padding: 16px 20px;
-  background: rgba(var(--bg), 0.2);
-  border-bottom: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   @include flexBox($jc: space-between);
+
+  html.light & {
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
 }
 
 .chat-title {
@@ -115,7 +130,11 @@
 
   &:hover {
     color: var(--fg);
-    background-color: var(--glass-bg-hi);
+    background-color: rgba(255, 255, 255, 0.06);
+
+    html.light & {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
   }
 }
 
@@ -125,7 +144,13 @@
   font-size: 11px;
   line-height: 1.5;
   color: var(--fg-55);
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  
+  html.light & {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.015);
+  }
   
   strong {
     color: var(--fg);
@@ -142,8 +167,8 @@
 
 .api-key-input {
   flex: 1;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--r-sm);
   padding: 6px 10px;
   font-size: 11px;
@@ -151,8 +176,13 @@
   outline: none;
   transition: border-color 0.22s ease;
 
+  html.light & {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
   &:focus {
-    border-color: var(--glass-border-hi);
+    border-color: rgba(200, 124, 70, 0.50);
   }
 }
 
@@ -195,8 +225,12 @@
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--glass-border);
+    background: rgba(255, 255, 255, 0.10);
     border-radius: 10px;
+
+    html.light & {
+      background: rgba(0, 0, 0, 0.10);
+    }
   }
 }
 
@@ -215,13 +249,18 @@
   font-size: 12px;
   line-height: 1.5;
   border-radius: var(--r-md);
-  background: var(--glass-bg-hi);
-  border: 1px solid var(--glass-border);
-  color: var(--fg-55);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--fg);
   word-wrap: break-word;
 
+  html.light & {
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
   a.chat-link {
-    color: var(--fg);
+    color: rgba(200, 124, 70, 1);
     text-decoration: underline;
     font-weight: 500;
     transition: opacity 0.18s ease;
@@ -232,9 +271,9 @@
   }
 
   &.user-bubble {
-    background: var(--fg-12);
-    border-color: var(--glass-border-hi);
-    color: var(--fg);
+    background: rgba(200, 124, 70, 0.20) !important;
+    border-color: rgba(200, 124, 70, 0.40) !important;
+    color: var(--fg) !important;
     border-bottom-right-radius: 3px;
   }
 
@@ -274,9 +313,9 @@
 }
 
 .prompt-chip {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  color: var(--fg-48);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--fg-55);
   font-size: 11px;
   font-weight: 500;
   padding: 6px 12px;
@@ -284,20 +323,34 @@
   cursor: pointer;
   transition: all 0.22s ease;
 
+  html.light & {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
   &:hover {
-    border-color: var(--glass-border-hi);
+    border-color: rgba(200, 124, 70, 0.60);
     color: var(--fg);
-    background: var(--glass-bg-hi);
+    background: rgba(200, 124, 70, 0.10);
     transform: translateY(-1px);
+
+    html.light & {
+      background: rgba(200, 124, 70, 0.08);
+    }
   }
 }
 
 // ── Input Row ────────────────────────────────────────────────────────────────
 .chat-input-row {
   padding: 14px 20px;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   @include flexBox($gap: 12px);
-  background: rgba(var(--bg), 0.1);
+  background: rgba(0, 0, 0, 0.15);
+
+  html.light & {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.015);
+  }
 
   input {
     flex: 1;
@@ -329,7 +382,7 @@
     }
 
     &:hover:not(:disabled) {
-      color: var(--fg);
+      color: rgba(200, 124, 70, 1);
       transform: scale(1.08) translate(1px, -1px);
     }
 

@@ -3,6 +3,7 @@
 // ─── Host — premium liquid glass with iridescent border ──────────────────────
 
 :host {
+  @extend .liquid-glass;
   width: 100%;
   max-width: 100vw;
   position: fixed;
@@ -10,15 +11,6 @@
   top: 0;
   left: 0;
   right: 0;
-  // Ultra-transparent glass — the backdrop blur alone creates the glass feel
-  background-color: rgba(7, 6, 8, 0.06);
-  backdrop-filter: var(--glass-blur-strong) saturate(3.0) brightness(1.04);
-  -webkit-backdrop-filter: var(--glass-blur-strong) saturate(3.0) brightness(1.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 8px 40px rgba(0, 0, 0, 0.12),
-    0 1px 0 rgba(255, 255, 255, 0.04);
   @include flexBox();
 
   // ── Top reflection line — caught ambient light at the glass edge ────────
@@ -60,15 +52,6 @@
 }
 
 :host-context(html.light) {
-  background-color: rgba(245, 245, 247, 0.08);
-  backdrop-filter: var(--glass-blur-strong) saturate(2.8) brightness(1.02);
-  -webkit-backdrop-filter: var(--glass-blur-strong) saturate(2.8) brightness(1.02);
-  border-bottom-color: rgba(28, 26, 24, 0.06);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.55) inset,
-    0 8px 32px rgba(0, 0, 0, 0.04),
-    0 1px 0 rgba(28, 26, 24, 0.04);
-
   &::after {
     background: linear-gradient(90deg,
         transparent 0%,

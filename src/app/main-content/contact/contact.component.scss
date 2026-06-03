@@ -178,16 +178,12 @@ section {
 // ─── Form ─────────────────────────────────────────────────────────────────────
 
 .contact-form {
+  @extend .liquid-glass;
   display: flex;
   flex-direction: column;
   width: 100%;
-  background: linear-gradient(155deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
-  border: 1px solid var(--glass-border);
   border-radius: var(--r-xl);
   padding: 26px 20px;
-  backdrop-filter: var(--glass-blur-strong);
-  -webkit-backdrop-filter: var(--glass-blur-strong);
-  box-shadow: 0 1px 0 var(--glass-border-hi) inset, 0 20px 56px var(--shadow-form);
 
   @media (min-width: 768px) {
     padding: 36px 32px;
@@ -332,14 +328,13 @@ section {
 // ─── Success state ────────────────────────────────────────────────────────────
 
 .form-success {
+  @extend .liquid-glass;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
   padding: 48px 32px;
-  background: linear-gradient(155deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
-  border: 1px solid var(--glass-border);
   border-radius: var(--r-xl);
   text-align: center;
   animation: fadeUp 0.5s ease;

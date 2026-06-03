@@ -159,7 +159,7 @@ section {
   }
 
   .about-photo-img--dark {
-    filter: var(--img-filter-dark);
+    filter: var(--img-filter-dark) sepia(0.22) saturate(1.15) contrast(1.02);
 
     :host-context(html.light) & {
       display: none;
@@ -168,7 +168,7 @@ section {
 
   .about-photo-img--light {
     display: none;
-    filter: var(--img-filter-light);
+    filter: var(--img-filter-light) sepia(0.24) saturate(1.15) contrast(1.02);
 
     :host-context(html.light) & {
       display: block;

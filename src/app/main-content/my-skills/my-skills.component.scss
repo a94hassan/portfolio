@@ -92,18 +92,12 @@ section {
 
 // ─── Skill Item Cards ────────────────────────────────────────────────────────
 .skill-item {
+  @extend .liquid-glass;
   width: 165px;
   height: 195px;
   padding: 28px 18px;
   box-sizing: border-box;
-  background: linear-gradient(160deg, var(--glass-bg-hi) 0%, var(--glass-bg) 100%);
-  border: 1px solid var(--glass-border);
   border-radius: var(--r-lg);
-  box-shadow:
-    0 1px 0 var(--glass-border-hi) inset,
-    0 4px 20px var(--shadow-tile);
-  backdrop-filter: var(--glass-blur-medium);
-  -webkit-backdrop-filter: var(--glass-blur-medium);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -133,7 +127,6 @@ section {
       width: 44px;
       height: 44px;
       object-fit: contain;
-      filter: brightness(0) invert(1);
       opacity: 0.65;
       transform: translateZ(5px);
       transition: opacity 0.3s ease, transform 0.3s ease;
@@ -210,7 +203,7 @@ section {
         inset 0 -2px 6px rgba(0, 0, 0, 0.05);
       
       img {
-        filter: brightness(0) invert(0);
+        filter: invert(1);
         opacity: 0.50;
       }
     }
