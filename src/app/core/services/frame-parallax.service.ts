@@ -10,7 +10,7 @@ export class FrameParallaxService {
   private readonly totalFrames = 750;
   private currentFrameIndex = signal<number>(0);
   private isDarkMode = signal<boolean>(true);
-  private frameCache = new Map<number, string>();
+  private frameCache = new Map<string, string>();
 
   constructor() {
     // Listen to scroll events

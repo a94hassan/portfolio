@@ -166,7 +166,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // ════════════════════════════════════════════════════════════════════════════
 
   private async initGlobalThreeJS() {
-    const canvas = document.querySelector('#global-canvas') as HTMLCanvasElement;
+    const canvas = document.querySelector('#three-canvas') as HTMLCanvasElement;
     if (!canvas) return;
 
     const THREE = await import('three');
