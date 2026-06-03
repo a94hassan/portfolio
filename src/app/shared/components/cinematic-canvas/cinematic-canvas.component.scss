@@ -10,6 +10,16 @@ canvas {
   z-index: -2;
   background: #000;
   will-change: transform, opacity;
+
+  // Mobile: hide canvas, keep dark bg — saves memory + no parallax needed
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+// Hide loader on mobile too
+@media (max-width: 768px) {
+  .cinema-loader { display: none; }
 }
 
 // ── Loading overlay ────────────────────────────────────────────────────────────

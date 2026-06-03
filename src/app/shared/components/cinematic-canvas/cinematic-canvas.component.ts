@@ -28,8 +28,8 @@ export class CinematicCanvasComponent implements AfterViewInit, OnDestroy {
     this.zone.runOutsideAngular(() => {
       const canvas = this.canvasRef.nativeElement;
       this.ctx = canvas.getContext('2d')!;
-      // Set scale via GSAP so parallax x/y animations don't reset it
-      gsap.set(canvas, { scale: 1.08, transformOrigin: 'center center' });
+      // Set initial state — opacity:1 + scale for parallax headroom
+      gsap.set(canvas, { opacity: 1, scale: 1.08, transformOrigin: 'center center' });
       this.resizeCanvas();
       this.preloadFrames();
       this.initMouseParallax();
