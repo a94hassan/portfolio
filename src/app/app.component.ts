@@ -1,4 +1,4 @@
-import { Component, NgZone, OnDestroy, OnInit, afterNextRender, inject } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, afterNextRender, inject, ViewEncapsulation } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import gsap from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -15,7 +15,8 @@ import { ThemeService } from './shared/services/theme.service';
   standalone: true,
   imports: [RouterOutlet, HeaderComponent, AiChatComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
+  encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements OnInit, OnDestroy {
   title = 'portfolio';

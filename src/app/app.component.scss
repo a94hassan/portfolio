@@ -20,7 +20,7 @@
 
 // Light mode — invert frame colors for white theme and apply warm ivory color grading
 html.light #global-canvas {
-  filter: sepia(0.32) saturate(1.2) contrast(0.95);
+  filter: invert(1) sepia(0.32) saturate(1.2) contrast(0.95);
 }
 
 #bg-overlay {
@@ -30,19 +30,15 @@ html.light #global-canvas {
   height: 100vh;
   z-index: -1;
   pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.33) 0%,
-    rgba(0, 0, 0, 0.66) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.33) 0%,
+      rgba(0, 0, 0, 0.66) 100%);
   transition: background 0.3s ease;
 
   html.light & {
-    background: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.33) 0%,
-      rgba(255, 255, 255, 0.66) 100%
-    );
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.33) 0%,
+        rgba(255, 255, 255, 0.66) 100%);
   }
 }
 
