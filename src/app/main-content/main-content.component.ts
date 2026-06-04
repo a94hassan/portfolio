@@ -66,7 +66,7 @@ export class MainContentComponent implements OnDestroy {
       });
 
       // 3. Portfolio section reveal
-      gsap.from('#portfolio_section .section-heading, #portfolio_section .portfolio-span, #portfolio_section .portfolio-ribbon-wrap', {
+      gsap.from('#portfolio_section .section-heading, #portfolio_section .portfolio-sub, #portfolio_section .portfolio-ribbon-wrapper', {
         scrollTrigger: {
           trigger: '#portfolio_section',
           start: 'top 82%',
