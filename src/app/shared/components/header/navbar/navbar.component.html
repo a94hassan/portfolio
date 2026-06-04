@@ -15,7 +15,7 @@
     @if (showDropdown) {
       <ul>
         @for (option of options; track $index) {
-          <li (click)="selectOption($index)" [class.selected]="selectedIndex === $index">
+          <li (click)="selectOption($index); $event.stopPropagation()" [class.selected]="selectedIndex === $index">
             {{ option.text }}
           </li>
         }
