@@ -29,6 +29,14 @@ export class FrameParallaxService {
   private isPlaying = false;
   private lastFrameTime = 0;
 
+  // Performance caching fields
+  private maxScroll = 0;
+  private resizeObserver?: ResizeObserver;
+  private lastDrawnFrame = -1;
+  private lastDrawnScrollY = -1;
+  private lastDrawnWidth = -1;
+  private lastDrawnHeight = -1;
+
   private parallaxCleanup?: () => void;
   private resizeListener?: () => void;
 
@@ -83,6 +91,17 @@ export class FrameParallaxService {
     
     this.resizeListener = () => this.resizeCanvas();
     window.addEventListener('resize', this.resizeListener);
+
+    // Setup ResizeObserver to watch body height changes dynamically without layout thrashing
+    const body = this.doc.body;
+    if (typeof ResizeObserver !== 'undefined' && body) {
+      this.resizeObserver = new ResizeObserver(() => {
+        const height = window.innerHeight;
+        const bodyHeight = body.scrollHeight || this.doc.documentElement?.scrollHeight || 0;
+        this.maxScroll = Math.max(0, bodyHeight - height);
+      });
+      this.resizeObserver.observe(body);
+    }
 
     // Setup mouse parallax effect
     this.setupMouseParallax();
@@ -176,17 +195,38 @@ export class FrameParallaxService {
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
 
+    // Cache the maxScroll value to prevent layout thrashing in drawFrame
+    const body = this.doc.body;
+    const bodyHeight = body?.scrollHeight || this.doc.documentElement?.scrollHeight || 0;
+    this.maxScroll = Math.max(0, bodyHeight - height);
+
     this.drawFrame(Math.floor(this.currentFrame));
   }
 
   private drawFrame(index: number): void {
     if (!this.ctx || !this.canvas || this.preloadedImages.length === 0) return;
 
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+    const scrollY = window.scrollY;
+
+    // Skip redundant drawing if the frame index, scroll position, and sizes are unchanged
+    if (
+      index === this.lastDrawnFrame &&
+      scrollY === this.lastDrawnScrollY &&
+      canvasWidth === this.lastDrawnWidth &&
+      canvasHeight === this.lastDrawnHeight
+    ) {
+      return;
+    }
+
     const img = this.preloadedImages[index];
     if (!img || !img.complete) return;
 
-    const canvasWidth = this.canvas.width;
-    const canvasHeight = this.canvas.height;
+    this.lastDrawnFrame = index;
+    this.lastDrawnScrollY = scrollY;
+    this.lastDrawnWidth = canvasWidth;
+    this.lastDrawnHeight = canvasHeight;
 
     // Clear canvas
     this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -207,8 +247,7 @@ export class FrameParallaxService {
     }
 
     // Calculate scroll fraction to interpolate ZOOM_FACTOR from 1.6 (top) to 2.0 (bottom)
-    const maxScroll = document.body.scrollHeight - window.innerHeight;
-    const scrollFraction = maxScroll > 0 ? Math.min(1, window.scrollY / maxScroll) : 0;
+    const scrollFraction = this.maxScroll > 0 ? Math.min(1, scrollY / this.maxScroll) : 0;
     const ZOOM_FACTOR = 1.6 + scrollFraction * 0.4;
 
     drawWidth *= ZOOM_FACTOR;
@@ -228,6 +267,9 @@ export class FrameParallaxService {
     }
     if (this.resizeListener) {
       window.removeEventListener('resize', this.resizeListener);
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 
