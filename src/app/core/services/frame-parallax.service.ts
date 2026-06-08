@@ -250,8 +250,8 @@ export class FrameParallaxService {
     const scrollFraction = this.maxScroll > 0 ? Math.min(1, scrollY / this.maxScroll) : 0;
     const ZOOM_FACTOR = 1.6 + scrollFraction * 0.4;
 
-    drawWidth *= ZOOM_FACTOR;
-    drawHeight *= ZOOM_FACTOR;
+    drawWidth *= ZOOM_FACTOR * 1.30;
+    drawHeight *= ZOOM_FACTOR * 1.30;
 
     // Shift horizontally to the left (80% of excess width) to hide right border and align content
     const offsetX = (canvasWidth - drawWidth) * 0.80;
