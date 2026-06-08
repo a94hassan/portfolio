@@ -220,9 +220,9 @@ section {
     &::placeholder { color: var(--fg-28); }
     &:hover  { border-color: var(--glass-border-hi); background: var(--glass-bg-hi); }
     &:focus  {
-      border-color: var(--glass-border-hi);
+      border-color: rgba(200, 124, 70, 0.45);
       background: var(--glass-bg-hi);
-      box-shadow: 0 0 0 3px rgba(100, 80, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(200, 124, 70, 0.12);
     }
   }
 
@@ -270,8 +270,8 @@ section {
     &:hover { border-color: var(--fg-35); background: var(--glass-bg-hi); }
 
     &:checked {
-      background: rgba(100, 80, 255, 0.18);
-      border-color: rgba(100, 80, 255, 0.40);
+      background: rgba(200, 124, 70, 0.22);
+      border-color: rgba(200, 124, 70, 0.55);
 
       &::after {
         content: '';

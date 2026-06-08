@@ -20,7 +20,7 @@
 
 // Light mode — invert frame colors for white theme and apply warm ivory color grading
 html.light #global-canvas {
-  filter: invert(1) sepia(0.32) saturate(1.2) contrast(0.95);
+  filter: invert(1) sepia(0.12) saturate(0.5) contrast(0.85) brightness(1.03);
 }
 
 #bg-overlay {

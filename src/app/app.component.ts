@@ -194,7 +194,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const ringHover = () => isLight() ? 'rgba(17,17,17,0.72)' : 'rgba(255,255,255,0.75)';
 
     let appeared = false;
-    const SEL = 'app-header,.skill-item,button,a,input,textarea';
+    const SEL = 'app-header,.skill-item,button,a,input,textarea,form,.project-info,.project-img-wrap,.about-icon,.social-icon-link';
     let spotEls: HTMLElement[] = [], rects: DOMRect[] = [];
     const refresh = () => { rects = spotEls.map(el => el.getBoundingClientRect()); };
     spotEls = Array.from(document.querySelectorAll(SEL));

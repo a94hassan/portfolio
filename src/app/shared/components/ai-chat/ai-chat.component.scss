@@ -37,7 +37,7 @@
     transform: scale(0.95);
   }
 
-  html.light & {
+  :host-context(html.light) & {
     background: linear-gradient(135deg, #ffffff 0%, #f7f5f2 100%);
     border: 1px solid rgba(0, 0, 0, 0.08);
     color: rgba(200, 124, 70, 1);
@@ -74,7 +74,7 @@
     height: 70vh;
   }
 
-  html.light & {
+  :host-context(html.light) & {
     background: rgba(255, 255, 255, 0.94) !important;
     border: 1px solid rgba(0, 0, 0, 0.08) !important;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
@@ -99,7 +99,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   @include flexBox($jc: space-between);
 
-  html.light & {
+  :host-context(html.light) & {
     background: rgba(0, 0, 0, 0.02);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
@@ -145,7 +145,7 @@
     color: var(--fg);
     background-color: rgba(255, 255, 255, 0.06);
 
-    html.light & {
+    :host-context(html.light) & {
       background-color: rgba(0, 0, 0, 0.04);
     }
   }
@@ -160,7 +160,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
   
-  html.light & {
+  :host-context(html.light) & {
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     background: rgba(0, 0, 0, 0.015);
   }
@@ -189,7 +189,7 @@
   outline: none;
   transition: border-color 0.22s ease;
 
-  html.light & {
+  :host-context(html.light) & {
     background: rgba(0, 0, 0, 0.02);
     border: 1px solid rgba(0, 0, 0, 0.06);
   }
@@ -241,7 +241,7 @@
     background: rgba(255, 255, 255, 0.10);
     border-radius: 10px;
 
-    html.light & {
+    :host-context(html.light) & {
       background: rgba(0, 0, 0, 0.10);
     }
   }
@@ -267,7 +267,7 @@
   color: var(--fg);
   word-wrap: break-word;
 
-  html.light & {
+  :host-context(html.light) & {
     background: rgba(0, 0, 0, 0.03);
     border: 1px solid rgba(0, 0, 0, 0.06);
   }
@@ -336,7 +336,7 @@
   cursor: pointer;
   transition: all 0.22s ease;
 
-  html.light & {
+  :host-context(html.light) & {
     background: rgba(0, 0, 0, 0.02);
     border: 1px solid rgba(0, 0, 0, 0.06);
   }
@@ -347,7 +347,7 @@
     background: rgba(200, 124, 70, 0.10);
     transform: translateY(-1px);
 
-    html.light & {
+    :host-context(html.light) & {
       background: rgba(200, 124, 70, 0.08);
     }
   }
@@ -360,7 +360,7 @@
   @include flexBox($gap: 12px);
   background: rgba(0, 0, 0, 0.15);
 
-  html.light & {
+  :host-context(html.light) & {
     border-top: 1px solid rgba(0, 0, 0, 0.08);
     background: rgba(0, 0, 0, 0.015);
   }
