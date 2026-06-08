@@ -23,7 +23,7 @@ export class FrameParallaxService {
   // Continuous playback state
   private currentFrame = 0;
   private direction = 1; // 1 = forward, -1 = backward
-  private baseSpeed = 15; // base frames per second
+  private baseSpeed = 30; // base frames per second
   private activeSpeedBoost = 0;
   private lastScrollTop = 0;
   private isPlaying = false;

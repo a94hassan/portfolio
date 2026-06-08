@@ -35,12 +35,12 @@
 
     <!-- Settings Panel -->
     <div class="chat-settings glass-layer" *ngIf="showSettings()">
-      <p>Hinterlege deinen eigenen <strong>Gemini API-Key</strong>, um den Chat live mit Google AI zu verbinden. Der Key wird nur lokal im Browser gespeichert.</p>
+      <p [innerHTML]="'chat_settings_desc' | translate"></p>
       <div class="api-key-input-row">
         <input type="password" [(ngModel)]="customApiKey" placeholder="AIzaSy..." class="api-key-input">
         <button (click)="saveApiKey()" class="save-key-btn">Save</button>
       </div>
-      <p *ngIf="hasCustomKey()" class="api-key-active-msg">Aktiver Status: Custom API-Key aktiv.</p>
+      <p *ngIf="hasCustomKey()" class="api-key-active-msg">{{ 'chat_settings_status' | translate }}</p>
     </div>
 
     <!-- History -->
@@ -69,7 +69,7 @@
 
     <!-- Input Row -->
     <form (ngSubmit)="sendMessage()" class="chat-input-row">
-      <input type="text" name="chatInput" [(ngModel)]="userInput" placeholder="Frage zu Hassan..." autocomplete="off">
+      <input type="text" name="chatInput" [(ngModel)]="userInput" [placeholder]="'chat_input_placeholder' | translate" autocomplete="off">
       <button type="submit" [disabled]="!userInput.trim()" aria-label="Nachricht senden">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"/>

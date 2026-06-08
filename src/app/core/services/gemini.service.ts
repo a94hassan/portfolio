@@ -1,9 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GeminiService {
+  private translate = inject(TranslateService);
+
   private systemPrompt = `
 Du bist der persönliche AI-Assistent auf dem Portfolio von Hassan Ammar, einem hochqualifizierten AI Frontend Developer & Prompt Engineer aus Saarbrücken, Deutschland.
 Deine Aufgabe ist es, Fragen von Besuchern präzise, professionell, sympathisch und ohne Emojis zu beantworten. Antworte immer in der Sprache des Nutzers (Deutsch oder Englisch).
@@ -12,7 +15,7 @@ Gib kurze, informative Antworten und verwende Markdown (z. B. Fettgedrucktes, Li
 Ausführliche Informationen über Hassan Ammar:
 - Rolle & Expertise: AI Frontend Developer & Prompt Engineer. Er verbindet modernste Frontend-Technologien (insbesondere Angular) mit künstlicher Intelligenz (LLM-Integrationen, Prompt Engineering, AI-Agents).
 - Leidenschaft: Erschaffung von performanten, barrierefreien und visuell beeindruckenden Web-Erlebnissen (Creative Coding). Er liebt flüssige Interaktionen, Motion-Design und sauberen Code.
-- Ausbildung: Intensiv-Absolvent der renommierten Developer Akademie. Er verfügt über ein starkes Fundament in Software Engineering, Clean Code, OOP und agilen Methoden (Scrum).
+- Ausbildung: Intensiv-Absolvent der renownierten Developer Akademie. Er verfügt über ein starkes Fundament in Software Engineering, Clean Code, OOP und agilen Methoden (Scrum).
 - Standort: Saarbrücken, Saarland, Deutschland (bereit für Remote-Arbeit oder hybride Rollen).
 - Technischer Stack:
   - Frontend-Kern: Angular 17/18+ (Signals, Standalone-Architektur, RxJS, reactive forms), TypeScript, JavaScript (ES6+), HTML5, CSS3, SCSS.
@@ -58,6 +61,8 @@ Ausführliche Informationen über Hassan Ammar:
    * Generates a response from Gemini or falls back to the local semantic engine.
    */
   async generateResponse(userMessage: string): Promise<string> {
+    const currentLang = this.translate.currentLang || 'en';
+
     if (this.hasApiKey()) {
       try {
         const apiKey = localStorage.getItem('GEMINI_API_KEY')!;
@@ -67,19 +72,42 @@ Ausführliche Informationen über Hassan Ammar:
         // Use gemini-2.5-flash as the standard fast web assistant model
         const model = ai.getGenerativeModel({
           model: 'gemini-2.5-flash',
-          systemInstruction: this.systemPrompt
+          systemInstruction: this.systemPrompt + `\nAktuelle Sprache der Webseite: ${currentLang === 'de' ? 'Deutsch' : 'Englisch'}. Antworte unbedingt in dieser Sprache.`
         });
 
         const result = await model.generateContent(userMessage);
         return result.response.text() || 'Entschuldigung, ich konnte keine Antwort generieren.';
       } catch (err) {
         console.error('Gemini API Error, falling back to mock engine:', err);
-        return this.generateMockResponse(userMessage) + '\n\n*(Hinweis: Der Aufruf der echten Gemini API schlug fehl, dies ist eine lokale Antwort.)*';
+        return this.generateMockResponse(userMessage) + `\n\n*(${currentLang === 'de' ? 'Hinweis: Der Aufruf der echten Gemini API schlug fehl, dies ist eine lokale Antwort.' : 'Note: The call to the real Gemini API failed, this is a local response.'})*`;
       }
     } else {
-      // Return semantic mock response with simulated delay
-      await new Promise(r => setTimeout(r, 1200));
-      return this.generateMockResponse(userMessage);
+      // Try to call the serverless Firebase Cloud Function proxy
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: userMessage,
+            lang: currentLang
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.text) {
+            return data.text;
+          }
+        }
+        throw new Error(`Proxy status: ${response.status}`);
+      } catch (err) {
+        console.warn('Firebase Cloud Function proxy failed or is not configured. Falling back to local mock engine:', err);
+        // Return semantic mock response with simulated delay
+        await new Promise(r => setTimeout(r, 1200));
+        return this.generateMockResponse(userMessage);
+      }
     }
   }
 
@@ -89,8 +117,9 @@ Ausführliche Informationen über Hassan Ammar:
   private generateMockResponse(msg: string): string {
     const lower = msg.toLowerCase();
     
-    // Language detection
-    const isEn = lower.includes('hello') || lower.includes('project') || lower.includes('skill') || lower.includes('contact') || lower.includes('work') || lower.includes('who');
+    // Precise translation language selection
+    const currentLang = this.translate.currentLang || 'en';
+    const isEn = currentLang === 'en';
 
     if (lower.includes('projekt') || lower.includes('project') || lower.includes('join') || lower.includes('pollo') || lower.includes('pokedex')) {
       if (isEn) {

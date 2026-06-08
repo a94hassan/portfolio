@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "public": "dist/portfolio/browser",
     "ignore": [
@@ -7,6 +10,10 @@
       "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/api/chat",
+        "function": "chat"
+      },
       {
         "source": "**",
         "destination": "/index.html"

@@ -69,5 +69,16 @@
   "legal_notice_h45": "Änderungen dieser rechtlichen Hinweise",
   "legal_notice_p4": "Ich behalte mir das Recht vor, diesen rechtlichen Hinweis jederzeit und ohne vorherige Ankündigung zu aktualisieren oder zu ändern. Alle Änderungen werden auf dieser Seite veröffentlicht.",
   "legal_notice_h46": "Kontaktieren Sie mich",
-  "legal_notice_p5": "Wenn Sie Fragen oder Bedenken zu diesem rechtlichen Hinweis haben oder mich aus irgendeinem Grund kontaktieren möchten, nutzen Sie bitte die oben angegebenen Kontaktinformationen."
+  "legal_notice_p5": "Wenn Sie Fragen oder Bedenken zu diesem rechtlichen Hinweis haben oder mich aus irgendeinem Grund kontaktieren möchten, nutzen Sie bitte die oben angegebenen Kontaktinformationen.",
+  "chat_welcome": "Hallo! Ich bin Hassans AI-Portfolio-Assistent. Wie kann ich dir heute helfen?\n\nFrag mich gerne zu seinen Projekten (Join, El Pollo Loco, Pokedex), seinen Fähigkeiten oder wie du ihn kontaktieren kannst.",
+  "chat_input_placeholder": "Frage zu Hassan...",
+  "chat_prompt_label1": "Projekte?",
+  "chat_prompt_text1": "Welche Projekte hat Hassan entwickelt?",
+  "chat_prompt_label2": "Skills?",
+  "chat_prompt_text2": "Welchen Tech-Stack nutzt er?",
+  "chat_prompt_label3": "Kontakt?",
+  "chat_prompt_text3": "Wie kann ich Hassan kontaktieren?",
+  "chat_error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+  "chat_settings_desc": "Hinterlege deinen eigenen Gemini API-Key, um den Chat live mit Google AI zu verbinden. Der Key wird nur lokal im Browser gespeichert.",
+  "chat_settings_status": "Aktiver Status: Custom API-Key aktiv."
 }

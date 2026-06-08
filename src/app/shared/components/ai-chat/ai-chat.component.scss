@@ -13,13 +13,13 @@
   width: 56px;
   height: 56px;
   border-radius: var(--r-circle);
-  background: linear-gradient(135deg, var(--btn-solid-from) 0%, var(--btn-solid-to) 100%);
-  border: 1px solid var(--btn-solid-border);
-  color: var(--btn-solid-color);
-  box-shadow: var(--btn-solid-sh);
+  background: linear-gradient(135deg, #181615 0%, #0a0808 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(200, 124, 70, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   cursor: pointer;
   @include flexBox();
-  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease, border-color 0.25s ease;
 
   svg {
     width: 24px;
@@ -29,11 +29,24 @@
 
   &:hover {
     transform: scale(1.08) rotate(5deg);
-    box-shadow: var(--btn-solid-sh-h);
+    border-color: rgba(200, 124, 70, 0.45);
+    box-shadow: 0 8px 28px rgba(200, 124, 70, 0.18), 0 4px 20px rgba(0, 0, 0, 0.5);
   }
 
   &:active {
     transform: scale(0.95);
+  }
+
+  html.light & {
+    background: linear-gradient(135deg, #ffffff 0%, #f7f5f2 100%);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: rgba(200, 124, 70, 1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+    &:hover {
+      border-color: rgba(200, 124, 70, 0.35);
+      box-shadow: 0 8px 24px rgba(200, 124, 70, 0.12), 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
   }
 }
 

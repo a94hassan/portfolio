@@ -1,7 +1,9 @@
-import { Component, inject, signal, effect, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, signal, effect, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GeminiService } from '../../../core/services/gemini.service';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 
 interface ChatMessage {
   sender: 'user' | 'bot';
@@ -12,12 +14,14 @@ interface ChatMessage {
 @Component({
   selector: 'app-ai-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './ai-chat.component.html',
   styleUrl: './ai-chat.component.scss'
 })
-export class AiChatComponent {
+export class AiChatComponent implements OnDestroy {
   private geminiService = inject(GeminiService);
+  private translateService = inject(TranslateService);
+  private langSubscription?: Subscription;
   
   @ViewChild('chatHistory') private chatHistoryContainer!: ElementRef;
 
@@ -36,11 +40,7 @@ export class AiChatComponent {
     }
   ]);
 
-  suggestedPrompts = [
-    { label: 'Projekte?', text: 'Welche Projekte hat Hassan entwickelt?' },
-    { label: 'Skills?', text: 'Welchen Tech-Stack nutzt er?' },
-    { label: 'Kontakt?', text: 'Wie kann ich Hassan kontaktieren?' }
-  ];
+  suggestedPrompts: { label: string; text: string }[] = [];
 
   constructor() {
     // Load custom API key from service state on load
@@ -51,6 +51,56 @@ export class AiChatComponent {
       if (this.messages().length > 0) {
         this.scrollToBottom();
       }
+    });
+
+    this.updateTranslations();
+    this.langSubscription = this.translateService.onLangChange.subscribe(() => {
+      this.updateTranslations();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.langSubscription?.unsubscribe();
+  }
+
+  private updateTranslations(): void {
+    const keys = [
+      'chat_welcome',
+      'chat_prompt_label1',
+      'chat_prompt_text1',
+      'chat_prompt_label2',
+      'chat_prompt_text2',
+      'chat_prompt_label3',
+      'chat_prompt_text3'
+    ];
+    this.translateService.get(keys).subscribe(res => {
+      const welcomeText = res['chat_welcome'] || 'Hallo! Ich bin Hassans AI-Portfolio-Assistent. Wie kann ich dir heute helfen?\n\nFrag mich gerne zu seinen Projekten (Join, El Pollo Loco, Pokedex), seinen Fähigkeiten oder wie du ihn kontaktieren kannst.';
+      
+      const currentMessages = this.messages();
+      if (currentMessages.length === 1 && currentMessages[0].sender === 'bot') {
+        this.messages.set([
+          {
+            sender: 'bot',
+            text: welcomeText,
+            time: currentMessages[0].time
+          }
+        ]);
+      }
+
+      this.suggestedPrompts = [
+        {
+          label: res['chat_prompt_label1'] || 'Projekte?',
+          text: res['chat_prompt_text1'] || 'Welche Projekte hat Hassan entwickelt?'
+        },
+        {
+          label: res['chat_prompt_label2'] || 'Skills?',
+          text: res['chat_prompt_text2'] || 'Welchen Tech-Stack nutzt er?'
+        },
+        {
+          label: res['chat_prompt_label3'] || 'Kontakt?',
+          text: res['chat_prompt_text3'] || 'Wie kann ich Hassan kontaktieren?'
+        }
+      ];
     });
   }
 
@@ -102,7 +152,7 @@ export class AiChatComponent {
     } catch (err) {
       this.messages.update(prev => [...prev, {
         sender: 'bot',
-        text: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
+        text: this.translateService.instant('chat_error') || 'Something went wrong. Please try again.',
         time: new Date()
       }]);
     } finally {
