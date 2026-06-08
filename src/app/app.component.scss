@@ -31,14 +31,14 @@ html.light #global-canvas {
   z-index: -1;
   pointer-events: none;
   background: linear-gradient(to top,
-      rgba(0, 0, 0, 0.66) 0%,
-      rgba(0, 0, 0, 0.33) 100%);
+      rgba(0, 0, 0, 0.80) 0%,
+      rgba(0, 0, 0, 0.24) 100%);
   transition: background 0.3s ease;
 
   html.light & {
     background: linear-gradient(to top,
-        rgba(255, 255, 255, 0.66) 0%,
-        rgba(255, 255, 255, 0.33) 100%);
+        rgba(255, 255, 255, 0.80) 0%,
+        rgba(255, 255, 255, 0.24) 100%);
   }
 }
 

@@ -23,7 +23,7 @@ export class FrameParallaxService {
   // Continuous playback state
   private currentFrame = 0;
   private direction = 1; // 1 = forward, -1 = backward
-  private baseSpeed = 30; // base frames per second
+  private baseSpeed = 20; // base frames per second
   private activeSpeedBoost = 0;
   private lastScrollTop = 0;
   private isPlaying = false;
@@ -132,7 +132,7 @@ export class FrameParallaxService {
       const instantVelocity = Math.abs(deltaScroll) / dt;
 
       // Map scroll velocity to a speed boost (tuned for highly visible scrollytelling)
-      const targetBoost = Math.min(instantVelocity * 0.16, 200); // cap max boost
+      const targetBoost = Math.min(instantVelocity * 0.30, 250); // cap max boost
 
       // Blend in the new speed boost smoothly
       this.activeSpeedBoost = Math.max(this.activeSpeedBoost, targetBoost);
@@ -253,8 +253,8 @@ export class FrameParallaxService {
     drawWidth *= ZOOM_FACTOR;
     drawHeight *= ZOOM_FACTOR;
 
-    // Align to the left (offsetX = 0) and center vertically
-    const offsetX = 0;
+    // Center horizontally and vertically for clean responsive alignment
+    const offsetX = (canvasWidth - drawWidth) / 2;
     const offsetY = (canvasHeight - drawHeight) / 2;
 
     this.ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);

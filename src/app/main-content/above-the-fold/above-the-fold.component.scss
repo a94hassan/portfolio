@@ -125,21 +125,19 @@ section {
 // ── Name ─────────────────────────────────────────────────────────────────────
 
 .hero-name {
-  // "Hassan Ammar" on a single line — Unbounded is wide, so sizes are tuned to
-  // keep the full name on one row within the text column even at narrow viewports.
   font-family: 'Unbounded', sans-serif;
   font-style: normal;
   font-weight: 600;
-  font-size: clamp(22px, 8vw, 36px);
+  font-size: clamp(22px, 8vw, 32px);
   letter-spacing: -0.02em;
   line-height: 1.05;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   color: var(--fg);
-  // Allow natural wrap on very narrow viewports without forcing it
-  white-space: nowrap;
+  white-space: normal; // Allow wrap to avoid breaking screen on small devices
 
   @media (min-width: 480px) {
-    font-size: clamp(26px, 7vw, 44px);
+    font-size: clamp(26px, 7vw, 40px);
+    white-space: nowrap; // Keep single line when viewport is wide enough
   }
 
   @media (min-width: 768px) {
@@ -298,9 +296,12 @@ section {
   position: relative;
   border-radius: var(--r-lg);
   overflow: hidden;
-  // Mobile: landscape crop so face is visible
-  aspect-ratio: 3 / 2;
-  max-height: 52vh;
+  // Mobile: portrait crop so whole face/body is visible, not zoomed
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  max-width: 220px;
+  max-height: 35vh;
+  margin: 0 auto;
   border: 1px solid var(--glass-border);
   box-shadow:
     0 0 0 1px var(--fg-03),
@@ -322,6 +323,9 @@ section {
     // Portrait on tablet+
     aspect-ratio: 3 / 4;
     max-height: 60vh;
+    max-width: none;
+    width: 100%;
+    margin: 0;
   }
 
   @media (min-width: 1024px) {
@@ -351,15 +355,10 @@ section {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  // Mobile landscape: show face/upper body
-  object-position: center 18%;
+  // Top-align face on all viewports to avoid weird cropping
+  object-position: center top;
   display: block;
   filter: var(--img-filter-dark);
-
-  @media (min-width: 768px) {
-    // Portrait: top-align to show face
-    object-position: center top;
-  }
 
   // Theme-conditional swap — light mode hides dark version & vice versa
   &--dark {
@@ -383,8 +382,9 @@ section {
 .hero-arrow {
   position: absolute;
   bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 24px;
+  left: auto;
+  transform: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -393,8 +393,12 @@ section {
   z-index: 2;
   animation: nudge 2.8s ease infinite;
 
-  @media (max-width: 768px) {
-    bottom: 12px;
+  @media (min-width: 768px) {
+    right: 50px;
+  }
+
+  @media (min-width: 1024px) {
+    right: 100px;
   }
 
   svg {

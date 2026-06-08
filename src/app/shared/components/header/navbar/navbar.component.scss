@@ -7,7 +7,7 @@ nav {
   font-weight: 500;
   letter-spacing: 0.10em;
   text-transform: uppercase;
-  @include flexBox($gap: 2px);
+  @include flexBox($gap: 12px);
 
   // Pill group container — visible on tablet+
   @media (min-width: 768px) {
@@ -212,62 +212,54 @@ nav {
 // ─── Burger ───────────────────────────────────────────────────────────────────
 
 .burger_menu {
-  width: 28px;
-  height: 20px;
-  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-circle);
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--fg-35);
   cursor: pointer;
-  display: block;
+  @include flexBox($fd: column, $gap: 3.5px);
+  position: relative;
+  transition: color 0.22s ease, border-color 0.22s ease, background 0.22s ease, transform 0.22s ease;
 
   @media (min-width: 768px) {
     display: none;
   }
-}
 
-.burger_menu span {
-  background-color: var(--fg-40);
-  position: absolute;
-  border-radius: 2px;
-  transition: transform 380ms cubic-bezier(0.4, 0, 0.2, 1), opacity 380ms cubic-bezier(0.4, 0, 0.2, 1), top 380ms cubic-bezier(0.4, 0, 0.2, 1), bottom 380ms cubic-bezier(0.4, 0, 0.2, 1), width 380ms cubic-bezier(0.4, 0, 0.2, 1), background-color 380ms cubic-bezier(0.4, 0, 0.2, 1);
-  width: 100%;
-  height: 1.5px;
-}
+  &:hover {
+    color: var(--fg);
+    border-color: var(--glass-border-hi);
+    background: var(--glass-bg);
+    transform: scale(1.08);
+  }
 
-.burger_menu span:nth-child(1) {
-  top: 0;
-}
+  &:active {
+    transform: scale(0.93);
+  }
 
-.burger_menu span:nth-child(2) {
-  top: 10px;
-  width: 65%;
-}
+  span {
+    display: block;
+    width: 14px;
+    height: 1.2px;
+    background-color: currentColor;
+    transition: transform 380ms cubic-bezier(0.4, 0, 0.2, 1), opacity 380ms cubic-bezier(0.4, 0, 0.2, 1), top 380ms cubic-bezier(0.4, 0, 0.2, 1), background-color 380ms cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 1px;
+    position: relative;
+  }
 
-.burger_menu span:nth-child(3) {
-  bottom: 0;
-}
-
-.burger_menu:not(.open):hover span {
-  background-color: var(--fg);
-}
-
-.burger_menu:not(.open):hover span:nth-child(2) {
-  width: 100%;
-}
-
-.burger_menu.open span:nth-child(1) {
-  transform: rotate(45deg);
-  top: 10px;
-  background-color: var(--fg);
-}
-
-.burger_menu.open span:nth-child(2) {
-  opacity: 0;
-  transform: translateX(-8px);
-}
-
-.burger_menu.open span:nth-child(3) {
-  transform: rotate(-45deg);
-  top: 10px;
-  background-color: var(--fg);
+  &.open {
+    span:nth-child(1) {
+      transform: translateY(4.7px) rotate(45deg);
+    }
+    span:nth-child(2) {
+      opacity: 0;
+      transform: translateX(-4px);
+    }
+    span:nth-child(3) {
+      transform: translateY(-4.7px) rotate(-45deg);
+    }
+  }
 }
 
 @keyframes slide {

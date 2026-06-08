@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, HostListener, ElementRef } from '@angular/core';
 import { TranslationService } from './../../../services/translation.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { ThemeService } from './../../../services/theme.service';
@@ -14,6 +14,7 @@ import { ThemeService } from './../../../services/theme.service';
 export class NavbarComponent {
   translate = inject(TranslationService);
   theme     = inject(ThemeService);
+  private elementRef = inject(ElementRef);
 
   options: { text: string; code: string }[] = [
     { text: 'EN', code: 'en' },
@@ -23,6 +24,14 @@ export class NavbarComponent {
   selectedIndex = localStorage.getItem('selectedLanguage') === 'en' ? 0 : 1;
   get selectedOption() { return this.options[this.selectedIndex]; }
   showDropdown = false;
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const clickedInside = this.elementRef.nativeElement.querySelector('.language_selector')?.contains(event.target);
+    if (!clickedInside) {
+      this.showDropdown = false;
+    }
+  }
 
   toggleIcon(navIcon: HTMLElement, dialog: HTMLElement): void {
     navIcon.classList.toggle('open');
