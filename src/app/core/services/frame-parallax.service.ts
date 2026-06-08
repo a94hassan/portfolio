@@ -253,8 +253,8 @@ export class FrameParallaxService {
     drawWidth *= ZOOM_FACTOR;
     drawHeight *= ZOOM_FACTOR;
 
-    // Center horizontally and vertically for clean responsive alignment
-    const offsetX = (canvasWidth - drawWidth) / 2;
+    // Shift horizontally to the left (80% of excess width) to hide right border and align content
+    const offsetX = (canvasWidth - drawWidth) * 0.80;
     const offsetY = (canvasHeight - drawHeight) / 2;
 
     this.ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
